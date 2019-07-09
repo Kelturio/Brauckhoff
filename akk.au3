@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.19
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.25
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -54,18 +54,32 @@ Global Const $SHDUpdaterPath = $SHDUpdaterDir & $SHDUpdaterFileName
 Global Const $SHDUpdaterExists = FileExists($SHDUpdaterPath)
 #EndRegion
 #Region
-Global Const $IniFileNameLocal = @ScriptDir & "\akk.ini"
-Global Const $IniFileNameGlobal = "\\172.16.128.4\edv\Gerrit\akkGlobalConfig.ini"
+Global Const $IniLocalFileName = "akk.ini"
+Global Const $IniLocalDir = @ScriptDir & "\"
+Global Const $IniLocalPath = $IniLocalDir & $IniLocalFileName
+Global Const $IniLocalExists = FileExists($IniLocalPath)
+
+Global Const $IniGlobalFileName = "akkGlobalConfig.ini"
+Global Const $IniGlobalDir = @ScriptDir & "\"
+Global Const $IniGlobalPath = $IniGlobalDir & $IniGlobalFileName
+Global Const $IniGlobalExists = FileExists($IniGlobalPath)
+
+Global Const $IniGlobalNetFileName = "akkGlobalConfig.ini"
+Global Const $IniGlobalNetDir = "\\172.16.128.4\edv\Gerrit\"
+Global Const $IniGlobalNetPath = $IniGlobalNetDir & $IniGlobalNetFileName
+Global Const $IniGlobalNetExists = FileExists($IniGlobalNetPath)
+
 Global Const $DownloadsDir = @UserProfileDir & "\Downloads"
 Global Const $DownloadsOldDir = $DownloadsDir & " alt"
 #EndRegion
 #Region
-Global Const $SmtpMailSmtpServer = "172.16.128.8"
+Global $SmtpMailSmtpServer = ""
 Global Const $SmtpMailEHLO = @ComputerName
-Global Const $SmtpMailFirst = ""
+Global Const $SmtpMailFirst = -1
 Global Const $SmtpMailTrace = 1
 
-Global Const $LowSpaceThresholdPerc = 5
+Global $LowSpaceThresholdPerc
+Global $MailAddresses[10][2]
 #EndRegion
 #Region
 _Singleton("akk")
@@ -74,6 +88,8 @@ ConsoleWrite(@CRLF & "akk.exe läuft")
 ConsoleWrite(@CRLF & $SpawnPath)
 ConsoleWrite(@CRLF & $KPSInfoPath)
 ConsoleWrite(@CRLF & "werden überwacht" & @CRLF)
+
+GetGlobalConfig()
 
 ;~ CleaningDownloads()
 
@@ -85,13 +101,27 @@ While 42
     Sleep($T2)
     Check()
 WEnd
+
+Func GetGlobalConfig()
+    If $IniGlobalNetExists Then
+        FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
+    EndIf
+    If FileExists($IniGlobalPath) Then
+        $LowSpaceThresholdPerc = IniRead($IniGlobalPath, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
+        For $i = 0 To 9 Step 1
+            $MailAddresses[$i][0] = IniRead($IniGlobalPath, "FreeSpaceCheck", "Mail" & $i & "Address", "")
+            $MailAddresses[$i][1] = IniRead($IniGlobalPath, "FreeSpaceCheck", "Mail" & $i & "Active", 0)
+        Next
+        $SmtpMailSmtpServer = IniRead($IniGlobalPath, "SmtpMail", "SmtpServer", "")
+    EndIf
+EndFunc   ;==>GetGlobalConfig
 #EndRegion
 #Region
 Func Check()
     CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
     CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
 ;~     CheckAndRunProcAs($PowerkatalogFileName, $PowerkatalogDir, $PowerkatalogPath, $PowerkatalogExists, "Administrator", "Brauckhoff", "")
-;~ 	CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
+;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
 EndFunc   ;==>Check
 
 Func CheckAndRunProc($Name, $Dir, $Path, $Exists)
@@ -120,7 +150,7 @@ Func CleaningDownloads()
         FileDirMoveRec($DownloadsDir, $DownloadsOldDir)
         FileDelete($DownloadsOldDir & "\Downloads alt.lnk")
         FileCreateShortcut($DownloadsOldDir, $DownloadsDir & "\Downloads alt")
-        IniWrite($IniFileNameLocal, "Downloads", "LastCleaningDate", _DateToDayValue(@YEAR, @MON, @MDAY))
+        IniWrite($IniLocalPath, "Downloads", "LastCleaningDate", _DateToDayValue(@YEAR, @MON, @MDAY))
         Local Const $Warning = '' _
                  & 'Wenn Sie noch wichtige Dateien im Ordner "Downloads" aufbewahren, die Sie benötigen, kopieren Sie diese bitte an einen anderen Ort.' & @CRLF _
                  & 'Alle Dateien aus dem Ordner "Downloads" wurden bereits in den Ordner "Downloads alt" verschoben.' & @CRLF _
@@ -151,7 +181,7 @@ Func FileDirMoveRec($SourceDir, $DestDir)
 EndFunc   ;==>FileDirMoveRec
 
 Func GetDownloadsLastCleaningDate()
-    Return IniRead($IniFileNameLocal, "Downloads", "LastCleaningDate", "Default Value")
+    Return IniRead($IniLocalPath, "Downloads", "LastCleaningDate", "Default Value")
 EndFunc   ;==>GetDownloadsLastCleaningDate
 #EndRegion
 #Region
@@ -170,17 +200,19 @@ Func CheckHomeDriveSpaceFree()
     Local Const $iFreeSpace = DriveSpaceFree(@HomeDrive & "\")
     Local Const $iTotalSpace = DriveSpaceTotal(@HomeDrive & "\")
     Local Const $iFreeSpacePerc = ($iFreeSpace / $iTotalSpace) * 100
-;~     If $iFreeSpacePerc < $LowSpaceThresholdPerc Then
-    SendMailLowSpace(Round($iFreeSpacePerc, 2), $sLabel, $sSerial, $iFreeSpace, $iTotalSpace)
-;~     EndIf
-
+    If $iFreeSpacePerc < $LowSpaceThresholdPerc Then
+        For $i = 0 To 9 Step 1
+            If $MailAddresses[$i][0] <> "" And $MailAddresses[$i][1] = 1 Then
+                SendMailLowSpace($MailAddresses[$i][0], Round($iFreeSpacePerc, 2), $sLabel, $sSerial, $iFreeSpace, $iTotalSpace)
+                Sleep(3000)
+            EndIf
+        Next
+    EndIf
 EndFunc   ;==>CheckHomeDriveSpaceFree
 
-Func SendMailLowSpace($iFreeSpacePerc, $sLabel, $sSerial, $iFreeSpace, $iTotalSpace)
+Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $sSerial, $iFreeSpace, $iTotalSpace)
     Local $sFromName = "akk.exe (Gerrit)"
     Local $sFromAddress = "akk@kuechen-brauckhoff.de"
-;~     Local $sToAddress = "searinox@gmx.de"
-    Local $sToAddress = "heger@easyconnectit.de"
     Local $sSubject = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $iFreeSpacePerc & "% !"
     Local $asBody[0]
     _ArrayAdd($asBody, "Akk Warnung wenig Speicherplatz auf:")
