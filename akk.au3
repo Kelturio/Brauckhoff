@@ -1,7 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_UseUpx=y
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.17
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.19
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -24,6 +23,7 @@
 #include <File.au3>
 #include <Misc.au3>
 #include <Date.au3>
+#include <Inet.au3>
 #Region
 Opt("MustDeclareVars", 1) ;0=no, 1=require pre-declaration
 Opt("TrayAutoPause", 0) ;0=no pause, 1=Pause
@@ -54,9 +54,18 @@ Global Const $SHDUpdaterPath = $SHDUpdaterDir & $SHDUpdaterFileName
 Global Const $SHDUpdaterExists = FileExists($SHDUpdaterPath)
 #EndRegion
 #Region
-Global Const $IniFileName = @ScriptDir & "\akk.ini"
+Global Const $IniFileNameLocal = @ScriptDir & "\akk.ini"
+Global Const $IniFileNameGlobal = "\\172.16.128.4\edv\Gerrit\akkGlobalConfig.ini"
 Global Const $DownloadsDir = @UserProfileDir & "\Downloads"
 Global Const $DownloadsOldDir = $DownloadsDir & " alt"
+#EndRegion
+#Region
+Global Const $SmtpMailSmtpServer = "172.16.128.8"
+Global Const $SmtpMailEHLO = @ComputerName
+Global Const $SmtpMailFirst = ""
+Global Const $SmtpMailTrace = 1
+
+Global Const $LowSpaceThresholdPerc = 5
 #EndRegion
 #Region
 _Singleton("akk")
@@ -66,7 +75,9 @@ ConsoleWrite(@CRLF & $SpawnPath)
 ConsoleWrite(@CRLF & $KPSInfoPath)
 ConsoleWrite(@CRLF & "werden überwacht" & @CRLF)
 
-CleaningDownloads()
+;~ CleaningDownloads()
+
+CheckHomeDriveSpaceFree()
 
 Sleep($T1)
 
@@ -103,14 +114,13 @@ Func ConsoleLog($Text)
 EndFunc   ;==>ConsoleLog
 #EndRegion
 #Region
-
 Func CleaningDownloads()
     If DownloadsNeedCleaning() Then
         DirRemove($DownloadsOldDir, $DIR_REMOVE)
         FileDirMoveRec($DownloadsDir, $DownloadsOldDir)
         FileDelete($DownloadsOldDir & "\Downloads alt.lnk")
         FileCreateShortcut($DownloadsOldDir, $DownloadsDir & "\Downloads alt")
-        IniWrite($IniFileName, "Downloads", "LastCleaningDate", _DateToDayValue(@YEAR, @MON, @MDAY))
+        IniWrite($IniFileNameLocal, "Downloads", "LastCleaningDate", _DateToDayValue(@YEAR, @MON, @MDAY))
         Local Const $Warning = '' _
                  & 'Wenn Sie noch wichtige Dateien im Ordner "Downloads" aufbewahren, die Sie benötigen, kopieren Sie diese bitte an einen anderen Ort.' & @CRLF _
                  & 'Alle Dateien aus dem Ordner "Downloads" wurden bereits in den Ordner "Downloads alt" verschoben.' & @CRLF _
@@ -118,14 +128,14 @@ Func CleaningDownloads()
                  & 'Alle Ihre Dateien die im Ordner "Downloads alt" bleiben, werden demnächst unwiderruflich GELÖSCHT!' & @CRLF _
                  & 'Bitte sichten und sichern Sie am besten jetzt sofort Ihre weiterhin benötigten Dateien.' & @CRLF _
                  & 'Soll der Ordner "Downloads alt" jetzt geöffnet werden?' & @CRLF
-        If MsgBox($MB_YESNO + $MB_ICONWARNING + $MB_SYSTEMMODAL, "ACHTUNG WICHTIG! LÖSCHUNG IHRER DOWNLOAD-DATEIEN", $Warning) = 6 Then
+        If MsgBox($MB_YESNO + $MB_ICONWARNING + $MB_SYSTEMMODAL, "ACHTUNG WICHTIG! LÖSCHUNG IHRER DOWNLOAD-DATEIEN", $Warning) = $IDYES Then
             ShellExecute($DownloadsOldDir)
         EndIf
     EndIf
 EndFunc   ;==>CleaningDownloads
 
 Func DownloadsNeedCleaning()
-    Return(_DateToDayValue(@YEAR, @MON, @MDAY) - GetDownloadsLastCleaningDate()) >= 14
+    Return (_DateToDayValue(@YEAR, @MON, @MDAY) - GetDownloadsLastCleaningDate()) >= 14
 EndFunc   ;==>DownloadsNeedCleaning
 Func FileDirMoveRec($SourceDir, $DestDir)
     If FileExists($SourceDir) Then
@@ -141,6 +151,58 @@ Func FileDirMoveRec($SourceDir, $DestDir)
 EndFunc   ;==>FileDirMoveRec
 
 Func GetDownloadsLastCleaningDate()
-    Return IniRead($IniFileName, "Downloads", "LastCleaningDate", "Default Value")
+    Return IniRead($IniFileNameLocal, "Downloads", "LastCleaningDate", "Default Value")
 EndFunc   ;==>GetDownloadsLastCleaningDate
+#EndRegion
+#Region
+Func ByteSuffix($iBytes)
+    Local $iIndex = 0, $aArray = [' bytes', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB']
+    While $iBytes > 1023
+        $iIndex += 1
+        $iBytes /= 1024
+    WEnd
+    Return Round($iBytes) & $aArray[$iIndex]
+EndFunc   ;==>ByteSuffix
+
+Func CheckHomeDriveSpaceFree()
+    Local Const $sLabel = DriveGetLabel(@HomeDrive & "\")
+    Local Const $sSerial = DriveGetSerial(@HomeDrive & "\")
+    Local Const $iFreeSpace = DriveSpaceFree(@HomeDrive & "\")
+    Local Const $iTotalSpace = DriveSpaceTotal(@HomeDrive & "\")
+    Local Const $iFreeSpacePerc = ($iFreeSpace / $iTotalSpace) * 100
+;~     If $iFreeSpacePerc < $LowSpaceThresholdPerc Then
+    SendMailLowSpace(Round($iFreeSpacePerc, 2), $sLabel, $sSerial, $iFreeSpace, $iTotalSpace)
+;~     EndIf
+
+EndFunc   ;==>CheckHomeDriveSpaceFree
+
+Func SendMailLowSpace($iFreeSpacePerc, $sLabel, $sSerial, $iFreeSpace, $iTotalSpace)
+    Local $sFromName = "akk.exe (Gerrit)"
+    Local $sFromAddress = "akk@kuechen-brauckhoff.de"
+;~     Local $sToAddress = "searinox@gmx.de"
+    Local $sToAddress = "heger@easyconnectit.de"
+    Local $sSubject = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $iFreeSpacePerc & "% !"
+    Local $asBody[0]
+    _ArrayAdd($asBody, "Akk Warnung wenig Speicherplatz auf:")
+    _ArrayAdd($asBody, @ComputerName)
+    If @IPAddress1 <> "0.0.0.0" Then _ArrayAdd($asBody, @IPAddress1)
+    If @IPAddress2 <> "0.0.0.0" Then _ArrayAdd($asBody, @IPAddress2)
+    If @IPAddress3 <> "0.0.0.0" Then _ArrayAdd($asBody, @IPAddress3)
+    If @IPAddress4 <> "0.0.0.0" Then _ArrayAdd($asBody, @IPAddress4)
+    _ArrayAdd($asBody, $sLabel & " (" & @HomeDrive & ")")
+    _ArrayAdd($asBody, Round($iFreeSpace / 1024, 2) & " GB frei von " & Round($iTotalSpace / 1024, 2) & " GB")
+    _ArrayAdd($asBody, $iFreeSpacePerc & "% frei")
+    Local $iResponse = _INetSmtpMail($SmtpMailSmtpServer, $sFromName, $sFromAddress, $sToAddress, $sSubject, $asBody, $SmtpMailEHLO, $SmtpMailFirst, $SmtpMailTrace)
+    Local $iErr = @error
+    If $iResponse = 0 Then
+        Local Const $Warning = '' _
+                 & 'DIE FESTPLATTE IST FAST VOLL!' & @CRLF & @CRLF _
+                 & 'Bitte Herrn Heger bescheid geben:' & @CRLF _
+                 & 'heger@easyconnectit.de' & @CRLF _
+                 & 'oder 0176 23984427' & @CRLF & @CRLF _
+                 & _ArrayToString($asBody, @CRLF) & @CRLF & @CRLF _
+                 & 'Mail failed with error code ' & $iErr & @CRLF
+        MsgBox($MB_ICONWARNING + $MB_SYSTEMMODAL, "Warnung!", $Warning)
+    EndIf
+EndFunc   ;==>SendMailLowSpace
 #EndRegion
