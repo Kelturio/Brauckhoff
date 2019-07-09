@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.26
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.27
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -76,7 +76,7 @@ Global Const $DownloadsOldDir = $DownloadsDir & " alt"
 Global $SmtpMailSmtpServer = ""
 Global Const $SmtpMailEHLO = @ComputerName
 Global Const $SmtpMailFirst = -1
-Global Const $SmtpMailTrace = 1
+Global Const $SmtpMailTrace = 0
 
 Global $LowSpaceThresholdPerc
 Global $MailAddresses[10][2]
