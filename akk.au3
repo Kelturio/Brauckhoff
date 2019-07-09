@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.25
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.26
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -91,7 +91,7 @@ ConsoleWrite(@CRLF & "werden überwacht" & @CRLF)
 
 GetGlobalConfig()
 
-;~ CleaningDownloads()
+CleaningDownloads()
 
 CheckHomeDriveSpaceFree()
 
