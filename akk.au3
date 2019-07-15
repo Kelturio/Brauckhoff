@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.51
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.52
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -60,7 +60,7 @@ Global Const $AkkPath = $AkkDir & $AkkFileName
 Global Const $AkkExists = FileExists($AkkPath)
 
 Global Const $AkkNetFileName = $AkkFileName
-Global Const $AkkNetDir = "\\172.16.128.4\edv\Gerrit\"
+Global Const $AkkNetDir = "\\172.16.128.4\edv\Gerrit\akk\"
 Global Const $AkkNetPath = $AkkNetDir & $AkkNetFileName
 Global Const $AkkNetExists = FileExists($AkkNetPath)
 
@@ -75,12 +75,12 @@ Global Const $AkkUpdaterNetPath = $AkkUpdaterNetDir & $AkkUpdaterNetFileName
 Global Const $AkkUpdaterNetExists = FileExists($AkkUpdaterNetPath)
 
 Global Const $IniLocalFileName = "akk.ini"
-Global Const $IniLocalDir = @ScriptDir & "\"
+Global Const $IniLocalDir = $AkkDir
 Global Const $IniLocalPath = $IniLocalDir & $IniLocalFileName
 Global Const $IniLocalExists = FileExists($IniLocalPath)
 
 Global Const $IniGlobalFileName = "akkGlobalConfig.ini"
-Global Const $IniGlobalDir = @ScriptDir & "\"
+Global Const $IniGlobalDir = $AkkDir
 Global Const $IniGlobalPath = $IniGlobalDir & $IniGlobalFileName
 Global $IniGlobalExists = FileExists($IniGlobalPath)
 
@@ -95,17 +95,31 @@ Global Const $IniGlobalExPath = $IniGlobalExDir & $IniGlobalExFileName
 Global $IniGlobalExExists = FileExists($IniGlobalExPath)
 
 Global Const $IniGlobalExNetFileName = $IniGlobalExFileName
-Global Const $IniGlobalExNetDir = $IniGlobalNetDir
+Global Const $IniGlobalExNetDir = $AkkNetDir
 Global Const $IniGlobalExNetPath = $IniGlobalExNetDir & $IniGlobalExNetFileName
 Global Const $IniGlobalExNetExists = FileExists($IniGlobalExNetPath)
 
-Global Const $IniGlobalNetLogFileName = "akkLog.ini"
-Global Const $IniGlobalNetLogDir = $IniGlobalNetDir & "log\"
+Global $LogFileID
+
+Global $LogFileName = ""
+Global Const $LogDir = $AkkDir & "log\"
+Global $LogPath = $LogDir & $LogFileName
+Global $LogExists = FileExists($LogPath)
+If Not $LogExists Then DirCreate($LogDir)
+
+Global $LogNetFileName = ""
+Global Const $LogNetDir = $AkkNetDir & "log\" & @ComputerName & "\"
+Global $LogNetPath = $LogNetDir & $LogNetFileName
+Global $LogNetExists = FileExists($LogNetPath)
+If Not $LogNetExists Then DirCreate($LogNetDir)
+
+Global Const $IniGlobalNetLogFileName = "akkGlobal.ini"
+Global Const $IniGlobalNetLogDir = $AkkNetDir & "log\"
 Global Const $IniGlobalNetLogPath = $IniGlobalNetLogDir & $IniGlobalNetLogFileName
 Global Const $IniGlobalNetLogExists = FileExists($IniGlobalNetLogPath)
 
-Global Const $IniGlobalNetLogInstanceFileName = "akkLog_" & @ComputerName & ".ini"
-Global Const $IniGlobalNetLogInstanceDir = $IniGlobalNetLogDir
+Global Const $IniGlobalNetLogInstanceFileName = "akkMacro.ini"
+Global Const $IniGlobalNetLogInstanceDir = $LogNetDir
 Global Const $IniGlobalNetLogInstancePath = $IniGlobalNetLogInstanceDir & $IniGlobalNetLogInstanceFileName
 Global Const $IniGlobalNetLogInstanceExists = FileExists($IniGlobalNetLogInstancePath)
 
@@ -117,15 +131,16 @@ Global $MacroAutoIt[1][2]
 Global $MacroDirectory[1][2]
 Global $MacroSystemInfo[1][2]
 #EndRegion
-#Region
+#Region SMTP
 Global $SmtpMailSmtpServer = ""
 Global Const $SmtpMailEHLO = @ComputerName
 Global Const $SmtpMailFirst = -1
 Global Const $SmtpMailTrace = 0
+;~ Global Const $SmtpMailTrace = 1
 
 Global $LowSpaceThresholdPerc
 Global $MailAddresses[10][2]
-#EndRegion
+#EndRegion SMTP
 #Region Globals Prometheus WMI Exporter
 Global Const $WmiExporterLocalFileName = "wmi_exporter.exe"
 Global Const $WmiExporterLocalDir = @HomeDrive & "\Brauckhoff\wmi_exporter\" ;@SCRIPTDIR?
@@ -181,16 +196,20 @@ Global Const $WmiExporterParams = '' _
          & ' --collectors.enabled ' & $WmiExporterCollectorsEnabled _
          & ' --telemetry.addr :9182 ' _
          & ' --collector.textfile.directory ' & $WmiExporterCollectorTextfileDir
-ConsoleLog($WmiExporterParams)
 #EndRegion Globals Prometheus WMI Exporter
 #Region
 _Singleton("akk")
 
-ConsoleWrite(@CRLF & "akk.exe läuft")
-ConsoleWrite(@CRLF & $SpawnPath)
-ConsoleWrite(@CRLF & $KPSInfoPath)
-ConsoleWrite(@CRLF & $WmiExporterLocalPath)
-ConsoleWrite(@CRLF & "werden überwacht" & @CRLF)
+ReadLocalConfig()
+
+ManageLogFile()
+
+ConsoleLog("akk.exe läuft")
+ConsoleLog($SpawnPath)
+ConsoleLog($KPSInfoPath)
+ConsoleLog($WmiExporterLocalPath)
+ConsoleLog("werden überwacht" & @CRLF)
+ConsoleLog($WmiExporterParams)
 
 GetGlobalConfig()
 
@@ -202,7 +221,7 @@ SetupWmiExporter()
 
 ;~ CleaningDownloads()
 
-;~ CheckHomeDriveSpaceFree()
+CheckHomeDriveSpaceFree()
 
 ;~ Sleep($T1)
 
@@ -210,7 +229,15 @@ While 42
     Sleep($T2)
     Check()
     GetGlobalConfig()
+    ManageLogFile()
 WEnd
+
+Func ConsoleLog($Text)
+    ConsoleWrite(@CRLF & $Text)
+    TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
+    _FileWriteLog($LogPath, $Text)
+    _FileWriteLog($LogNetPath, $Text)
+EndFunc   ;==>ConsoleLog
 
 Func GetGlobalConfig()
     If $IniGlobalNetExists And Not $IniGlobalExists Then
@@ -255,6 +282,16 @@ Func GetGlobalConfig()
     EndIf
 EndFunc   ;==>GetGlobalConfig
 
+Func ManageLogFile()
+    $LogFileName = StringFormat("%04s", $LogFileID) & ".log"
+    $LogPath = $LogDir & $LogFileName
+    $LogNetPath = $LogNetDir & $LogFileName
+    If _FileCountLines($LogPath) > 1e3 Then
+        $LogFileID += 1
+        IniWrite($IniLocalPath, "LogFile", "ID", $LogFileID)
+    EndIf
+EndFunc   ;==>ManageLogFile
+
 Func ReadGlobalConfig()
     If FileExists($IniGlobalPath) Then
         $LowSpaceThresholdPerc = IniRead($IniGlobalPath, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
@@ -271,6 +308,14 @@ Func ReadGlobalConfig()
         EndIf
     EndIf
 EndFunc   ;==>ReadGlobalConfig
+
+Func ReadLocalConfig()
+    $LogFileID = IniRead($IniLocalPath, "LogFile", "ID", "NULL")
+    If $LogFileID = "NULL" Then
+        IniWrite($IniLocalPath, "LogFile", "ID", 0)
+        $LogFileID = 0
+    EndIf
+EndFunc   ;==>ReadLocalConfig
 
 Func WriteLogStartup()
     Local Const $DelimItem = $ArrayDelimItem
@@ -368,11 +413,6 @@ Func CheckAndRunProcAs($Name, $Dir, $Path, $Exists, $UserName, $Domain, $Passwor
         RunAs($UserName, $Domain, $Password, $RUN_LOGON_NETWORK, $Path, $Dir)
     EndIf
 EndFunc   ;==>CheckAndRunProcAs
-
-Func ConsoleLog($Text)
-    ConsoleWrite(@CRLF & $Text)
-    TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
-EndFunc   ;==>ConsoleLog
 #EndRegion
 #Region CleaningDownloads
 Func CleaningDownloads()
@@ -412,7 +452,7 @@ Func FileDirMoveRec($SourceDir, $DestDir)
 EndFunc   ;==>FileDirMoveRec
 
 Func GetDownloadsLastCleaningDate()
-    Return IniRead($IniLocalPath, "Downloads", "LastCleaningDate", "Default Value")
+    Return IniRead($IniLocalPath, "Downloads", "LastCleaningDate", "NULL")
 EndFunc   ;==>GetDownloadsLastCleaningDate
 #EndRegion CleaningDownloads
 #Region FreeSpaceCheck
@@ -432,12 +472,16 @@ Func CheckHomeDriveSpaceFree()
     Local Const $iTotalSpace = DriveSpaceTotal(@HomeDrive & "\")
     Local Const $iFreeSpacePerc = ($iFreeSpace / $iTotalSpace) * 100
     If $iFreeSpacePerc < $LowSpaceThresholdPerc Then
-        For $i = 0 To 9 Step 1
-            If $MailAddresses[$i][0] <> "" And $MailAddresses[$i][1] = 1 Then
-                SendMailLowSpace($MailAddresses[$i][0], Round($iFreeSpacePerc, 2), $sLabel, $sSerial, $iFreeSpace, $iTotalSpace)
-                Sleep(3000)
-            EndIf
-        Next
+        If (_DateToDayValue(@YEAR, @MON, @MDAY) - IniRead($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", "NULL")) >= 1 Then
+            IniWrite($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", _DateToDayValue(@YEAR, @MON, @MDAY))
+            For $i = 0 To 9 Step 1
+                If $MailAddresses[$i][0] <> "" And $MailAddresses[$i][1] = 1 Then
+                    ConsoleLog("Sending Mail to " & $MailAddresses[$i][0])
+                    SendMailLowSpace($MailAddresses[$i][0], Round($iFreeSpacePerc, 2), $sLabel, $sSerial, $iFreeSpace, $iTotalSpace)
+                    Sleep(3000)
+                EndIf
+            Next
+        EndIf
     EndIf
 EndFunc   ;==>CheckHomeDriveSpaceFree
 
