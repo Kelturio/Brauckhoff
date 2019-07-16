@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.29
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.31
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -74,6 +74,11 @@ Global Const $IniGlobalNetLogDir = $IniGlobalNetDir & "log\"
 Global Const $IniGlobalNetLogPath = $IniGlobalNetLogDir & $IniGlobalNetLogFileName
 Global Const $IniGlobalNetLogExists = FileExists($IniGlobalNetLogPath)
 
+Global Const $IniGlobalNetLogInstanceFileName = "akkLog_" & @ComputerName & ".ini"
+Global Const $IniGlobalNetLogInstanceDir = $IniGlobalNetLogDir
+Global Const $IniGlobalNetLogInstancePath = $IniGlobalNetLogInstanceDir & $IniGlobalNetLogInstanceFileName
+Global Const $IniGlobalNetLogInstanceExists = FileExists($IniGlobalNetLogInstancePath)
+
 Global Const $DownloadsDir = @UserProfileDir & "\Downloads"
 Global Const $DownloadsOldDir = $DownloadsDir & " alt"
 #EndRegion
@@ -104,10 +109,10 @@ WriteLogStartup()
 
 Sleep($T1)
 
-While 42
-    Sleep($T2)
-    Check()
-WEnd
+;~ While 42
+;~     Sleep($T2)
+;~     Check()
+;~ WEnd
 
 Func GetGlobalConfig()
     If $IniGlobalNetExists Then
@@ -124,10 +129,18 @@ Func GetGlobalConfig()
 EndFunc   ;==>GetGlobalConfig
 
 Func WriteLogStartup()
-	MsgBox($MB_ICONWARNING + $MB_SYSTEMMODAL, "Warnung!", $IniGlobalNetLogPath)
-    If $IniGlobalNetLogExists Then
-        IniWrite($IniGlobalNetLogPath, 'IPAddress1', @ComputerName, @IPAddress1)
-    EndIf
+;~     MsgBox($MB_ICONWARNING + $MB_SYSTEMMODAL, "Warnung!", $IniGlobalNetLogPath)
+	IniWrite($IniGlobalNetLogPath, "IPAddress1", @ComputerName, @IPAddress1)
+
+	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", Compiled, @Compiled)
+	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", ScriptName, ScriptName)
+	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", ScriptDir, ScriptDir)
+	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", ScriptFullPath, ScriptFullPath)
+	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", WorkingDir, WorkingDir)
+	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", AutoItExe, AutoItExe)
+	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", AutoItPID, AutoItPID)
+	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", AutoItVersion, AutoItVersion)
+	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", AutoItX64, AutoItX64)
 EndFunc   ;==>WriteLogStartup
 #EndRegion
 #Region
