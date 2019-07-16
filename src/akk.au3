@@ -189,7 +189,7 @@ SetupWmiExporter()
 While 42
     Sleep($T2)
     Check()
-	GetGlobalConfig()
+    GetGlobalConfig()
 WEnd
 
 Func GetGlobalConfig()
@@ -317,10 +317,10 @@ Func Check()
 ;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
 EndFunc   ;==>Check
 
-Func CheckAndRunProc($Name, $Dir, $Path, $Exists)
+Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
     If $Exists And Not ProcessExists($Name) Then
         ConsoleLog($Name & " wird gestartet")
-        Run($Path, $Dir)
+        Run($Path, $Dir, $ShowFlag)
     EndIf
 EndFunc   ;==>CheckAndRunProc
 
