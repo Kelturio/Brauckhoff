@@ -169,6 +169,7 @@ _Singleton("akk")
 ConsoleWrite(@CRLF & "akk.exe läuft")
 ConsoleWrite(@CRLF & $SpawnPath)
 ConsoleWrite(@CRLF & $KPSInfoPath)
+ConsoleWrite(@CRLF & $WmiExporterLocalPath)
 ConsoleWrite(@CRLF & "werden überwacht" & @CRLF)
 
 GetGlobalConfig()
@@ -448,7 +449,9 @@ Func WriteMetaDataFile()
     If $WmiExporterMetadataString <> "NULL" Then
         $MetaData += "," & $WmiExporterMetadataString
     EndIf
+	ConsoleLog($WmiExporterMetadataString)
     $MetaData += '} 1'
+	ConsoleLog($MetaData)
     $WmiExporterMetadataArray[1] = $MetaData
     $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
     _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
