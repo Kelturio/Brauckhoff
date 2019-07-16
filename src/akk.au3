@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.35
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.40
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -98,15 +98,25 @@ Global $MailAddresses[10][2]
 #EndRegion
 #Region Globals Prometheus
 Global Const $WmiExporterLocalFileName = "wmi_exporter.exe"
-Global Const $WmiExporterLocalDir = @HomeDrive & "\Program Files\wmi_exporter\"
+Global Const $WmiExporterLocalDir = @HomeDrive & "\Brauckhoff\wmi_exporter\" ;@SCRIPTDIR?
 Global Const $WmiExporterLocalPath = $WmiExporterLocalDir & $WmiExporterLocalFileName
 Global Const $WmiExporterLocalExists = FileExists($WmiExporterLocalPath)
 
-Global Const $WmiExporterGlobalNetSetupFileName = "wmi_exporter-0.7.999-amd64.msi"
+Global Const $WmiExporterGlobalNetSetupFileName = "wmi_exporter.exe"
 Global Const $WmiExporterGlobalNetSetupDir = $IniGlobalNetDir & "wmi_exporter\"
 Global Const $WmiExporterGlobalNetSetupPath = $WmiExporterGlobalNetSetupDir & $WmiExporterGlobalNetSetupFileName
 Global Const $WmiExporterGlobalNetSetupExists = FileExists($WmiExporterGlobalNetSetupPath)
-#EndRegion
+
+Global Const $WmiExporterCollectorsEnabled = "cpu,cs,logical_disk,memory,net,os,process,service,system,textfile"
+
+Global Const $WmiExporterCollectorTextfileDir = $WmiExporterLocalDir & "textfile_inputs\"
+
+Global Const $WmiExporterParams = '' _
+& ' --log.format logger:eventlog?name=wmi_exporter' _
+& ' --collectors.enabled ' & $WmiExporterCollectorsEnabled _
+& ' --telemetry.addr :9182 ' _
+& ' --collector.textfile.directory ' & $WmiExporterCollectorTextfileDir
+#EndRegion Globals Prometheus
 #Region
 _Singleton("akk")
 
@@ -223,6 +233,7 @@ EndFunc   ;==>WriteLogStartup
 Func Check()
     CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
     CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
+	CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
 ;~     CheckAndRunProcAs($PowerkatalogFileName, $PowerkatalogDir, $PowerkatalogPath, $PowerkatalogExists, "Administrator", "Brauckhoff", "")
 ;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
 EndFunc   ;==>Check
@@ -343,12 +354,12 @@ EndFunc   ;==>SendMailLowSpace
 #EndRegion
 #Region WMI Exporter
 Func SetupWmiExporter()
-	Local Const $WmiInstallerPath = @TempDir & "\" & $WmiExporterGlobalNetSetupFileName
+;~     Local Const $WmiInstallerPath = @TempDir & "\" & $WmiExporterGlobalNetSetupFileName
     If Not $WmiExporterLocalExists Then
-		FileCopy($WmiExporterGlobalNetSetupPath, $WmiInstallerPath)
-		If FileExists($WmiInstallerPath) Then
-			Run($WmiInstallerPath, @TempDir)
-		EndIf
-	EndIf
-EndFunc
-#EndRegion
+        FileCopy($WmiExporterGlobalNetSetupPath, $WmiExporterLocalPath)
+;~         If FileExists($WmiExporterLocalPath) Then
+;~             Run($WmiExporterLocalPath & " --log.format logger:eventlog?name=wmi_exporter --collectors.enabled " & $WmiExporterCollectorsEnabled & " --telemetry.addr :9182  --collector.textfile.directory " & $WmiExporterCollectorTextfileDir, "")
+;~         EndIf
+    EndIf
+EndFunc   ;==>SetupWmiExporter
+#EndRegion WMI Exporter
