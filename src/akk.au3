@@ -107,8 +107,45 @@ Global Const $WmiExporterGlobalNetSetupDir = $IniGlobalNetDir & "wmi_exporter\"
 Global Const $WmiExporterGlobalNetSetupPath = $WmiExporterGlobalNetSetupDir & $WmiExporterGlobalNetSetupFileName
 Global Const $WmiExporterGlobalNetSetupExists = FileExists($WmiExporterGlobalNetSetupPath)
 
-Global Const $WmiExporterCollectorsEnabled = "cs" _ ;akk
-& ",logical_disk,memory,net,os,process,service,system,textfile"
+Global Const $WmiExporterCollectorsEnabled = "" _
+         & "ad" _ ; Active Directory Domain Services
+		 & ",cpu" _ ; CPU usage
+         & ",cs" _ ; "Computer System" metrics (system properties, num cpus/total memory)
+		 & ",dns" _ ; DNS Server
+		 & ",hyperv" _ ; Hyper-V hosts
+		 & ",iis" _ ; IIS sites and applications
+         & ",logical_disk" _ ; Logical disks, disk I/O
+		 & ",memory" _ ; Memory usage metrics
+		 & ",msmq" _ ; MSMQ queues
+		 & ",mssql" _ ; SQL Server Performance Objects metrics
+		 & ",netframework_clrexceptions" _ ; .NET Framework CLR Exceptions
+		 & ",netframework_clrinterop" _ ; .NET Framework Interop Metrics
+		 & ",netframework_clrjit" _ ; .NET Framework JIT metrics
+		 & ",netframework_clrloading" _ ; .NET Framework CLR Loading metrics
+		 & ",netframework_clrlocksandthreads" _ ; .NET Framework locks and metrics threads
+		 & ",netframework_clrmemory" _ ; .NET Framework Memory metrics
+		 & ",netframework_clrremoting" _ ; .NET Framework Remoting metrics
+		 & ",netframework_clrsecurity" _ ; .NET Framework Security Check metrics
+		 & ",net" _ ; Network interface I/O
+		 & ",os" _ ; OS metrics (memory, processes, users)
+		 & ",process" _ ; Per-process metrics
+		 & ",service" _ ; Service state metrics
+		 & ",system" _ ; System calls
+		 & ",tcp" _ ; TCP connections
+		 & ",textfile" _ ; Read prometheus metrics from a text file
+		 & ",vmware" ; Performance counters installed by the Vmware Guest agent
+
+
+
+;~ 		          & "cs" _ ;
+;~          & ",logical_disk
+;~ 		 ,memory
+;~ 		 ,net
+;~ 		 ,os
+;~ 		 ,process
+;~ 		 ,service
+;~ 		 ,system
+;~ 		 ,textfile"
 
 Global Const $WmiExporterCollectorTextfileDir = $WmiExporterLocalDir & "textfile_inputs\"
 
@@ -118,7 +155,7 @@ Global Const $WmiExporterParams = '' _
          & ' --telemetry.addr :9182 ' _
          & ' --collector.textfile.directory ' & $WmiExporterCollectorTextfileDir
 ConsoleLog($WmiExporterParams)
-#EndRegion Globals Prometheus
+#EndRegion Globals Prometheus WMI Exporter
 #Region
 _Singleton("akk")
 
