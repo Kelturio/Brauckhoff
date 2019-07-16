@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
-#AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.52
+#AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Red.ico
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.53
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -147,10 +147,15 @@ Global Const $WmiExporterLocalDir = @HomeDrive & "\Brauckhoff\wmi_exporter\" ;@S
 Global Const $WmiExporterLocalPath = $WmiExporterLocalDir & $WmiExporterLocalFileName
 Global $WmiExporterLocalExists = FileExists($WmiExporterLocalPath)
 
-Global Const $WmiExporterGlobalNetSetupFileName = "wmi_exporter.exe"
-Global Const $WmiExporterGlobalNetSetupDir = $IniGlobalNetDir & "wmi_exporter\"
-Global Const $WmiExporterGlobalNetSetupPath = $WmiExporterGlobalNetSetupDir & $WmiExporterGlobalNetSetupFileName
-Global Const $WmiExporterGlobalNetSetupExists = FileExists($WmiExporterGlobalNetSetupPath)
+Global Const $WmiExporterX32GlobalNetSetupFileName = "wmi_exporter-0.7.999-preview.2-386.exe"
+Global Const $WmiExporterX32GlobalNetSetupDir = $AkkNetDir & "wmi_exporter\"
+Global Const $WmiExporterX32GlobalNetSetupPath = $WmiExporterX32GlobalNetSetupDir & $WmiExporterX32GlobalNetSetupFileName
+Global Const $WmiExporterX32GlobalNetSetupExists = FileExists($WmiExporterX32GlobalNetSetupPath)
+
+Global Const $WmiExporterX64GlobalNetSetupFileName = "wmi_exporter-0.7.999-preview.2-amd64.exe"
+Global Const $WmiExporterX64GlobalNetSetupDir = $AkkNetDir & "wmi_exporter\"
+Global Const $WmiExporterX64GlobalNetSetupPath = $WmiExporterX64GlobalNetSetupDir & $WmiExporterX64GlobalNetSetupFileName
+Global Const $WmiExporterX64GlobalNetSetupExists = FileExists($WmiExporterX64GlobalNetSetupPath)
 
 Global Const $WmiExporterCollectorsEnabled = "" _
          & "" _ ;~ & "ad" _ ; Active Directory Domain Services
@@ -269,14 +274,14 @@ Func GetGlobalConfig()
 
     Local $AkkUpdaterTime = FileGetTime($AkkUpdaterPath, $FT_MODIFIED, $FT_STRING)
     Local $AkkUpdaterNetTime = FileGetTime($AkkUpdaterNetPath, $FT_MODIFIED, $FT_STRING)
-    If $AkkUpdaterTime <> $AkkUpdaterNetTime Then
+    If $AkkUpdaterTime <> $AkkUpdaterNetTime And @Compiled Then
         $AkkUpdaterExists = FileCopy($AkkUpdaterNetPath, $AkkUpdaterPath, $FC_OVERWRITE + $FC_CREATEPATH)
         ConsoleLog("Reload Updater" & @CRLF & $AkkUpdaterNetPath)
     EndIf
 
     Local $AkkTime = FileGetTime($AkkPath, $FT_MODIFIED, $FT_STRING)
     Local $AkkNetTime = FileGetTime($AkkNetPath, $FT_MODIFIED, $FT_STRING)
-    If $AkkTime <> $AkkNetTime Then
+    If $AkkTime <> $AkkNetTime And @Compiled Then
         CheckAndRunProc($AkkUpdaterFileName, $AkkUpdaterDir, $AkkUpdaterPath, $AkkUpdaterExists)
         ConsoleLog("Reload Akk" & @CRLF & $AkkNetPath)
     EndIf
@@ -390,7 +395,7 @@ Func WriteLogStartup()
     IniWriteSection($IniGlobalNetLogInstancePath, "MacroSystemInfo", $MacroSystemInfo)
 EndFunc   ;==>WriteLogStartup
 #EndRegion
-#Region
+#Region CheckAndRunProc
 Func Check()
     CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
     CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
@@ -413,7 +418,7 @@ Func CheckAndRunProcAs($Name, $Dir, $Path, $Exists, $UserName, $Domain, $Passwor
         RunAs($UserName, $Domain, $Password, $RUN_LOGON_NETWORK, $Path, $Dir)
     EndIf
 EndFunc   ;==>CheckAndRunProcAs
-#EndRegion
+#EndRegion CheckAndRunProc
 #Region CleaningDownloads
 Func CleaningDownloads()
     If DownloadsNeedCleaning() Then
@@ -517,18 +522,17 @@ EndFunc   ;==>SendMailLowSpace
 Func SetupWmiExporter()
     ProcessClose($WmiExporterLocalFileName)
     If Not $WmiExporterLocalExists Then
-        If FileCopy($WmiExporterGlobalNetSetupPath, $WmiExporterLocalPath, $FC_OVERWRITE + $FC_CREATEPATH) Then
+        Local $SourcePath = (@OSArch = "X64") ? $WmiExporterX64GlobalNetSetupPath : $WmiExporterX32GlobalNetSetupPath
+        If FileCopy($SourcePath, $WmiExporterLocalPath, $FC_OVERWRITE + $FC_CREATEPATH) Then
             $WmiExporterLocalExists = FileExists($WmiExporterLocalPath)
         EndIf
     EndIf
-    If Not FileExists($WmiExporterCollectorTextfileDir) Then
-        DirCreate($WmiExporterCollectorTextfileDir)
-    EndIf
+    If Not FileExists($WmiExporterCollectorTextfileDir) Then DirCreate($WmiExporterCollectorTextfileDir)
     WriteMetaDataFile()
 EndFunc   ;==>SetupWmiExporter
 
 Func WriteMetaDataFile()
-    Local $MetaData = 'metadata{computername="' & @ComputerName & '"'
+    Local $MetaData = 'metadata{computername="' & @ComputerName & '"' & ',username="' & @UserName & '"'
     If $WmiExporterMetadataString <> "NULL" And StringLen($WmiExporterMetadataString) And Not StringIsSpace($WmiExporterMetadataString) Then
         $MetaData &= "," & $WmiExporterMetadataString
     EndIf
