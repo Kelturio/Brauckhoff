@@ -152,6 +152,7 @@ Global Const $WmiExporterMetadataDir = $WmiExporterCollectorTextfileDir
 Global Const $WmiExporterMetadataPath = $WmiExporterMetadataDir & $WmiExporterMetadataFileName
 Global $WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
 
+Global $WmiExporterMetadataString
 Global $WmiExporterMetadataArray[1]
 Global $WmiExporterMetadataArrayRet
 
@@ -170,9 +171,9 @@ ConsoleWrite(@CRLF & $SpawnPath)
 ConsoleWrite(@CRLF & $KPSInfoPath)
 ConsoleWrite(@CRLF & "werden überwacht" & @CRLF)
 
-CheckGlobalConfig()
-
 GetGlobalConfig()
+
+ReadGlobalConfig()
 
 WriteLogStartup()
 
@@ -189,7 +190,7 @@ While 42
     Check()
 WEnd
 
-Func CheckGlobalConfig()
+Func GetGlobalConfig()
     If $IniGlobalNetExists And Not $IniGlobalExists Then
         $IniGlobalExists = FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
     EndIf
@@ -202,20 +203,20 @@ Func CheckGlobalConfig()
     If $IniGlobalTime <> $IniGlobalNetTime Then
         $IniGlobalExists = FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
         ConsoleLog("Reload Config " & $IniGlobalNetPath)
+		ReadGlobalConfig()
     EndIf
 
     Local $IniGlobalExTime = FileGetTime($IniGlobalExPath, $FT_MODIFIED, $FT_STRING)
     Local $IniGlobalExNetTime = FileGetTime($IniGlobalExNetPath, $FT_MODIFIED, $FT_STRING)
     If $IniGlobalExTime <> $IniGlobalExNetTime Then
         $IniGlobalExExists = FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
-        ConsoleLog("Reload Config " & $IniGlobalExNetPath)
+        ConsoleLog("Reload Config" & @CRLF & $IniGlobalExNetPath)
+		ReadGlobalConfig()
+		WriteMetaDataFile()
     EndIf
 EndFunc   ;==>CheckGlobalConfig
 
-Func GetGlobalConfig()
-;~     If $IniGlobalNetExists Then
-;~         FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
-;~     EndIf
+Func ReadGlobalConfig()
     If FileExists($IniGlobalPath) Then
         $LowSpaceThresholdPerc = IniRead($IniGlobalPath, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
         For $i = 0 To 9 Step 1
@@ -224,12 +225,9 @@ Func GetGlobalConfig()
         Next
         $SmtpMailSmtpServer = IniRead($IniGlobalPath, "SmtpMail", "SmtpServer", "")
     EndIf
-;~     If $IniGlobalExNetExists Then
-;~         FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
-;~     EndIf
     If FileExists($IniGlobalExPath) Then
-        Local $MetaData = IniRead($IniGlobalExPath, "MetaData", @ComputerName, "NULL")
-        If $MetaData = "NULL" Then
+        $WmiExporterMetadataString = IniRead($IniGlobalExPath, "MetaData", @ComputerName, "NULL")
+        If $WmiExporterMetadataString = "NULL" Then
             IniWrite($IniGlobalExNetPath, "MetaData", @ComputerName, "")
         EndIf
     EndIf
@@ -312,7 +310,7 @@ EndFunc   ;==>WriteLogStartup
 Func Check()
     CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
     CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
-    CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
+;~     CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
 ;~     CheckAndRunProcAs($PowerkatalogFileName, $PowerkatalogDir, $PowerkatalogPath, $PowerkatalogExists, "Administrator", "Brauckhoff", "")
 ;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
 EndFunc   ;==>Check
@@ -336,7 +334,7 @@ Func ConsoleLog($Text)
     TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
 EndFunc   ;==>ConsoleLog
 #EndRegion
-#Region
+#Region CleaningDownloads
 Func CleaningDownloads()
     If DownloadsNeedCleaning() Then
         DirRemove($DownloadsOldDir, $DIR_REMOVE)
@@ -442,7 +440,16 @@ Func SetupWmiExporter()
     If Not FileExists($WmiExporterCollectorTextfileDir) Then
         DirCreate($WmiExporterCollectorTextfileDir)
     EndIf
-    _ArrayAdd($WmiExporterMetadataArray, 'metadata{computername="' & @ComputerName & '"} 1')
+	WriteMetaDataFile()
+EndFunc   ;==>SetupWmiExporter
+
+Func WriteMetaDataFile()
+	Local $MetaData = 'metadata{computername="' & @ComputerName & '"'
+	If $WmiExporterMetadataString <> "NULL" Then
+		$MetaData += "," & $WmiExporterMetadataString
+	EndIf
+	$MetaData += '} 1'
+	$WmiExporterMetadataArray[1] = $MetaData
     $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
     _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
     If Not $WmiExporterMetadataExists Or Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet) Then
@@ -450,7 +457,7 @@ Func SetupWmiExporter()
         ConsoleLog("_FileWriteFromArray" & @CRLF & $WmiExporterMetadataPath)
         $WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
     EndIf
-EndFunc   ;==>SetupWmiExporter
+EndFunc
 #EndRegion WMI Exporter
 #Region UDF
 ;~ https://www.autoitscript.com/forum/topic/182506-array-comparison/
