@@ -311,7 +311,7 @@ EndFunc   ;==>WriteLogStartup
 Func Check()
     CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
     CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
-;~     CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
+    CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
 ;~     CheckAndRunProcAs($PowerkatalogFileName, $PowerkatalogDir, $PowerkatalogPath, $PowerkatalogExists, "Administrator", "Brauckhoff", "")
 ;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
 EndFunc   ;==>Check
@@ -446,21 +446,13 @@ EndFunc   ;==>SetupWmiExporter
 
 Func WriteMetaDataFile()
     Local $MetaData = 'metadata{computername="' & @ComputerName & '"'
-    If $WmiExporterMetadataString <> "NULL" Then
+    If $WmiExporterMetadataString <> "NULL" And StringLen($WmiExporterMetadataString) And Not StringIsSpace($WmiExporterMetadataString) Then
         $MetaData &= "," & $WmiExporterMetadataString
     EndIf
-    ConsoleLog($WmiExporterMetadataString)
     $MetaData &= '} 1'
-    ConsoleLog($MetaData)
     $WmiExporterMetadataArray[1] = $MetaData
     $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
     _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
-    _ArrayDisplay($WmiExporterMetadataArray)
-    _ArrayDisplay($WmiExporterMetadataArrayRet)
-    ConsoleLog(_ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet))
-    ConsoleLog(_ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet, 1))
-    ConsoleLog(_ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet, 2))
-    ConsoleLog(_ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet, 3))
     If Not $WmiExporterMetadataExists Or Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet, 3) Then
         _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
         ConsoleLog("_FileWriteFromArray" & @CRLF & $WmiExporterMetadataPath)
