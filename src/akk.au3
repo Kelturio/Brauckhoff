@@ -137,6 +137,14 @@ Global Const $WmiExporterCollectorsEnabled = "" _
 
 Global Const $WmiExporterCollectorTextfileDir = $WmiExporterLocalDir & "textfile_inputs\"
 
+Global Const $WmiExporterMetadataFileName = "metadata.prom"
+Global Const $WmiExporterMetadataDir = $WmiExporterCollectorTextfileDir
+Global Const $WmiExporterMetadataPath = $WmiExporterMetadataDir & $WmiExporterMetadataFileName
+Global Const $WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
+
+Global $WmiExporterMetadataArray[1]
+Global $WmiExporterMetadataArrayRet
+
 Global Const $WmiExporterParams = '' _
          & ' --log.format logger:eventlog?name=wmi_exporter' _
          & ' --collectors.enabled ' & $WmiExporterCollectorsEnabled _
@@ -261,7 +269,6 @@ Func Check()
     CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
     CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
     CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
-;~     CheckAndRunProc($WmiExporterLocalFileName, "", $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
 ;~     CheckAndRunProcAs($PowerkatalogFileName, $PowerkatalogDir, $PowerkatalogPath, $PowerkatalogExists, "Administrator", "Brauckhoff", "")
 ;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
 EndFunc   ;==>Check
@@ -391,6 +398,9 @@ Func SetupWmiExporter()
     If Not FileExists($WmiExporterCollectorTextfileDir) Then
         DirCreate($WmiExporterCollectorTextfileDir)
     EndIf
-
+	_ArrayAdd($WmiExporterMetadataArray, 'metadata{computername=" ' & @ComputerName & ' "} 1')
+	If Not $WmiExporterMetadataExists Then
+		_FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
+	EndIf
 EndFunc   ;==>SetupWmiExporter
 #EndRegion WMI Exporter
