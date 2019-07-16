@@ -81,7 +81,7 @@ Global Const $SmtpMailTrace = 1
 
 ;~ Global Const $LowSpaceThresholdPerc = 5
 Global $LowSpaceThresholdPerc
-Global $MailAddresses[][]
+Global $MailAddresses[0][2]
 #EndRegion
 #Region
 _Singleton("akk")
@@ -105,17 +105,17 @@ While 42
 WEnd
 
 Func GetGlobalConfig()
-	If $IniGlobalNetExists Then
-		If FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH) Then
-			$LowSpaceThresholdPerc = IniRead($IniGlobalPath, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
-			For $i = 0 To 9 Step 1
-				_ArrayAdd($MailAddresses, IniRead($IniGlobalPath, "FreeSpaceCheck", "Mail" & $i & "Address", ""), 0)
-				_ArrayAdd($MailAddresses, IniRead($IniGlobalPath, "FreeSpaceCheck", "Mail" & $i & "Address", ""), 1)
-			Next
-			$SmtpMailSmtpServer = IniRead($IniGlobalPath, "SmtpMail", "SmtpServer", "Default Value")
-			_ArrayDisplay($MailAddresses)
-		EndIf
-	EndIf
+    If $IniGlobalNetExists Then
+        If FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH) Then
+            $LowSpaceThresholdPerc = IniRead($IniGlobalPath, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
+            For $i = 0 To 9 Step 1
+                $MailAddresses[$i][0] = IniRead($IniGlobalPath, "FreeSpaceCheck", "Mail" & $i & "Address", "")
+				$MailAddresses[$i][1] = IniRead($IniGlobalPath, "FreeSpaceCheck", "Mail" & $i & "Active", 0)
+            Next
+            $SmtpMailSmtpServer = IniRead($IniGlobalPath, "SmtpMail", "SmtpServer", "Default Value")
+            _ArrayDisplay($MailAddresses)
+        EndIf
+    EndIf
 EndFunc   ;==>GetGlobalConfig
 #EndRegion
 #Region
@@ -214,7 +214,7 @@ Func SendMailLowSpace($iFreeSpacePerc, $sLabel, $sSerial, $iFreeSpace, $iTotalSp
     Local $sToAddress = "searinox@gmx.de"
 ;~     Local $sToAddress = "heger@easyconnectit.de"
     Local $sSubject = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $iFreeSpacePerc & "% !"
-    Local $asBody[]
+    Local $asBody[0]
     _ArrayAdd($asBody, "Akk Warnung wenig Speicherplatz auf:")
     _ArrayAdd($asBody, @ComputerName)
     If @IPAddress1 <> "0.0.0.0" Then _ArrayAdd($asBody, @IPAddress1)
