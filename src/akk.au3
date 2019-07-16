@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.34
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.35
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -81,6 +81,11 @@ Global Const $IniGlobalNetLogInstanceExists = FileExists($IniGlobalNetLogInstanc
 
 Global Const $DownloadsDir = @UserProfileDir & "\Downloads"
 Global Const $DownloadsOldDir = $DownloadsDir & " alt"
+
+Global Const $ArrayDelimItem = "|"
+Global $MacroAutoIt[1][2]
+Global $MacroDirectory[1][2]
+Global $MacroSystemInfo[1][2]
 #EndRegion
 #Region
 Global $SmtpMailSmtpServer = ""
@@ -129,31 +134,56 @@ Func GetGlobalConfig()
 EndFunc   ;==>GetGlobalConfig
 
 Func WriteLogStartup()
-;~     MsgBox($MB_ICONWARNING + $MB_SYSTEMMODAL, "Warnung!", $IniGlobalNetLogPath)
+	Local Const $DelimItem = $ArrayDelimItem
     IniWrite($IniGlobalNetLogPath, "IPAddress1", @ComputerName, @IPAddress1)
 
-;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "Compiled", @Compiled)
-;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "ScriptName", @ScriptName)
-;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "ScriptDir", @ScriptDir)
-;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "ScriptFullPath", @ScriptFullPath)
-;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "WorkingDir", @WorkingDir)
-;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "AutoItExe", @AutoItExe)
-;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "AutoItPID", @AutoItPID)
-;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "AutoItVersion", @AutoItVersion)
-;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "AutoItX64", @AutoItX64)
-    Local $DelimItem = "|"
-    Local $SectionData[0][2]
-    _ArrayAdd($SectionData, "Compiled" & $DelimItem & @Compiled, 0, $DelimItem)
-    _ArrayAdd($SectionData, "ScriptName" & $DelimItem & @ScriptName, 0, $DelimItem)
-    _ArrayAdd($SectionData, "ScriptDir" & $DelimItem & @ScriptDir, 0, $DelimItem)
-    _ArrayAdd($SectionData, "ScriptFullPath" & $DelimItem & @ScriptFullPath, 0, $DelimItem)
-    _ArrayAdd($SectionData, "WorkingDir" & $DelimItem & @WorkingDir, 0, $DelimItem)
-    _ArrayAdd($SectionData, "AutoItExe" & $DelimItem & @AutoItExe, 0, $DelimItem)
-    _ArrayAdd($SectionData, "AutoItPID" & $DelimItem & @AutoItPID, 0, $DelimItem)
-    _ArrayAdd($SectionData, "AutoItVersion" & $DelimItem & @AutoItVersion, 0, $DelimItem)
-    _ArrayAdd($SectionData, "AutoItX64" & $DelimItem & @AutoItX64, 0, $DelimItem)
-    _ArrayDisplay($SectionData)
-	IniWriteSection($IniGlobalNetLogInstancePath, "MacroAutoIt", $SectionData)
+    _ArrayAdd($MacroAutoIt, "Compiled" & $DelimItem & @Compiled, 0, $DelimItem)
+    _ArrayAdd($MacroAutoIt, "ScriptName" & $DelimItem & @ScriptName, 0, $DelimItem)
+    _ArrayAdd($MacroAutoIt, "ScriptDir" & $DelimItem & @ScriptDir, 0, $DelimItem)
+    _ArrayAdd($MacroAutoIt, "ScriptFullPath" & $DelimItem & @ScriptFullPath, 0, $DelimItem)
+    _ArrayAdd($MacroAutoIt, "WorkingDir" & $DelimItem & @WorkingDir, 0, $DelimItem)
+    _ArrayAdd($MacroAutoIt, "AutoItExe" & $DelimItem & @AutoItExe, 0, $DelimItem)
+    _ArrayAdd($MacroAutoIt, "AutoItPID" & $DelimItem & @AutoItPID, 0, $DelimItem)
+    _ArrayAdd($MacroAutoIt, "AutoItVersion" & $DelimItem & @AutoItVersion, 0, $DelimItem)
+    _ArrayAdd($MacroAutoIt, "AutoItX64" & $DelimItem & @AutoItX64, 0, $DelimItem)
+    _ArrayDisplay($MacroAutoIt)
+    IniWriteSection($IniGlobalNetLogInstancePath, "MacroAutoIt", $MacroAutoIt)
+
+	_ArrayAdd($MacroDirectory, "AppDataCommonDir" & $DelimItem & @AppDataCommonDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "DesktopCommonDir" & $DelimItem & @DesktopCommonDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "DocumentsCommonDir" & $DelimItem & @DocumentsCommonDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "FavoritesCommonDir" & $DelimItem & @FavoritesCommonDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "ProgramsCommonDir" & $DelimItem & @ProgramsCommonDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "StartMenuCommonDir" & $DelimItem & @StartMenuCommonDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "StartupCommonDir" & $DelimItem & @StartupCommonDir, 0, $DelimItem)
+
+	_ArrayAdd($MacroDirectory, "AppDataDir" & $DelimItem & @AppDataDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "LocalAppDataDir" & $DelimItem & @LocalAppDataDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "DesktopDir" & $DelimItem & @DesktopDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "MyDocumentsDir" & $DelimItem & @MyDocumentsDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "FavoritesDir" & $DelimItem & @FavoritesDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "ProgramsDir" & $DelimItem & @ProgramsDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "StartMenuDir" & $DelimItem & @StartMenuDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "StartupDir" & $DelimItem & @StartupDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "UserProfileDir" & $DelimItem & @UserProfileDir, 0, $DelimItem)
+
+	_ArrayAdd($MacroDirectory, "HomeDrive" & $DelimItem & @HomeDrive, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "HomePath" & $DelimItem & @HomePath, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "HomeShare" & $DelimItem & @HomeShare, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "LogonDNSDomain" & $DelimItem & @LogonDNSDomain, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "LogonDomain" & $DelimItem & @LogonDomain, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "LogonServer" & $DelimItem & @LogonServer, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "ProgramFilesDir" & $DelimItem & @ProgramFilesDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "CommonFilesDir" & $DelimItem & @CommonFilesDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "WindowsDir" & $DelimItem & @WindowsDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "SystemDir" & $DelimItem & @SystemDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "TempDir" & $DelimItem & @TempDir, 0, $DelimItem)
+	_ArrayAdd($MacroDirectory, "ComSpec" & $DelimItem & @ComSpec, 0, $DelimItem)
+	_ArrayDisplay($MacroDirectory)
+    IniWriteSection($IniGlobalNetLogInstancePath, "MacroDirectory", $MacroDirectory)
+
+
+
 EndFunc   ;==>WriteLogStartup
 #EndRegion
 #Region
