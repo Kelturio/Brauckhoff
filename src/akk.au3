@@ -310,9 +310,9 @@ EndFunc   ;==>WriteLogStartup
 #EndRegion
 #Region
 Func Check()
-    CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists, @SW_MAXIMIZE)
+    CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
     CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
-    CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists, @SW_MAXIMIZE )
+    CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
 ;~     CheckAndRunProcAs($PowerkatalogFileName, $PowerkatalogDir, $PowerkatalogPath, $PowerkatalogExists, "Administrator", "Brauckhoff", "")
 ;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
 EndFunc   ;==>Check
@@ -320,8 +320,7 @@ EndFunc   ;==>Check
 Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
     If $Exists And Not ProcessExists($Name) Then
         ConsoleLog($Name & " wird gestartet")
-;~         Run($Path, $Dir, $ShowFlag)
-        Run($Path, $Dir)
+        Run($Path, $Dir, $ShowFlag)
     EndIf
 EndFunc   ;==>CheckAndRunProc
 
