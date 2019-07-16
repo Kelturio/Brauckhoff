@@ -1,10 +1,20 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Red.ico
+#AutoIt3Wrapper_Res_Comment=Comment
+#AutoIt3Wrapper_Res_Description=Running Through Russia 2 Bot
 #AutoIt3Wrapper_Res_Fileversion=1.0.0.53
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
+#AutoIt3Wrapper_Res_ProductName=Running Through Russia 2 Bot
+#AutoIt3Wrapper_Res_CompanyName=Sliph Co.
+#AutoIt3Wrapper_Res_LegalCopyright=Searinox
+#AutoIt3Wrapper_Res_LegalTradeMarks=Akk
+#AutoIt3Wrapper_Res_SaveSource=y
 #AutoIt3Wrapper_Res_Language=1031
+#AutoIt3Wrapper_Res_Field=Made By|Searinox
+#AutoIt3Wrapper_AU3Check_Stop_OnWarning=y
+#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -v 1 -v 3
 #AutoIt3Wrapper_Run_Tidy=y
-#Tidy_Parameters=/tc 4 /reel /sf
+#Tidy_Parameters=/tc 4 /gd /reel /sci 9 /kv 0 /bdir "tidy\bdir\" /sf
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #cs ----------------------------------------------------------------------------
 
@@ -54,13 +64,23 @@ Global Const $SHDUpdaterPath = $SHDUpdaterDir & $SHDUpdaterFileName
 Global Const $SHDUpdaterExists = FileExists($SHDUpdaterPath)
 #EndRegion
 #Region
+Global Const $RootFileName = ""
+Global Const $RootDir = "\\172.16.128.4\edv\Gerrit\"
+Global Const $RootPath = $RootDir & $RootFileName
+Global Const $RootExists = FileExists($RootPath)
+
+Global Const $AkkRootFileName = ""
+Global Const $AkkRootDir = $RootDir & "akk\"
+Global Const $AkkRootPath = $AkkRootDir & $AkkRootFileName
+Global Const $AkkRootExists = FileExists($AkkRootPath)
+
 Global Const $AkkFileName = "akk.exe"
 Global Const $AkkDir = @ScriptDir & "\"
 Global Const $AkkPath = $AkkDir & $AkkFileName
 Global Const $AkkExists = FileExists($AkkPath)
 
 Global Const $AkkNetFileName = $AkkFileName
-Global Const $AkkNetDir = "\\172.16.128.4\edv\Gerrit\akk\"
+Global Const $AkkNetDir = $RootDir
 Global Const $AkkNetPath = $AkkNetDir & $AkkNetFileName
 Global Const $AkkNetExists = FileExists($AkkNetPath)
 
@@ -70,7 +90,7 @@ Global Const $AkkUpdaterPath = $AkkUpdaterDir & $AkkUpdaterFileName
 Global $AkkUpdaterExists = FileExists($AkkUpdaterPath)
 
 Global Const $AkkUpdaterNetFileName = $AkkUpdaterFileName
-Global Const $AkkUpdaterNetDir = $AkkNetDir
+Global Const $AkkUpdaterNetDir = $RootDir
 Global Const $AkkUpdaterNetPath = $AkkUpdaterNetDir & $AkkUpdaterNetFileName
 Global Const $AkkUpdaterNetExists = FileExists($AkkUpdaterNetPath)
 
@@ -85,7 +105,7 @@ Global Const $IniGlobalPath = $IniGlobalDir & $IniGlobalFileName
 Global $IniGlobalExists = FileExists($IniGlobalPath)
 
 Global Const $IniGlobalNetFileName = $IniGlobalFileName
-Global Const $IniGlobalNetDir = $AkkNetDir
+Global Const $IniGlobalNetDir = $AkkRootDir
 Global Const $IniGlobalNetPath = $IniGlobalNetDir & $IniGlobalNetFileName
 Global Const $IniGlobalNetExists = FileExists($IniGlobalNetPath)
 
@@ -95,7 +115,7 @@ Global Const $IniGlobalExPath = $IniGlobalExDir & $IniGlobalExFileName
 Global $IniGlobalExExists = FileExists($IniGlobalExPath)
 
 Global Const $IniGlobalExNetFileName = $IniGlobalExFileName
-Global Const $IniGlobalExNetDir = $AkkNetDir
+Global Const $IniGlobalExNetDir = $AkkRootDir
 Global Const $IniGlobalExNetPath = $IniGlobalExNetDir & $IniGlobalExNetFileName
 Global Const $IniGlobalExNetExists = FileExists($IniGlobalExNetPath)
 
@@ -108,13 +128,13 @@ Global $LogExists = FileExists($LogPath)
 If Not $LogExists Then DirCreate($LogDir)
 
 Global $LogNetFileName = ""
-Global Const $LogNetDir = $AkkNetDir & "log\" & @ComputerName & "\"
+Global Const $LogNetDir = $AkkRootDir & "log\" & @ComputerName & "\"
 Global $LogNetPath = $LogNetDir & $LogNetFileName
 Global $LogNetExists = FileExists($LogNetPath)
 If Not $LogNetExists Then DirCreate($LogNetDir)
 
 Global Const $IniGlobalNetLogFileName = "akkGlobal.ini"
-Global Const $IniGlobalNetLogDir = $AkkNetDir & "log\"
+Global Const $IniGlobalNetLogDir = $AkkRootDir & "log\"
 Global Const $IniGlobalNetLogPath = $IniGlobalNetLogDir & $IniGlobalNetLogFileName
 Global Const $IniGlobalNetLogExists = FileExists($IniGlobalNetLogPath)
 
@@ -148,12 +168,12 @@ Global Const $WmiExporterLocalPath = $WmiExporterLocalDir & $WmiExporterLocalFil
 Global $WmiExporterLocalExists = FileExists($WmiExporterLocalPath)
 
 Global Const $WmiExporterX32GlobalNetSetupFileName = "wmi_exporter-0.7.999-preview.2-386.exe"
-Global Const $WmiExporterX32GlobalNetSetupDir = $AkkNetDir & "wmi_exporter\"
+Global Const $WmiExporterX32GlobalNetSetupDir = $AkkRootDir & "wmi_exporter\"
 Global Const $WmiExporterX32GlobalNetSetupPath = $WmiExporterX32GlobalNetSetupDir & $WmiExporterX32GlobalNetSetupFileName
 Global Const $WmiExporterX32GlobalNetSetupExists = FileExists($WmiExporterX32GlobalNetSetupPath)
 
 Global Const $WmiExporterX64GlobalNetSetupFileName = "wmi_exporter-0.7.999-preview.2-amd64.exe"
-Global Const $WmiExporterX64GlobalNetSetupDir = $AkkNetDir & "wmi_exporter\"
+Global Const $WmiExporterX64GlobalNetSetupDir = $AkkRootDir & "wmi_exporter\"
 Global Const $WmiExporterX64GlobalNetSetupPath = $WmiExporterX64GlobalNetSetupDir & $WmiExporterX64GlobalNetSetupFileName
 Global Const $WmiExporterX64GlobalNetSetupExists = FileExists($WmiExporterX64GlobalNetSetupPath)
 
@@ -259,7 +279,7 @@ Func GetGlobalConfig()
     Local $IniGlobalNetTime = FileGetTime($IniGlobalNetPath, $FT_MODIFIED, $FT_STRING)
     If $IniGlobalTime <> $IniGlobalNetTime Then
         $IniGlobalExists = FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
-        ConsoleLog("Reload Config" & @CRLF & $IniGlobalNetPath)
+        ConsoleLog("Reload Config " & $IniGlobalNetPath)
         ReadGlobalConfig()
     EndIf
 
@@ -267,7 +287,7 @@ Func GetGlobalConfig()
     Local $IniGlobalExNetTime = FileGetTime($IniGlobalExNetPath, $FT_MODIFIED, $FT_STRING)
     If $IniGlobalExTime <> $IniGlobalExNetTime Then
         $IniGlobalExExists = FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
-        ConsoleLog("Reload Config" & @CRLF & $IniGlobalExNetPath)
+        ConsoleLog("Reload Config " & $IniGlobalExNetPath)
         ReadGlobalConfig()
         WriteMetaDataFile()
     EndIf
@@ -276,14 +296,14 @@ Func GetGlobalConfig()
     Local $AkkUpdaterNetTime = FileGetTime($AkkUpdaterNetPath, $FT_MODIFIED, $FT_STRING)
     If $AkkUpdaterTime <> $AkkUpdaterNetTime And @Compiled Then
         $AkkUpdaterExists = FileCopy($AkkUpdaterNetPath, $AkkUpdaterPath, $FC_OVERWRITE + $FC_CREATEPATH)
-        ConsoleLog("Reload Updater" & @CRLF & $AkkUpdaterNetPath)
+        ConsoleLog("Reload Akk Updater " & $AkkUpdaterNetPath)
     EndIf
 
     Local $AkkTime = FileGetTime($AkkPath, $FT_MODIFIED, $FT_STRING)
     Local $AkkNetTime = FileGetTime($AkkNetPath, $FT_MODIFIED, $FT_STRING)
     If $AkkTime <> $AkkNetTime And @Compiled Then
         CheckAndRunProc($AkkUpdaterFileName, $AkkUpdaterDir, $AkkUpdaterPath, $AkkUpdaterExists)
-        ConsoleLog("Reload Akk" & @CRLF & $AkkNetPath)
+        ConsoleLog("Reload Akk " & $AkkNetPath)
     EndIf
 EndFunc   ;==>GetGlobalConfig
 
@@ -418,7 +438,7 @@ Func CheckAndRunProcAs($Name, $Dir, $Path, $Exists, $UserName, $Domain, $Passwor
         RunAs($UserName, $Domain, $Password, $RUN_LOGON_NETWORK, $Path, $Dir)
     EndIf
 EndFunc   ;==>CheckAndRunProcAs
-#EndRegion
+#EndRegion CheckAndRunProc
 #Region CleaningDownloads
 Func CleaningDownloads()
     If DownloadsNeedCleaning() Then
