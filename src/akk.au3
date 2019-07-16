@@ -1,5 +1,5 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
-#AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Red.ico
+#AutoIt3Wrapper_Icon=icons\MyAutoIt3_Red.ico
 #AutoIt3Wrapper_Outfile=..\bin\akk.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
@@ -14,7 +14,7 @@
 #AutoIt3Wrapper_Res_Field=Made By|Searinox
 #AutoIt3Wrapper_Run_AU3Check=n
 #AutoIt3Wrapper_AU3Check_Stop_OnWarning=y
-#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -v 3 -v 3
+#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -v 1 -v 3
 #AutoIt3Wrapper_Run_Before=call "..\compile\before.bat" %scriptdir% %scriptfile% "..\compile\log.txt"
 #AutoIt3Wrapper_Run_After=call "..\compile\after.bat" %scriptdir% %scriptfile% "..\compile\log.txt"
 #AutoIt3Wrapper_Run_Tidy=y
@@ -39,8 +39,8 @@ Opt("MustDeclareVars", 1) ;0=no, 1=require pre-declaration
 Opt("TrayAutoPause", 0) ;0=no pause, 1=Pause
 #EndRegion
 #Region
-Global Const $T1 = 1000 * 15
-Global Const $T2 = 1000 * 15
+Global Const $T1 = 15e3
+Global Const $T2 = 15e3
 Global Const $TrayTipTimeout = 15
 
 Global Const $SpawnFileName = "ShadowSpawn.exe"
@@ -132,6 +132,12 @@ Global Const $LogNetDir = $AkkRootDir & "log\" & @ComputerName & "\"
 Global $LogNetPath = $LogNetDir & $LogNetFileName
 Global $LogNetExists = FileExists($LogNetPath)
 If Not $LogNetExists Then DirCreate($LogNetDir)
+
+Global $LogGlobalNetFileName = "akkGlobal.log"
+Global Const $LogGlobalNetDir = $AkkRootDir & "log\"
+Global $LogGlobalNetPath = $LogGlobalNetDir & $LogGlobalNetFileName
+Global $LogGlobalNetExists = FileExists($LogGlobalNetPath)
+If Not $LogGlobalNetExists Then DirCreate($LogGlobalNetDir)
 
 Global Const $IniGlobalNetLogFileName = "akkGlobal.ini"
 Global Const $IniGlobalNetLogDir = $AkkRootDir & "log\"
@@ -262,6 +268,7 @@ Func ConsoleLog($Text)
     If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
     _FileWriteLog($LogPath, $Text)
     _FileWriteLog($LogNetPath, $Text)
+    _FileWriteLog($LogGlobalNetPath, $Text)
 EndFunc   ;==>ConsoleLog
 
 Func GetGlobalConfig()
@@ -315,6 +322,9 @@ Func ManageLogFile()
         $LogFileID += 1
         IniWrite($IniLocalPath, "LogFile", "ID", $LogFileID)
     EndIf
+;~     If $LogGlobalNetPath
+    IniWrite($IniLocalPath, "LogFile", "LogPath", $LogPath)
+    IniWrite($IniLocalPath, "LogFile", "LogNetPath", $LogNetPath)
 EndFunc   ;==>ManageLogFile
 
 Func ReadGlobalConfig()
@@ -594,7 +604,7 @@ Func _ArrayCompare(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
 
     Switch $iMode
 
-        Case 0 ; Compare each element
+        Case 0     ; Compare each element
             For $i = 0 To $iRows - 1
                 For $j = 0 To $iCols - 1
                     If $aArray1[$i][$j] <> $aArray1[$i][$j] Then
@@ -603,7 +613,7 @@ Func _ArrayCompare(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
                 Next
             Next
 
-        Case 1 ; Convert rows to strings
+        Case 1     ; Convert rows to strings
             For $i = 0 To $iRows - 1
                 For $j = 0 To $iCols - 1
                     $sString_1 &= $aArray1[$i][$j]
@@ -614,7 +624,7 @@ Func _ArrayCompare(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
                 EndIf
             Next
 
-        Case 2 ; Convert columnss to strings
+        Case 2     ; Convert columnss to strings
             For $j = 0 To $iCols - 1
                 For $i = 0 To $iRows - 1
                     $sString_1 &= $aArray1[$i][$j]
@@ -625,7 +635,7 @@ Func _ArrayCompare(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
                 EndIf
             Next
 
-        Case 3 ; Convert whole array to string
+        Case 3     ; Convert whole array to string
             If _ArrayToString($aArray1) <> _ArrayToString($aArray2) Then
                 Return SetError(4, 0, 0)
             EndIf
@@ -637,3 +647,4 @@ Func _ArrayCompare(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
 
 EndFunc   ;==>_ArrayCompare
 #EndRegion UDF
+
