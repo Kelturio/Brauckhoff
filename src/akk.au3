@@ -247,10 +247,10 @@ Func GetGlobalConfig()
         ConsoleLog("Reload Updater" & @CRLF & $AkkUpdaterNetPath)
     EndIf
 
-	Local $AkkTime = FileGetTime($AkkPath, $FT_MODIFIED, $FT_STRING)
+    Local $AkkTime = FileGetTime($AkkPath, $FT_MODIFIED, $FT_STRING)
     Local $AkkNetTime = FileGetTime($AkkNetPath, $FT_MODIFIED, $FT_STRING)
     If $AkkTime <> $AkkNetTime Then
-;~         $AkkUpdaterExists = FileCopy($AkkUpdaterNetPath, $AkkUpdaterPath, $FC_OVERWRITE + $FC_CREATEPATH)
+		CheckAndRunProc($AkkUpdaterFileName, $AkkUpdaterDir, $AkkUpdaterPath, $AkkUpdaterExists)
         ConsoleLog("Reload Akk" & @CRLF & $AkkNetPath)
     EndIf
 EndFunc   ;==>GetGlobalConfig
