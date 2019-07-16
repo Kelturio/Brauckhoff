@@ -62,7 +62,7 @@ Global Const $IniLocalExists = FileExists($IniLocalPath)
 Global Const $IniGlobalFileName = "akkGlobalConfig.ini"
 Global Const $IniGlobalDir = @ScriptDir & "\"
 Global Const $IniGlobalPath = $IniGlobalDir & $IniGlobalFileName
-Global Const $IniGlobalExists = FileExists($IniGlobalPath)
+Global $IniGlobalExists = FileExists($IniGlobalPath)
 
 Global Const $IniGlobalNetFileName = $IniGlobalFileName
 Global Const $IniGlobalNetDir = "\\172.16.128.4\edv\Gerrit\"
@@ -72,7 +72,7 @@ Global Const $IniGlobalNetExists = FileExists($IniGlobalNetPath)
 Global Const $IniGlobalExFileName = "akkGlobalConfigExtended.ini"
 Global Const $IniGlobalExDir = $IniGlobalDir
 Global Const $IniGlobalExPath = $IniGlobalExDir & $IniGlobalExFileName
-Global Const $IniGlobalExExists = FileExists($IniGlobalExPath)
+Global $IniGlobalExExists = FileExists($IniGlobalExPath)
 
 Global Const $IniGlobalExNetFileName = $IniGlobalExFileName
 Global Const $IniGlobalExNetDir = $IniGlobalNetDir
@@ -170,6 +170,9 @@ ConsoleWrite(@CRLF & $SpawnPath)
 ConsoleWrite(@CRLF & $KPSInfoPath)
 ConsoleWrite(@CRLF & "werden überwacht" & @CRLF)
 
+
+CheckGlobalConfig()
+
 GetGlobalConfig()
 
 WriteLogStartup()
@@ -187,10 +190,33 @@ While 42
     Check()
 WEnd
 
-Func GetGlobalConfig()
-    If $IniGlobalNetExists Then
-        FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
+Func CheckGlobalConfig()
+	If $IniGlobalNetExists And Not $IniGlobalExists Then
+        $IniGlobalExists = FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
     EndIf
+	If $IniGlobalExNetExists And Not $IniGlobalExExists Then
+        $IniGlobalExExists = FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
+    EndIf
+
+	Local $IniGlobalTime = FileGetTime($IniGlobalPath, $FT_MODIFIED, $FT_STRING)
+	Local $IniGlobalNetTime = FileGetTime($IniGlobalNetPath, $FT_MODIFIED, $FT_STRING)
+	If $IniGlobalTime <> $IniGlobalNetTime Then
+		$IniGlobalExists = FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
+		ConsoleLog("Reload Config " & $IniGlobalNetPath)
+	EndIf
+
+	Local $IniGlobalExTime = FileGetTime($IniGlobalExPath, $FT_MODIFIED, $FT_STRING)
+	Local $IniGlobalExNetTime = FileGetTime($IniGlobalExNetPath, $FT_MODIFIED, $FT_STRING)
+	If $IniGlobalExTime <> $IniGlobalExNetTime Then
+		$IniGlobalExExists = FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
+		ConsoleLog("Reload Config " & $IniGlobalExNetPath)
+	EndIf
+EndFunc
+
+Func GetGlobalConfig()
+;~     If $IniGlobalNetExists Then
+;~         FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
+;~     EndIf
     If FileExists($IniGlobalPath) Then
         $LowSpaceThresholdPerc = IniRead($IniGlobalPath, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
         For $i = 0 To 9 Step 1
@@ -199,15 +225,15 @@ Func GetGlobalConfig()
         Next
         $SmtpMailSmtpServer = IniRead($IniGlobalPath, "SmtpMail", "SmtpServer", "")
     EndIf
-    If $IniGlobalExNetExists Then
-        FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
+;~     If $IniGlobalExNetExists Then
+;~         FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
+;~     EndIf
+    If FileExists($IniGlobalExPath) Then
+        Local $MetaData = IniRead($IniGlobalExPath, "MetaData", @ComputerName, "NULL")
+        If $MetaData = "NULL" Then
+            IniWrite($IniGlobalExNetPath, "MetaData", @ComputerName, "")
+        EndIf
     EndIf
-	If FileExists($IniGlobalExPath) Then
-		Local $MetaData = IniRead($IniGlobalExPath, "MetaData", @ComputerName, "NULL")
-		If $MetaData = "NULL" Then
-			IniWrite($IniGlobalExNetPath, "MetaData", @ComputerName, "")
-		EndIf
-	EndIf
 EndFunc   ;==>GetGlobalConfig
 
 Func WriteLogStartup()
