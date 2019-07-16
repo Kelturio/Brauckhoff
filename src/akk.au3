@@ -455,6 +455,8 @@ Func WriteMetaDataFile()
     $WmiExporterMetadataArray[1] = $MetaData
     $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
     _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
+	_ArrayDisplay($WmiExporterMetadataArray)
+	_ArrayDisplay($WmiExporterMetadataArrayRet)
     If Not $WmiExporterMetadataExists Or Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet) Then
         _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
         ConsoleLog("_FileWriteFromArray" & @CRLF & $WmiExporterMetadataPath)
