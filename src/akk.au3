@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
-#AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.51
+#AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Red.ico
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.52
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -147,10 +147,15 @@ Global Const $WmiExporterLocalDir = @HomeDrive & "\Brauckhoff\wmi_exporter\" ;@S
 Global Const $WmiExporterLocalPath = $WmiExporterLocalDir & $WmiExporterLocalFileName
 Global $WmiExporterLocalExists = FileExists($WmiExporterLocalPath)
 
-Global Const $WmiExporterGlobalNetSetupFileName = "wmi_exporter.exe"
-Global Const $WmiExporterGlobalNetSetupDir = $IniGlobalNetDir & "wmi_exporter\"
-Global Const $WmiExporterGlobalNetSetupPath = $WmiExporterGlobalNetSetupDir & $WmiExporterGlobalNetSetupFileName
-Global Const $WmiExporterGlobalNetSetupExists = FileExists($WmiExporterGlobalNetSetupPath)
+Global Const $WmiExporterX32GlobalNetSetupFileName = "wmi_exporter-0.7.999-preview.2-386.exe"
+Global Const $WmiExporterX32GlobalNetSetupDir = $AkkNetDir & "wmi_exporter\"
+Global Const $WmiExporterX32GlobalNetSetupPath = $WmiExporterX32GlobalNetSetupDir & $WmiExporterX32GlobalNetSetupFileName
+Global Const $WmiExporterX32GlobalNetSetupExists = FileExists($WmiExporterX32GlobalNetSetupPath)
+
+Global Const $WmiExporterX64GlobalNetSetupFileName = "wmi_exporter-0.7.999-preview.2-amd64.exe"
+Global Const $WmiExporterX64GlobalNetSetupDir = $AkkNetDir & "wmi_exporter\"
+Global Const $WmiExporterX64GlobalNetSetupPath = $WmiExporterX64GlobalNetSetupDir & $WmiExporterX64GlobalNetSetupFileName
+Global Const $WmiExporterX64GlobalNetSetupExists = FileExists($WmiExporterX64GlobalNetSetupPath)
 
 Global Const $WmiExporterCollectorsEnabled = "" _
          & "" _ ;~ & "ad" _ ; Active Directory Domain Services
@@ -517,13 +522,12 @@ EndFunc   ;==>SendMailLowSpace
 Func SetupWmiExporter()
     ProcessClose($WmiExporterLocalFileName)
     If Not $WmiExporterLocalExists Then
-        If FileCopy($WmiExporterGlobalNetSetupPath, $WmiExporterLocalPath, $FC_OVERWRITE + $FC_CREATEPATH) Then
+		Local $SourcePath = (@OSArch = "X64") ? $WmiExporterX64GlobalNetSetupPath : $WmiExporterX32GlobalNetSetupPath
+        If FileCopy($SourcePath, $WmiExporterLocalPath, $FC_OVERWRITE + $FC_CREATEPATH) Then
             $WmiExporterLocalExists = FileExists($WmiExporterLocalPath)
         EndIf
     EndIf
-    If Not FileExists($WmiExporterCollectorTextfileDir) Then
-        DirCreate($WmiExporterCollectorTextfileDir)
-    EndIf
+    If Not FileExists($WmiExporterCollectorTextfileDir) Then DirCreate($WmiExporterCollectorTextfileDir)
     WriteMetaDataFile()
 EndFunc   ;==>SetupWmiExporter
 
