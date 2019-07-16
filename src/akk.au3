@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.48
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.51
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -181,7 +181,7 @@ Global Const $WmiExporterParams = '' _
          & ' --collectors.enabled ' & $WmiExporterCollectorsEnabled _
          & ' --telemetry.addr :9182 ' _
          & ' --collector.textfile.directory ' & $WmiExporterCollectorTextfileDir
-;~ ConsoleLog($WmiExporterParams)
+ConsoleLog($WmiExporterParams)
 #EndRegion Globals Prometheus WMI Exporter
 #Region
 _Singleton("akk")
@@ -359,7 +359,7 @@ Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
         ConsoleLog($Name & " wird gestartet")
         Return Run($Path, $Dir, $ShowFlag)
     EndIf
-	Return 0
+    Return 0
 EndFunc   ;==>CheckAndRunProc
 
 Func CheckAndRunProcAs($Name, $Dir, $Path, $Exists, $UserName, $Domain, $Password)
