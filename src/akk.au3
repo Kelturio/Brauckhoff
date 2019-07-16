@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.27
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.29
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -124,10 +124,11 @@ Func GetGlobalConfig()
 EndFunc   ;==>GetGlobalConfig
 
 Func WriteLogStartup()
+	MsgBox($MB_ICONWARNING + $MB_SYSTEMMODAL, "Warnung!", $IniGlobalNetLogPath)
     If $IniGlobalNetLogExists Then
-        IniWrite($IniGlobalNetLogFileName, 'IPAddress1', @ComputerName, @IPAddress1)
+        IniWrite($IniGlobalNetLogPath, 'IPAddress1', @ComputerName, @IPAddress1)
     EndIf
-EndFunc
+EndFunc   ;==>WriteLogStartup
 #EndRegion
 #Region
 Func Check()
