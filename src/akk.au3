@@ -121,7 +121,8 @@ Global $MacroSystemInfo[1][2]
 Global $SmtpMailSmtpServer = ""
 Global Const $SmtpMailEHLO = @ComputerName
 Global Const $SmtpMailFirst = -1
-Global Const $SmtpMailTrace = 0
+;~ Global Const $SmtpMailTrace = 0
+Global Const $SmtpMailTrace = 1
 
 Global $LowSpaceThresholdPerc
 Global $MailAddresses[10][2]
