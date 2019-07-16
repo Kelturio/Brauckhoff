@@ -432,7 +432,7 @@ Func CheckHomeDriveSpaceFree()
     Local Const $iTotalSpace = DriveSpaceTotal(@HomeDrive & "\")
     Local Const $iFreeSpacePerc = ($iFreeSpace / $iTotalSpace) * 100
     If $iFreeSpacePerc < $LowSpaceThresholdPerc Then
-        ConsoleLog(IniRead($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", "Default Value"))
+        ConsoleLog("LastMailSendDate " & IniRead($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", "Default Value"))
         ConsoleLog(_DateToDayValue(@YEAR, @MON, @MDAY) - IniRead($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", "Default Value"))
         If (_DateToDayValue(@YEAR, @MON, @MDAY) - IniRead($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", "Default Value")) >= 1 Then
             IniWrite($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", _DateToDayValue(@YEAR, @MON, @MDAY))
