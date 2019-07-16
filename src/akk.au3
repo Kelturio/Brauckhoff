@@ -160,7 +160,7 @@ Global Const $WmiExporterParams = '' _
          & ' --collectors.enabled ' & $WmiExporterCollectorsEnabled _
          & ' --telemetry.addr :9182 ' _
          & ' --collector.textfile.directory ' & $WmiExporterCollectorTextfileDir
-ConsoleLog($WmiExporterParams)
+;~ ConsoleLog($WmiExporterParams)
 #EndRegion Globals Prometheus WMI Exporter
 #Region
 _Singleton("akk")
@@ -169,7 +169,6 @@ ConsoleWrite(@CRLF & "akk.exe läuft")
 ConsoleWrite(@CRLF & $SpawnPath)
 ConsoleWrite(@CRLF & $KPSInfoPath)
 ConsoleWrite(@CRLF & "werden überwacht" & @CRLF)
-
 
 CheckGlobalConfig()
 
@@ -191,27 +190,27 @@ While 42
 WEnd
 
 Func CheckGlobalConfig()
-	If $IniGlobalNetExists And Not $IniGlobalExists Then
+    If $IniGlobalNetExists And Not $IniGlobalExists Then
         $IniGlobalExists = FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
     EndIf
-	If $IniGlobalExNetExists And Not $IniGlobalExExists Then
+    If $IniGlobalExNetExists And Not $IniGlobalExExists Then
         $IniGlobalExExists = FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
     EndIf
 
-	Local $IniGlobalTime = FileGetTime($IniGlobalPath, $FT_MODIFIED, $FT_STRING)
-	Local $IniGlobalNetTime = FileGetTime($IniGlobalNetPath, $FT_MODIFIED, $FT_STRING)
-	If $IniGlobalTime <> $IniGlobalNetTime Then
-		$IniGlobalExists = FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
-		ConsoleLog("Reload Config " & $IniGlobalNetPath)
-	EndIf
+    Local $IniGlobalTime = FileGetTime($IniGlobalPath, $FT_MODIFIED, $FT_STRING)
+    Local $IniGlobalNetTime = FileGetTime($IniGlobalNetPath, $FT_MODIFIED, $FT_STRING)
+    If $IniGlobalTime <> $IniGlobalNetTime Then
+        $IniGlobalExists = FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
+        ConsoleLog("Reload Config " & $IniGlobalNetPath)
+    EndIf
 
-	Local $IniGlobalExTime = FileGetTime($IniGlobalExPath, $FT_MODIFIED, $FT_STRING)
-	Local $IniGlobalExNetTime = FileGetTime($IniGlobalExNetPath, $FT_MODIFIED, $FT_STRING)
-	If $IniGlobalExTime <> $IniGlobalExNetTime Then
-		$IniGlobalExExists = FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
-		ConsoleLog("Reload Config " & $IniGlobalExNetPath)
-	EndIf
-EndFunc
+    Local $IniGlobalExTime = FileGetTime($IniGlobalExPath, $FT_MODIFIED, $FT_STRING)
+    Local $IniGlobalExNetTime = FileGetTime($IniGlobalExNetPath, $FT_MODIFIED, $FT_STRING)
+    If $IniGlobalExTime <> $IniGlobalExNetTime Then
+        $IniGlobalExExists = FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
+        ConsoleLog("Reload Config " & $IniGlobalExNetPath)
+    EndIf
+EndFunc   ;==>CheckGlobalConfig
 
 Func GetGlobalConfig()
 ;~     If $IniGlobalNetExists Then
