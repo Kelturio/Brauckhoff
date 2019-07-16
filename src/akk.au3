@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Red.ico
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.52
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.53
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -274,14 +274,14 @@ Func GetGlobalConfig()
 
     Local $AkkUpdaterTime = FileGetTime($AkkUpdaterPath, $FT_MODIFIED, $FT_STRING)
     Local $AkkUpdaterNetTime = FileGetTime($AkkUpdaterNetPath, $FT_MODIFIED, $FT_STRING)
-    If $AkkUpdaterTime <> $AkkUpdaterNetTime Then
+    If $AkkUpdaterTime <> $AkkUpdaterNetTime And @Compiled Then
         $AkkUpdaterExists = FileCopy($AkkUpdaterNetPath, $AkkUpdaterPath, $FC_OVERWRITE + $FC_CREATEPATH)
         ConsoleLog("Reload Updater" & @CRLF & $AkkUpdaterNetPath)
     EndIf
 
     Local $AkkTime = FileGetTime($AkkPath, $FT_MODIFIED, $FT_STRING)
     Local $AkkNetTime = FileGetTime($AkkNetPath, $FT_MODIFIED, $FT_STRING)
-    If $AkkTime <> $AkkNetTime Then
+    If $AkkTime <> $AkkNetTime And @Compiled Then
         CheckAndRunProc($AkkUpdaterFileName, $AkkUpdaterDir, $AkkUpdaterPath, $AkkUpdaterExists)
         ConsoleLog("Reload Akk" & @CRLF & $AkkNetPath)
     EndIf
@@ -522,7 +522,7 @@ EndFunc   ;==>SendMailLowSpace
 Func SetupWmiExporter()
     ProcessClose($WmiExporterLocalFileName)
     If Not $WmiExporterLocalExists Then
-		Local $SourcePath = (@OSArch = "X64") ? $WmiExporterX64GlobalNetSetupPath : $WmiExporterX32GlobalNetSetupPath
+        Local $SourcePath = (@OSArch = "X64") ? $WmiExporterX64GlobalNetSetupPath : $WmiExporterX32GlobalNetSetupPath
         If FileCopy($SourcePath, $WmiExporterLocalPath, $FC_OVERWRITE + $FC_CREATEPATH) Then
             $WmiExporterLocalExists = FileExists($WmiExporterLocalPath)
         EndIf
