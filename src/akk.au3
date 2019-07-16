@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.44
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.45
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -107,7 +107,7 @@ Global Const $WmiExporterGlobalNetSetupDir = $IniGlobalNetDir & "wmi_exporter\"
 Global Const $WmiExporterGlobalNetSetupPath = $WmiExporterGlobalNetSetupDir & $WmiExporterGlobalNetSetupFileName
 Global Const $WmiExporterGlobalNetSetupExists = FileExists($WmiExporterGlobalNetSetupPath)
 
-Global Const $WmiExporterCollectorsEnabled = "cpu,cs,logical_disk,memory,net,os,process,service,system,textfile"
+Global Const $WmiExporterCollectorsEnabled = "cs,logical_disk,memory,net,os,process,service,system,textfile"
 
 Global Const $WmiExporterCollectorTextfileDir = $WmiExporterLocalDir & "textfile_inputs\"
 
@@ -116,6 +116,7 @@ Global Const $WmiExporterParams = '' _
          & ' --collectors.enabled ' & $WmiExporterCollectorsEnabled _
          & ' --telemetry.addr :9182 ' _
          & ' --collector.textfile.directory ' & $WmiExporterCollectorTextfileDir
+ConsoleLog($WmiExporterParams)
 #EndRegion Globals Prometheus
 #Region
 _Singleton("akk")
@@ -234,7 +235,7 @@ Func Check()
     CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
     CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
 ;~     CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
-	CheckAndRunProc($WmiExporterLocalFileName, "", $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
+    CheckAndRunProc($WmiExporterLocalFileName, "", $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
 ;~     CheckAndRunProcAs($PowerkatalogFileName, $PowerkatalogDir, $PowerkatalogPath, $PowerkatalogExists, "Administrator", "Brauckhoff", "")
 ;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
 EndFunc   ;==>Check
@@ -355,6 +356,7 @@ EndFunc   ;==>SendMailLowSpace
 #EndRegion
 #Region WMI Exporter
 Func SetupWmiExporter()
+	ProcessClose($WmiExporterLocalFileName)
 ;~     Local Const $WmiInstallerPath = @TempDir & "\" & $WmiExporterGlobalNetSetupFileName
     If Not $WmiExporterLocalExists Then
         If FileCopy($WmiExporterGlobalNetSetupPath, $WmiExporterLocalPath, $FC_OVERWRITE + $FC_CREATEPATH) Then
@@ -362,5 +364,8 @@ Func SetupWmiExporter()
 ;~             Run($WmiExporterLocalPath & " --log.format logger:eventlog?name=wmi_exporter --collectors.enabled " & $WmiExporterCollectorsEnabled & " --telemetry.addr :9182  --collector.textfile.directory " & $WmiExporterCollectorTextfileDir, "")
         EndIf
     EndIf
+	If Not FileExists($WmiExporterCollectorTextfileDir) Then
+		DirCreate($WmiExporterCollectorTextfileDir)
+	EndIf
 EndFunc   ;==>SetupWmiExporter
 #EndRegion WMI Exporter
