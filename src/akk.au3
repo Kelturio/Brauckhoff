@@ -399,11 +399,80 @@ Func SetupWmiExporter()
         DirCreate($WmiExporterCollectorTextfileDir)
     EndIf
     _ArrayAdd($WmiExporterMetadataArray, 'metadata{computername="' & @ComputerName & '"} 1')
-	_ArrayDisplay($WmiExporterMetadataArray)
-	_FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
-	_ArrayDisplay($WmiExporterMetadataArrayRet)
+    _ArrayDisplay($WmiExporterMetadataArray)
+    _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
+    _ArrayDisplay($WmiExporterMetadataArrayRet)
     If Not $WmiExporterMetadataExists Then
         _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
     EndIf
 EndFunc   ;==>SetupWmiExporter
 #EndRegion WMI Exporter
+#Region
+;~ https://www.autoitscript.com/forum/topic/182506-array-comparison/
+Func _ArrayCompare_M23(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
+
+    ; Check if arrays
+    If Not(IsArray($aArray1)) Or Not(IsArray($aArray2)) Then
+        Return SetError(1, 0, 0)
+    EndIf
+
+    ; Check if same number of dimensions
+    $iDims = UBound($aArray1, $UBOUND_DIMENSIONS)
+    If $iDims <> UBound($aArray2, $UBOUND_DIMENSIONS) Then
+        Return SetError(2, 0, 0)
+    EndIf
+
+    ; Check if same size
+    $iRows = UBound($aArray1, $UBOUND_ROWS)
+    $iCols = UBound($aArray1, $UBOUND_COLUMNS)
+    If $iRows <> UBound($aArray2, $UBOUND_ROWS) Or $iCols <> UBound($aArray2, $UBOUND_COLUMNS) Then
+        Return SetError(3, 0, 0)
+    EndIf
+
+    Local $sString_1, $sString_2
+
+    Switch $iMode
+
+        Case 0 ; Compare each element
+            For $i = 0 To $iRows - 1
+                For $j = 0 To $iCols - 1
+                    If $aArray1[$i][$j] <> $aArray1[$i][$j] Then
+                        Return SetError(4, 0, 0)
+                    EndIf
+                Next
+            Next
+
+        Case 1 ; Convert rows to strings
+            For $i = 0 To $iRows - 1
+                For $j = 0 To $iCols - 1
+                    $sString_1 &= $aArray1[$i][$j]
+                    $sString_2 &= $aArray2[$i][$j]
+                Next
+                If $sString_1 <> $sString_2 Then
+                    Return SetError(4, 0, 0)
+                EndIf
+            Next
+
+        Case 2 ; Convert columnss to strings
+            For $j = 0 To $iCols - 1
+                For $i = 0 To $iRows - 1
+                    $sString_1 &= $aArray1[$i][$j]
+                    $sString_2 &= $aArray2[$i][$j]
+                Next
+                If $sString_1 <> $sString_2 Then
+                    Return SetError(4, 0, 0)
+                EndIf
+            Next
+
+        Case 3 ; Convert whole array to string
+            If _ArrayToString($aArray1) <> _ArrayToString($aArray2) Then
+                Return SetError(4, 0, 0)
+            EndIf
+
+    EndSwitch
+
+    ; Looks as if they match
+    Return 1
+
+EndFunc
+#EndRegion
