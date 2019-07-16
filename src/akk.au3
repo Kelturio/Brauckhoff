@@ -447,11 +447,11 @@ EndFunc   ;==>SetupWmiExporter
 Func WriteMetaDataFile()
     Local $MetaData = 'metadata{computername="' & @ComputerName & '"'
     If $WmiExporterMetadataString <> "NULL" Then
-        $MetaData += "," & $WmiExporterMetadataString
+        $MetaData &= "," & $WmiExporterMetadataString
     EndIf
-	ConsoleLog($WmiExporterMetadataString)
-    $MetaData += '} 1'
-	ConsoleLog($MetaData)
+    ConsoleLog($WmiExporterMetadataString)
+    $MetaData &= '} 1'
+    ConsoleLog($MetaData)
     $WmiExporterMetadataArray[1] = $MetaData
     $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
     _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
