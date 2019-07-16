@@ -128,6 +128,10 @@ Global $1f = ""
 Global Const $1g = $y & "log\" & @ComputerName & "\"
 Global $1h = $1g & $1f
 Global $1i = FileExists($1h)
+Global $1j = "akkGlobal.log"
+Global Const $1k = $y & "log\"
+Global $1l = $1k & $1j
+Global $1m = FileExists($1l)
 _2g("akkUpdater")
 _2n("akkUpdater.exe gestartet")
 Sleep(5e3)
@@ -137,18 +141,19 @@ While 42
 _2q()
 Sleep(60e3)
 WEnd
-Func _2m($1j, $1k, $1l, $1m, $1n = @SW_HIDE)
-If $1m And Not ProcessExists($1j) Then
-_2n($1j & " wird gestartet")
-Return Run($1l, $1k, $1n)
+Func _2m($1n, $1o, $1p, $1q, $1r = @SW_HIDE)
+If $1q And Not ProcessExists($1n) Then
+_2n($1n & " wird gestartet")
+Return Run($1p, $1o, $1r)
 EndIf
 Return 0
 EndFunc
-Func _2n($1o)
-ConsoleWrite(@CRLF & $1o)
-If @OSArch <> "WIN_10" Then TrayTip("", $1o, 15, 2)
-_1s($1d, $1o)
-_1s($1h, $1o)
+Func _2n($1s)
+ConsoleWrite(@CRLF & $1s)
+If @OSArch <> "WIN_10" Then TrayTip("", $1s, 15, 2)
+_1s($1d, $1s)
+_1s($1h, $1s)
+_1s($1l, $1s)
 EndFunc
 Func _2o()
 $1b = StringFormat("%04s", $1a) & ".log"
