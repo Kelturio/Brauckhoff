@@ -101,15 +101,16 @@ Global Const $IniGlobalExNetExists = FileExists($IniGlobalExNetPath)
 
 Global $LogFileID
 
-Global $LogFileName
+Global $LogFileName = ""
 Global Const $LogDir = $AkkDir & "log\"
 Global $LogPath = $LogDir & $LogFileName
 Global $LogExists = FileExists($LogPath)
 
-Global $LogNetFileName
+Global $LogNetFileName = ""
 Global Const $LogNetDir = $AkkNetDir & "log\" & @ComputerName & "\"
 Global $LogNetPath = $LogNetDir & $LogNetFileName
 Global $LogNetExists = FileExists($LogNetPath)
+If Not $LogNetExists Then DirCreate($LogNetDir)
 
 Global Const $IniGlobalNetLogFileName = "akkGlobal.ini"
 Global Const $IniGlobalNetLogDir = $AkkNetDir & "log\"
@@ -234,7 +235,7 @@ Func ConsoleLog($Text)
     ConsoleWrite(@CRLF & $Text)
     TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
     _FileWriteLog($LogPath, $Text)
-	_FileWriteLog($LogNetPath, $Text)
+    _FileWriteLog($LogNetPath, $Text)
 EndFunc   ;==>ConsoleLog
 
 Func GetGlobalConfig()
@@ -283,7 +284,7 @@ EndFunc   ;==>GetGlobalConfig
 Func ManageLogFile()
     $LogFileName = StringFormat("%04s", $LogFileID) & ".log"
     $LogPath = $LogDir & $LogFileName
-	$LogNetPath = $LogNetDir & $LogFileName
+    $LogNetPath = $LogNetDir & $LogFileName
     If _FileCountLines($LogPath) > 1e3 Then
         $LogFileID += 1
         IniWrite($IniLocalPath, "LogFile", "ID", $LogFileID)
