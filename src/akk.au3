@@ -250,7 +250,7 @@ Func GetGlobalConfig()
     Local $AkkTime = FileGetTime($AkkPath, $FT_MODIFIED, $FT_STRING)
     Local $AkkNetTime = FileGetTime($AkkNetPath, $FT_MODIFIED, $FT_STRING)
     If $AkkTime <> $AkkNetTime Then
-		CheckAndRunProc($AkkUpdaterFileName, $AkkUpdaterDir, $AkkUpdaterPath, $AkkUpdaterExists)
+        CheckAndRunProc($AkkUpdaterFileName, $AkkUpdaterDir, $AkkUpdaterPath, $AkkUpdaterExists)
         ConsoleLog("Reload Akk" & @CRLF & $AkkNetPath)
     EndIf
 EndFunc   ;==>GetGlobalConfig
@@ -357,8 +357,9 @@ EndFunc   ;==>Check
 Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
     If $Exists And Not ProcessExists($Name) Then
         ConsoleLog($Name & " wird gestartet")
-        Run($Path, $Dir, $ShowFlag)
+        Return Run($Path, $Dir, $ShowFlag)
     EndIf
+	Return 0
 EndFunc   ;==>CheckAndRunProc
 
 Func CheckAndRunProcAs($Name, $Dir, $Path, $Exists, $UserName, $Domain, $Password)
