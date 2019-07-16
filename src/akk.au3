@@ -400,18 +400,17 @@ Func SetupWmiExporter()
     EndIf
     _ArrayAdd($WmiExporterMetadataArray, 'metadata{computername="' & @ComputerName & '"} 1')
     $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
-;~     _ArrayDisplay($WmiExporterMetadataArray)
     _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
-;~     _ArrayDisplay($WmiExporterMetadataArrayRet)
-    If Not $WmiExporterMetadataExists Or Not _ArrayCompare_M23($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet) Then
+    If Not $WmiExporterMetadataExists Or Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet) Then
         _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
-        ConsoleLog("_FileWriteFromArray " & $WmiExporterMetadataPath)
+        ConsoleLog("_FileWriteFromArray" & @CRLF & $WmiExporterMetadataPath)
     EndIf
 EndFunc   ;==>SetupWmiExporter
 #EndRegion WMI Exporter
 #Region UDF
 ;~ https://www.autoitscript.com/forum/topic/182506-array-comparison/
-Func _ArrayCompare_M23(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
+;~ Melba23
+Func _ArrayCompare(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
 
     ; Check if arrays
     If Not (IsArray($aArray1)) Or Not (IsArray($aArray2)) Then
@@ -477,4 +476,4 @@ Func _ArrayCompare_M23(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
     Return 1
 
 EndFunc   ;==>_ArrayCompare_M23
-#EndRegion
+#EndRegion UDF
