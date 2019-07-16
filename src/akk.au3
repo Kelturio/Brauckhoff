@@ -399,6 +399,7 @@ Func SetupWmiExporter()
         DirCreate($WmiExporterCollectorTextfileDir)
     EndIf
     _ArrayAdd($WmiExporterMetadataArray, 'metadata{computername="' & @ComputerName & '"} 1')
+	$WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray)
     _ArrayDisplay($WmiExporterMetadataArray)
     _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
     _ArrayDisplay($WmiExporterMetadataArrayRet)
@@ -412,19 +413,19 @@ EndFunc   ;==>SetupWmiExporter
 Func _ArrayCompare_M23(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
 
     ; Check if arrays
-    If Not(IsArray($aArray1)) Or Not(IsArray($aArray2)) Then
+    If Not (IsArray($aArray1)) Or Not (IsArray($aArray2)) Then
         Return SetError(1, 0, 0)
     EndIf
 
     ; Check if same number of dimensions
-    $iDims = UBound($aArray1, $UBOUND_DIMENSIONS)
+    Local $iDims = UBound($aArray1, $UBOUND_DIMENSIONS)
     If $iDims <> UBound($aArray2, $UBOUND_DIMENSIONS) Then
         Return SetError(2, 0, 0)
     EndIf
 
     ; Check if same size
-    $iRows = UBound($aArray1, $UBOUND_ROWS)
-    $iCols = UBound($aArray1, $UBOUND_COLUMNS)
+    Local $iRows = UBound($aArray1, $UBOUND_ROWS)
+    Local $iCols = UBound($aArray1, $UBOUND_COLUMNS)
     If $iRows <> UBound($aArray2, $UBOUND_ROWS) Or $iCols <> UBound($aArray2, $UBOUND_COLUMNS) Then
         Return SetError(3, 0, 0)
     EndIf
@@ -474,5 +475,5 @@ Func _ArrayCompare_M23(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
     ; Looks as if they match
     Return 1
 
-EndFunc
+EndFunc   ;==>_ArrayCompare_M23
 #EndRegion
