@@ -54,6 +54,26 @@ Global Const $SHDUpdaterPath = $SHDUpdaterDir & $SHDUpdaterFileName
 Global Const $SHDUpdaterExists = FileExists($SHDUpdaterPath)
 #EndRegion
 #Region
+Global Const $AkkFileName = "akk.exe"
+Global Const $AkkDir = @ScriptDir & "\"
+Global Const $AkkPath = $AkkDir & $AkkFileName
+Global Const $AkkExists = FileExists($AkkPath)
+
+Global Const $AkkNetFileName = $AkkFileName
+Global Const $AkkNetDir = "\\172.16.128.4\edv\Gerrit\"
+Global Const $AkkNetPath = $AkkNetDir & $AkkNetFileName
+Global Const $AkkNetExists = FileExists($AkkNetPath)
+
+Global Const $AkkUpdaterFileName = "akkUpdater.exe"
+Global Const $AkkUpdaterDir = $AkkDir
+Global Const $AkkUpdaterPath = $AkkUpdaterDir & $AkkUpdaterFileName
+Global $AkkUpdaterExists = FileExists($AkkUpdaterPath)
+
+Global Const $AkkUpdaterNetFileName = $AkkUpdaterFileName
+Global Const $AkkUpdaterNetDir = $AkkNetDir
+Global Const $AkkUpdaterNetPath = $AkkUpdaterNetDir & $AkkUpdaterNetFileName
+Global Const $AkkUpdaterNetExists = FileExists($AkkUpdaterNetPath)
+
 Global Const $IniLocalFileName = "akk.ini"
 Global Const $IniLocalDir = @ScriptDir & "\"
 Global Const $IniLocalPath = $IniLocalDir & $IniLocalFileName
@@ -65,7 +85,7 @@ Global Const $IniGlobalPath = $IniGlobalDir & $IniGlobalFileName
 Global $IniGlobalExists = FileExists($IniGlobalPath)
 
 Global Const $IniGlobalNetFileName = $IniGlobalFileName
-Global Const $IniGlobalNetDir = "\\172.16.128.4\edv\Gerrit\"
+Global Const $IniGlobalNetDir = $AkkNetDir
 Global Const $IniGlobalNetPath = $IniGlobalNetDir & $IniGlobalNetFileName
 Global Const $IniGlobalNetExists = FileExists($IniGlobalNetPath)
 
@@ -199,12 +219,15 @@ Func GetGlobalConfig()
     If $IniGlobalExNetExists And Not $IniGlobalExExists Then
         $IniGlobalExExists = FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
     EndIf
+	If $AkkUpdaterNetExists And Not $AkkUpdaterExists Then
+        $AkkUpdaterExists = FileCopy($AkkUpdaterNetPath, $AkkUpdaterPath, $FC_OVERWRITE + $FC_CREATEPATH)
+    EndIf
 
     Local $IniGlobalTime = FileGetTime($IniGlobalPath, $FT_MODIFIED, $FT_STRING)
     Local $IniGlobalNetTime = FileGetTime($IniGlobalNetPath, $FT_MODIFIED, $FT_STRING)
     If $IniGlobalTime <> $IniGlobalNetTime Then
         $IniGlobalExists = FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
-        ConsoleLog("Reload Config " & $IniGlobalNetPath)
+        ConsoleLog("Reload Config" & @CRLF & $IniGlobalNetPath)
         ReadGlobalConfig()
     EndIf
 
@@ -215,6 +238,13 @@ Func GetGlobalConfig()
         ConsoleLog("Reload Config" & @CRLF & $IniGlobalExNetPath)
         ReadGlobalConfig()
         WriteMetaDataFile()
+    EndIf
+
+	Local $AkkUpdaterTime = FileGetTime($AkkUpdaterPath, $FT_MODIFIED, $FT_STRING)
+    Local $AkkUpdaterNetTime = FileGetTime($AkkUpdaterNetPath, $FT_MODIFIED, $FT_STRING)
+    If $AkkUpdaterTime <> $AkkUpdaterNetTime Then
+        $AkkUpdaterExists = FileCopy($AkkUpdaterNetPath, $AkkUpdaterPath, $FC_OVERWRITE + $FC_CREATEPATH)
+        ConsoleLog("Reload Updater" & @CRLF & $AkkUpdaterNetPath)
     EndIf
 EndFunc   ;==>GetGlobalConfig
 
