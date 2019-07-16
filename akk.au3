@@ -1,8 +1,16 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Red.ico
+#AutoIt3Wrapper_Res_Comment=Comment
+#AutoIt3Wrapper_Res_Description=Running Through Russia 2 Bot
 #AutoIt3Wrapper_Res_Fileversion=1.0.0.53
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
+#AutoIt3Wrapper_Res_ProductName=Running Through Russia 2 Bot
+#AutoIt3Wrapper_Res_CompanyName=Sliph Co.
+#AutoIt3Wrapper_Res_LegalCopyright=Searinox
+#AutoIt3Wrapper_Res_LegalTradeMarks=Akk
+#AutoIt3Wrapper_Res_SaveSource=y
 #AutoIt3Wrapper_Res_Language=1031
+#AutoIt3Wrapper_Res_Field=Made By|Searinox
 #AutoIt3Wrapper_Run_Tidy=y
 #Tidy_Parameters=/tc 4 /reel /sf
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -54,12 +62,12 @@ Global Const $SHDUpdaterPath = $SHDUpdaterDir & $SHDUpdaterFileName
 Global Const $SHDUpdaterExists = FileExists($SHDUpdaterPath)
 #EndRegion
 #Region
-Global Const $RootFileName
+Global Const $RootFileName = ""
 Global Const $RootDir = "\\172.16.128.4\edv\Gerrit\"
 Global Const $RootPath = $RootDir & $RootFileName
 Global Const $RootExists = FileExists($RootPath)
 
-Global Const $AkkRootFileName
+Global Const $AkkRootFileName = ""
 Global Const $AkkRootDir = $RootDir & "akk\"
 Global Const $AkkRootPath = $AkkRootDir & $AkkRootFileName
 Global Const $AkkRootExists = FileExists($AkkRootPath)
