@@ -189,7 +189,6 @@ Global Const $WmiExporterParams = '' _
          & ' --collectors.enabled ' & $WmiExporterCollectorsEnabled _
          & ' --telemetry.addr :9182 ' _
          & ' --collector.textfile.directory ' & $WmiExporterCollectorTextfileDir
-ConsoleLog($WmiExporterParams)
 #EndRegion Globals Prometheus WMI Exporter
 #Region
 _Singleton("akk")
@@ -198,11 +197,12 @@ ReadLocalConfig()
 
 ManageLogFile()
 
-ConsoleWrite(@CRLF & "akk.exe läuft")
-ConsoleWrite(@CRLF & $SpawnPath)
-ConsoleWrite(@CRLF & $KPSInfoPath)
-ConsoleWrite(@CRLF & $WmiExporterLocalPath)
-ConsoleWrite(@CRLF & "werden überwacht" & @CRLF)
+ConsoleLog("akk.exe läuft")
+ConsoleLog($SpawnPath)
+ConsoleLog($KPSInfoPath)
+ConsoleLog($WmiExporterLocalPath)
+ConsoleLog("werden überwacht" & @CRLF)
+ConsoleLog($WmiExporterParams)
 
 GetGlobalConfig()
 
@@ -224,6 +224,12 @@ While 42
     GetGlobalConfig()
     ManageLogFile()
 WEnd
+
+Func ConsoleLog($Text)
+    ConsoleWrite(@CRLF & $Text)
+    TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
+    _FileWriteLog($LogPath, $Text)
+EndFunc   ;==>ConsoleLog
 
 Func GetGlobalConfig()
     If $IniGlobalNetExists And Not $IniGlobalExists Then
@@ -301,12 +307,6 @@ Func ReadLocalConfig()
         $LogFileID = 0
     EndIf
 EndFunc   ;==>ReadLocalConfig
-
-Func ConsoleLog($Text)
-    ConsoleWrite(@CRLF & $Text)
-    TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
-	_FileWriteLog($LogPath, $Text)
-EndFunc   ;==>ConsoleLog
 
 Func WriteLogStartup()
     Local Const $DelimItem = $ArrayDelimItem
