@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.45
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.46
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -64,10 +64,20 @@ Global Const $IniGlobalDir = @ScriptDir & "\"
 Global Const $IniGlobalPath = $IniGlobalDir & $IniGlobalFileName
 Global Const $IniGlobalExists = FileExists($IniGlobalPath)
 
-Global Const $IniGlobalNetFileName = "akkGlobalConfig.ini"
+Global Const $IniGlobalNetFileName = $IniGlobalFileName
 Global Const $IniGlobalNetDir = "\\172.16.128.4\edv\Gerrit\"
 Global Const $IniGlobalNetPath = $IniGlobalNetDir & $IniGlobalNetFileName
 Global Const $IniGlobalNetExists = FileExists($IniGlobalNetPath)
+
+Global Const $IniGlobalExFileName = "akkGlobalConfigExtended.ini"
+Global Const $IniGlobalExDir = $IniGlobalDir
+Global Const $IniGlobalExPath = $IniGlobalExDir & $IniGlobalExFileName
+Global Const $IniGlobalExExists = FileExists($IniGlobalExPath)
+
+Global Const $IniGlobalExNetFileName = $IniGlobalExFileName
+Global Const $IniGlobalExNetDir = $IniGlobalNetDir
+Global Const $IniGlobalExNetPath = $IniGlobalExNetDir & $IniGlobalExNetFileName
+Global Const $IniGlobalExNetExists = FileExists($IniGlobalExNetPath)
 
 Global Const $IniGlobalNetLogFileName = "akkLog.ini"
 Global Const $IniGlobalNetLogDir = $IniGlobalNetDir & "log\"
@@ -140,7 +150,7 @@ Global Const $WmiExporterCollectorTextfileDir = $WmiExporterLocalDir & "textfile
 Global Const $WmiExporterMetadataFileName = "metadata.prom"
 Global Const $WmiExporterMetadataDir = $WmiExporterCollectorTextfileDir
 Global Const $WmiExporterMetadataPath = $WmiExporterMetadataDir & $WmiExporterMetadataFileName
-Global Const $WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
+Global $WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
 
 Global $WmiExporterMetadataArray[1]
 Global $WmiExporterMetadataArrayRet
@@ -188,6 +198,9 @@ Func GetGlobalConfig()
             $MailAddresses[$i][1] = IniRead($IniGlobalPath, "FreeSpaceCheck", "Mail" & $i & "Active", 0)
         Next
         $SmtpMailSmtpServer = IniRead($IniGlobalPath, "SmtpMail", "SmtpServer", "")
+    EndIf
+	If $IniGlobalExNetExists Then
+        FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
     EndIf
 EndFunc   ;==>GetGlobalConfig
 
@@ -333,7 +346,7 @@ Func GetDownloadsLastCleaningDate()
     Return IniRead($IniLocalPath, "Downloads", "LastCleaningDate", "Default Value")
 EndFunc   ;==>GetDownloadsLastCleaningDate
 #EndRegion
-#Region
+#Region FreeSpaceCheck
 Func ByteSuffix($iBytes)
     Local $iIndex = 0, $aArray = [' bytes', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB']
     While $iBytes > 1023
@@ -404,6 +417,7 @@ Func SetupWmiExporter()
     If Not $WmiExporterMetadataExists Or Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet) Then
         _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
         ConsoleLog("_FileWriteFromArray" & @CRLF & $WmiExporterMetadataPath)
+		$WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
     EndIf
 EndFunc   ;==>SetupWmiExporter
 #EndRegion WMI Exporter
@@ -475,5 +489,5 @@ Func _ArrayCompare(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
     ; Looks as if they match
     Return 1
 
-EndFunc   ;==>_ArrayCompare_M23
+EndFunc   ;==>_ArrayCompare
 #EndRegion UDF
