@@ -39,17 +39,17 @@ Global Const $SpawnPath = $SpawnDir & $SpawnFileName
 Global Const $SpawnExists = FileExists($SpawnPath)
 
 Global Const $KPSInfoFileName = "KPSInfo.exe"
-Global Const $KPSInfoDir = "C:\Program Files (x86)\KPS designstudio\KPSInfo\"
+Global Const $KPSInfoDir = @ProgramFilesDir & "\KPS designstudio\KPSInfo\"
 Global Const $KPSInfoPath = $KPSInfoDir & $KPSInfoFileName
 Global Const $KPSInfoExists = FileExists($KPSInfoPath)
 
 Global Const $PowerkatalogFileName = "Powerkatalog-Schnittstelle.exe"
-Global Const $PowerkatalogDir = "C:\Program Files (x86)\KPS designstudio\Powerkatalog-Schnittstelle\"
+Global Const $PowerkatalogDir = @ProgramFilesDir & "\KPS designstudio\Powerkatalog-Schnittstelle\"
 Global Const $PowerkatalogPath = $PowerkatalogDir & $PowerkatalogFileName
 Global Const $PowerkatalogExists = FileExists($PowerkatalogPath)
 
 Global Const $SHDUpdaterFileName = "SHDUpdater_min.exe"
-Global Const $SHDUpdaterDir = "C:\Program Files (x86)\SHDUpdater\"
+Global Const $SHDUpdaterDir = @ProgramFilesDir & "\SHDUpdater\"
 Global Const $SHDUpdaterPath = $SHDUpdaterDir & $SHDUpdaterFileName
 Global Const $SHDUpdaterExists = FileExists($SHDUpdaterPath)
 #EndRegion
@@ -96,6 +96,17 @@ Global Const $SmtpMailTrace = 0
 Global $LowSpaceThresholdPerc
 Global $MailAddresses[10][2]
 #EndRegion
+#Region Globals Prometheus
+Global Const $WmiExporterLocalFileName = "wmi_exporter.exe"
+Global Const $WmiExporterLocalDir = @HomeDrive & "\Program Files\wmi_exporter\"
+Global Const $WmiExporterLocalPath = $WmiExporterLocalDir & $WmiExporterLocalFileName
+Global Const $WmiExporterLocalExists = FileExists($WmiExporterLocalPath)
+
+Global Const $WmiExporterGlobalNetSetupFileName = "wmi_exporter-0.7.999-amd64.msi"
+Global Const $WmiExporterGlobalNetSetupDir = $IniGlobalNetDir & "wmi_exporter\"
+Global Const $WmiExporterGlobalNetSetupPath = $WmiExporterGlobalNetSetupDir & $WmiExporterGlobalNetSetupFileName
+Global Const $WmiExporterGlobalNetSetupExists = FileExists($WmiExporterGlobalNetSetupPath)
+#EndRegion
 #Region
 _Singleton("akk")
 
@@ -107,6 +118,8 @@ ConsoleWrite(@CRLF & "werden überwacht" & @CRLF)
 GetGlobalConfig()
 
 WriteLogStartup()
+
+SetupWmiExporter()
 
 ;~ CleaningDownloads()
 
@@ -146,7 +159,7 @@ Func WriteLogStartup()
     _ArrayAdd($MacroAutoIt, "AutoItPID" & $DelimItem & @AutoItPID, 0, $DelimItem)
     _ArrayAdd($MacroAutoIt, "AutoItVersion" & $DelimItem & @AutoItVersion, 0, $DelimItem)
     _ArrayAdd($MacroAutoIt, "AutoItX64" & $DelimItem & @AutoItX64, 0, $DelimItem)
-    _ArrayDisplay($MacroAutoIt)
+;~     _ArrayDisplay($MacroAutoIt)
     IniWriteSection($IniGlobalNetLogInstancePath, "MacroAutoIt", $MacroAutoIt)
 
     _ArrayAdd($MacroDirectory, "AppDataCommonDir" & $DelimItem & @AppDataCommonDir, 0, $DelimItem)
@@ -179,30 +192,30 @@ Func WriteLogStartup()
     _ArrayAdd($MacroDirectory, "SystemDir" & $DelimItem & @SystemDir, 0, $DelimItem)
     _ArrayAdd($MacroDirectory, "TempDir" & $DelimItem & @TempDir, 0, $DelimItem)
     _ArrayAdd($MacroDirectory, "ComSpec" & $DelimItem & @ComSpec, 0, $DelimItem)
-    _ArrayDisplay($MacroDirectory)
+;~     _ArrayDisplay($MacroDirectory)
     IniWriteSection($IniGlobalNetLogInstancePath, "MacroDirectory", $MacroDirectory)
 
-	_ArrayAdd($MacroSystemInfo, "CPUArch" & $DelimItem & @CPUArch, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "KBLayout" & $DelimItem & @KBLayout, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "MUILang" & $DelimItem & @MUILang, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "OSArch" & $DelimItem & @OSArch, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "OSLang" & $DelimItem & @OSLang, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "OSType" & $DelimItem & @OSType, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "OSVersion" & $DelimItem & @OSVersion, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "OSBuild" & $DelimItem & @OSBuild, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "OSServicePack" & $DelimItem & @OSServicePack, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "ComputerName" & $DelimItem & @ComputerName, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "UserName" & $DelimItem & @UserName, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "IPAddress1" & $DelimItem & @IPAddress1, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "IPAddress2" & $DelimItem & @IPAddress2, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "IPAddress3" & $DelimItem & @IPAddress3, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "IPAddress4" & $DelimItem & @IPAddress4, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "CPUArch" & $DelimItem & @CPUArch, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "KBLayout" & $DelimItem & @KBLayout, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "MUILang" & $DelimItem & @MUILang, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "OSArch" & $DelimItem & @OSArch, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "OSLang" & $DelimItem & @OSLang, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "OSType" & $DelimItem & @OSType, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "OSVersion" & $DelimItem & @OSVersion, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "OSBuild" & $DelimItem & @OSBuild, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "OSServicePack" & $DelimItem & @OSServicePack, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "ComputerName" & $DelimItem & @ComputerName, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "UserName" & $DelimItem & @UserName, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "IPAddress1" & $DelimItem & @IPAddress1, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "IPAddress2" & $DelimItem & @IPAddress2, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "IPAddress3" & $DelimItem & @IPAddress3, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "IPAddress4" & $DelimItem & @IPAddress4, 0, $DelimItem)
 
-	_ArrayAdd($MacroSystemInfo, "DesktopHeight" & $DelimItem & @DesktopHeight, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "DesktopWidth" & $DelimItem & @DesktopWidth, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "DesktopDepth" & $DelimItem & @DesktopDepth, 0, $DelimItem)
-	_ArrayAdd($MacroSystemInfo, "DesktopRefresh" & $DelimItem & @DesktopRefresh, 0, $DelimItem)
-	_ArrayDisplay($MacroSystemInfo)
+    _ArrayAdd($MacroSystemInfo, "DesktopHeight" & $DelimItem & @DesktopHeight, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "DesktopWidth" & $DelimItem & @DesktopWidth, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "DesktopDepth" & $DelimItem & @DesktopDepth, 0, $DelimItem)
+    _ArrayAdd($MacroSystemInfo, "DesktopRefresh" & $DelimItem & @DesktopRefresh, 0, $DelimItem)
+;~     _ArrayDisplay($MacroSystemInfo)
     IniWriteSection($IniGlobalNetLogInstancePath, "MacroSystemInfo", $MacroSystemInfo)
 EndFunc   ;==>WriteLogStartup
 #EndRegion
@@ -327,4 +340,15 @@ Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $sSerial, $iFreeSpa
         MsgBox($MB_ICONWARNING + $MB_SYSTEMMODAL, "Warnung!", $Warning)
     EndIf
 EndFunc   ;==>SendMailLowSpace
+#EndRegion
+#Region WMI Exporter
+Func SetupWmiExporter()
+	Local Const $WmiInstallerPath = @TempDir & "\" & $WmiExporterGlobalNetSetupFileName
+    If Not $WmiExporterLocalExists Then
+		FileCopy($WmiExporterGlobalNetSetupPath, $WmiInstallerPath)
+		If FileExists($WmiInstallerPath) Then
+			Run($WmiInstallerPath, @TempDir)
+		EndIf
+	EndIf
+EndFunc
 #EndRegion
