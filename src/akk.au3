@@ -96,7 +96,7 @@ Global Const $SmtpMailTrace = 0
 Global $LowSpaceThresholdPerc
 Global $MailAddresses[10][2]
 #EndRegion
-#Region Globals Prometheus
+#Region Globals Prometheus WMI Exporter
 Global Const $WmiExporterLocalFileName = "wmi_exporter.exe"
 Global Const $WmiExporterLocalDir = @HomeDrive & "\Brauckhoff\wmi_exporter\" ;@SCRIPTDIR?
 Global Const $WmiExporterLocalPath = $WmiExporterLocalDir & $WmiExporterLocalFileName
@@ -107,7 +107,8 @@ Global Const $WmiExporterGlobalNetSetupDir = $IniGlobalNetDir & "wmi_exporter\"
 Global Const $WmiExporterGlobalNetSetupPath = $WmiExporterGlobalNetSetupDir & $WmiExporterGlobalNetSetupFileName
 Global Const $WmiExporterGlobalNetSetupExists = FileExists($WmiExporterGlobalNetSetupPath)
 
-Global Const $WmiExporterCollectorsEnabled = "cs,logical_disk,memory,net,os,process,service,system,textfile"
+Global Const $WmiExporterCollectorsEnabled = "cs" _ ;akk
+& ",logical_disk,memory,net,os,process,service,system,textfile"
 
 Global Const $WmiExporterCollectorTextfileDir = $WmiExporterLocalDir & "textfile_inputs\"
 
@@ -356,16 +357,14 @@ EndFunc   ;==>SendMailLowSpace
 #EndRegion
 #Region WMI Exporter
 Func SetupWmiExporter()
-	ProcessClose($WmiExporterLocalFileName)
-;~     Local Const $WmiInstallerPath = @TempDir & "\" & $WmiExporterGlobalNetSetupFileName
+    ProcessClose($WmiExporterLocalFileName)
     If Not $WmiExporterLocalExists Then
         If FileCopy($WmiExporterGlobalNetSetupPath, $WmiExporterLocalPath, $FC_OVERWRITE + $FC_CREATEPATH) Then
             $WmiExporterLocalExists = FileExists($WmiExporterLocalPath)
-;~             Run($WmiExporterLocalPath & " --log.format logger:eventlog?name=wmi_exporter --collectors.enabled " & $WmiExporterCollectorsEnabled & " --telemetry.addr :9182  --collector.textfile.directory " & $WmiExporterCollectorTextfileDir, "")
         EndIf
     EndIf
-	If Not FileExists($WmiExporterCollectorTextfileDir) Then
-		DirCreate($WmiExporterCollectorTextfileDir)
-	EndIf
+    If Not FileExists($WmiExporterCollectorTextfileDir) Then
+        DirCreate($WmiExporterCollectorTextfileDir)
+    EndIf
 EndFunc   ;==>SetupWmiExporter
 #EndRegion WMI Exporter
