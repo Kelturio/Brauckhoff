@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.24
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.27
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -69,6 +69,11 @@ Global Const $IniGlobalNetDir = "\\172.16.128.4\edv\Gerrit\"
 Global Const $IniGlobalNetPath = $IniGlobalNetDir & $IniGlobalNetFileName
 Global Const $IniGlobalNetExists = FileExists($IniGlobalNetPath)
 
+Global Const $IniGlobalNetLogFileName = "akkLog.ini"
+Global Const $IniGlobalNetLogDir = $IniGlobalNetDir & "log\"
+Global Const $IniGlobalNetLogPath = $IniGlobalNetLogDir & $IniGlobalNetLogFileName
+Global Const $IniGlobalNetLogExists = FileExists($IniGlobalNetLogPath)
+
 Global Const $DownloadsDir = @UserProfileDir & "\Downloads"
 Global Const $DownloadsOldDir = $DownloadsDir & " alt"
 #EndRegion
@@ -76,7 +81,7 @@ Global Const $DownloadsOldDir = $DownloadsDir & " alt"
 Global $SmtpMailSmtpServer = ""
 Global Const $SmtpMailEHLO = @ComputerName
 Global Const $SmtpMailFirst = -1
-Global Const $SmtpMailTrace = 1
+Global Const $SmtpMailTrace = 0
 
 Global $LowSpaceThresholdPerc
 Global $MailAddresses[10][2]
@@ -91,9 +96,11 @@ ConsoleWrite(@CRLF & "werden überwacht" & @CRLF)
 
 GetGlobalConfig()
 
+WriteLogStartup()
+
 ;~ CleaningDownloads()
 
-CheckHomeDriveSpaceFree()
+;~ CheckHomeDriveSpaceFree()
 
 Sleep($T1)
 
@@ -106,15 +113,21 @@ Func GetGlobalConfig()
     If $IniGlobalNetExists Then
         FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
     EndIf
-	If FileExists($IniGlobalPath) Then
-		$LowSpaceThresholdPerc = IniRead($IniGlobalPath, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
-		For $i = 0 To 9 Step 1
+    If FileExists($IniGlobalPath) Then
+        $LowSpaceThresholdPerc = IniRead($IniGlobalPath, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
+        For $i = 0 To 9 Step 1
             $MailAddresses[$i][0] = IniRead($IniGlobalPath, "FreeSpaceCheck", "Mail" & $i & "Address", "")
             $MailAddresses[$i][1] = IniRead($IniGlobalPath, "FreeSpaceCheck", "Mail" & $i & "Active", 0)
         Next
         $SmtpMailSmtpServer = IniRead($IniGlobalPath, "SmtpMail", "SmtpServer", "")
-	EndIf
+    EndIf
 EndFunc   ;==>GetGlobalConfig
+
+Func WriteLogStartup()
+    If $IniGlobalNetLogExists Then
+        IniWrite($IniGlobalNetLogFileName, 'IPAddress1', @ComputerName, @IPAddress1)
+    EndIf
+EndFunc
 #EndRegion
 #Region
 Func Check()
