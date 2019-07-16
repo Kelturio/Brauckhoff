@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.47
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.48
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -219,7 +219,7 @@ Func GetGlobalConfig()
     If $IniGlobalExNetExists And Not $IniGlobalExExists Then
         $IniGlobalExExists = FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
     EndIf
-	If $AkkUpdaterNetExists And Not $AkkUpdaterExists Then
+    If $AkkUpdaterNetExists And Not $AkkUpdaterExists Then
         $AkkUpdaterExists = FileCopy($AkkUpdaterNetPath, $AkkUpdaterPath, $FC_OVERWRITE + $FC_CREATEPATH)
     EndIf
 
@@ -240,11 +240,18 @@ Func GetGlobalConfig()
         WriteMetaDataFile()
     EndIf
 
-	Local $AkkUpdaterTime = FileGetTime($AkkUpdaterPath, $FT_MODIFIED, $FT_STRING)
+    Local $AkkUpdaterTime = FileGetTime($AkkUpdaterPath, $FT_MODIFIED, $FT_STRING)
     Local $AkkUpdaterNetTime = FileGetTime($AkkUpdaterNetPath, $FT_MODIFIED, $FT_STRING)
     If $AkkUpdaterTime <> $AkkUpdaterNetTime Then
         $AkkUpdaterExists = FileCopy($AkkUpdaterNetPath, $AkkUpdaterPath, $FC_OVERWRITE + $FC_CREATEPATH)
         ConsoleLog("Reload Updater" & @CRLF & $AkkUpdaterNetPath)
+    EndIf
+
+	Local $AkkTime = FileGetTime($AkkPath, $FT_MODIFIED, $FT_STRING)
+    Local $AkkNetTime = FileGetTime($AkkNetPath, $FT_MODIFIED, $FT_STRING)
+    If $AkkTime <> $AkkNetTime Then
+;~         $AkkUpdaterExists = FileCopy($AkkUpdaterNetPath, $AkkUpdaterPath, $FC_OVERWRITE + $FC_CREATEPATH)
+        ConsoleLog("Reload Akk" & @CRLF & $AkkNetPath)
     EndIf
 EndFunc   ;==>GetGlobalConfig
 
