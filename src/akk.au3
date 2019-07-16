@@ -399,6 +399,9 @@ Func SetupWmiExporter()
         DirCreate($WmiExporterCollectorTextfileDir)
     EndIf
     _ArrayAdd($WmiExporterMetadataArray, 'metadata{computername="' & @ComputerName & '"} 1')
+	_ArrayDisplay($WmiExporterMetadataArray)
+	_FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
+	_ArrayDisplay($WmiExporterMetadataArrayRet)
     If Not $WmiExporterMetadataExists Then
         _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
     EndIf
