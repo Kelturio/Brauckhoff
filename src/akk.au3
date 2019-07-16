@@ -1,31 +1,29 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Red.ico
-#AutoIt3Wrapper_Res_Comment=Comment
-#AutoIt3Wrapper_Res_Description=Running Through Russia 2 Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.53
+#AutoIt3Wrapper_Outfile=..\bin\akk.exe
+#AutoIt3Wrapper_Res_Comment=Hallo Werner!
+#AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.54
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
-#AutoIt3Wrapper_Res_ProductName=Running Through Russia 2 Bot
+#AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
 #AutoIt3Wrapper_Res_LegalCopyright=Searinox
 #AutoIt3Wrapper_Res_LegalTradeMarks=Akk
 #AutoIt3Wrapper_Res_SaveSource=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Res_Field=Made By|Searinox
+#AutoIt3Wrapper_Run_AU3Check=n
 #AutoIt3Wrapper_AU3Check_Stop_OnWarning=y
-#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -v 1 -v 3
+#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -v 3 -v 3
+#AutoIt3Wrapper_Run_Before=call "..\compile\before.bat" %scriptdir% %scriptfile% "..\compile\log.txt"
+#AutoIt3Wrapper_Run_After=call "..\compile\after.bat" %scriptdir% %scriptfile% "..\compile\log.txt"
 #AutoIt3Wrapper_Run_Tidy=y
 #Tidy_Parameters=/tc 4 /gd /reel /sci 9 /kv 0 /bdir "tidy\bdir\" /sf
 #AutoIt3Wrapper_Run_Au3Stripper=y
 #Au3Stripper_Parameters=/tl /debug /pe /mi=99 /rm /rsln
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #cs ----------------------------------------------------------------------------
-
-       AutoIt Version: 3.3.14.2
-       Author:         Searinox
-
-       Script Function:
-       Template AutoIt script.
-
+   
 #ce ----------------------------------------------------------------------------
 #include <AutoItConstants.au3>
 #include <MsgBoxConstants.au3>
@@ -206,7 +204,7 @@ Global Const $WmiExporterCollectorsEnabled = "" _
          & "" _ ;~ & ",tcp" _ ; TCP connections
          & ",textfile" _ ; Read prometheus metrics from a text file
          & "" _ ;~ & ",vmware" ; Performance counters installed by the Vmware Guest agent
-
+        
 Global Const $WmiExporterCollectorTextfileDir = $WmiExporterLocalDir & "textfile_inputs\"
 
 Global Const $WmiExporterMetadataFileName = "metadata.prom"
@@ -235,7 +233,7 @@ ConsoleLog("akk.exe läuft")
 ConsoleLog($SpawnPath)
 ConsoleLog($KPSInfoPath)
 ConsoleLog($WmiExporterLocalPath)
-ConsoleLog("werden überwacht" & @CRLF)
+ConsoleLog("werden überwacht")
 ConsoleLog($WmiExporterParams)
 
 GetGlobalConfig()
@@ -246,11 +244,11 @@ WriteLogStartup()
 
 SetupWmiExporter()
 
-;~ CleaningDownloads()
+CleaningDownloads()
 
 CheckHomeDriveSpaceFree()
 
-;~ Sleep($T1)
+Sleep($T1)
 
 While 42
     Sleep($T2)
@@ -261,7 +259,7 @@ WEnd
 
 Func ConsoleLog($Text)
     ConsoleWrite(@CRLF & $Text)
-    TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
+    If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
     _FileWriteLog($LogPath, $Text)
     _FileWriteLog($LogNetPath, $Text)
 EndFunc   ;==>ConsoleLog
@@ -494,7 +492,7 @@ EndFunc   ;==>ByteSuffix
 
 Func CheckHomeDriveSpaceFree()
     Local Const $sLabel = DriveGetLabel(@HomeDrive & "\")
-    Local Const $sSerial = DriveGetSerial(@HomeDrive & "\")
+;~     Local Const $sSerial = DriveGetSerial(@HomeDrive & "\")
     Local Const $iFreeSpace = DriveSpaceFree(@HomeDrive & "\")
     Local Const $iTotalSpace = DriveSpaceTotal(@HomeDrive & "\")
     Local Const $iFreeSpacePerc = ($iFreeSpace / $iTotalSpace) * 100
@@ -504,7 +502,7 @@ Func CheckHomeDriveSpaceFree()
             For $i = 0 To 9 Step 1
                 If $MailAddresses[$i][0] <> "" And $MailAddresses[$i][1] = 1 Then
                     ConsoleLog("Sending Mail to " & $MailAddresses[$i][0])
-                    SendMailLowSpace($MailAddresses[$i][0], Round($iFreeSpacePerc, 2), $sLabel, $sSerial, $iFreeSpace, $iTotalSpace)
+                    SendMailLowSpace($MailAddresses[$i][0], Round($iFreeSpacePerc, 2), $sLabel, $iFreeSpace, $iTotalSpace)
                     Sleep(3000)
                 EndIf
             Next
@@ -512,7 +510,7 @@ Func CheckHomeDriveSpaceFree()
     EndIf
 EndFunc   ;==>CheckHomeDriveSpaceFree
 
-Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $sSerial, $iFreeSpace, $iTotalSpace)
+Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $iFreeSpace, $iTotalSpace)
     Local $sFromName = "akk.exe (Gerrit)"
     Local $sFromAddress = "akk@kuechen-brauckhoff.de"
     Local $sSubject = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $iFreeSpacePerc & "% !"
