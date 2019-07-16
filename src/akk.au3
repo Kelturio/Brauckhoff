@@ -405,11 +405,11 @@ Func SetupWmiExporter()
 ;~     _ArrayDisplay($WmiExporterMetadataArrayRet)
     If Not $WmiExporterMetadataExists Or Not _ArrayCompare_M23($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet) Then
         _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
-        ConsoleLog("_FileWriteFromArray")
+        ConsoleLog("_FileWriteFromArray " & $WmiExporterMetadataPath)
     EndIf
 EndFunc   ;==>SetupWmiExporter
 #EndRegion WMI Exporter
-#Region
+#Region UDF
 ;~ https://www.autoitscript.com/forum/topic/182506-array-comparison/
 Func _ArrayCompare_M23(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
 
