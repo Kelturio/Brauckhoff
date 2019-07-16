@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.46
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.47
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -189,6 +189,7 @@ SetupWmiExporter()
 While 42
     Sleep($T2)
     Check()
+	GetGlobalConfig()
 WEnd
 
 Func GetGlobalConfig()
