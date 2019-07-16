@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.19
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.20
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -79,7 +79,9 @@ Global Const $SmtpMailEHLO = @ComputerName
 Global Const $SmtpMailFirst = ""
 Global Const $SmtpMailTrace = 1
 
-Global Const $LowSpaceThresholdPerc = 5
+;~ Global Const $LowSpaceThresholdPerc = 5
+Global $LowSpaceThresholdPerc
+Global $MailAddresses[][]
 #EndRegion
 #Region
 _Singleton("akk")
@@ -103,9 +105,18 @@ While 42
 WEnd
 
 Func GetGlobalConfig()
-	FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
-	$SmtpMailSmtpServer = IniRead($IniGlobalPath, "SmtpMail", "SmtpServer", "Default Value")
-EndFunc
+	If $IniGlobalNetExists Then
+		If FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH) Then
+			$LowSpaceThresholdPerc = IniRead($IniGlobalPath, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
+			For $i = 0 To 9 Step 1
+				_ArrayAdd($MailAddresses, IniRead($IniGlobalPath, "FreeSpaceCheck", "Mail" & $i & "Address", ""), 0)
+				_ArrayAdd($MailAddresses, IniRead($IniGlobalPath, "FreeSpaceCheck", "Mail" & $i & "Address", ""), 1)
+			Next
+			$SmtpMailSmtpServer = IniRead($IniGlobalPath, "SmtpMail", "SmtpServer", "Default Value")
+			_ArrayDisplay($MailAddresses)
+		EndIf
+	EndIf
+EndFunc   ;==>GetGlobalConfig
 #EndRegion
 #Region
 Func Check()
@@ -203,7 +214,7 @@ Func SendMailLowSpace($iFreeSpacePerc, $sLabel, $sSerial, $iFreeSpace, $iTotalSp
     Local $sToAddress = "searinox@gmx.de"
 ;~     Local $sToAddress = "heger@easyconnectit.de"
     Local $sSubject = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $iFreeSpacePerc & "% !"
-    Local $asBody[0]
+    Local $asBody[]
     _ArrayAdd($asBody, "Akk Warnung wenig Speicherplatz auf:")
     _ArrayAdd($asBody, @ComputerName)
     If @IPAddress1 <> "0.0.0.0" Then _ArrayAdd($asBody, @IPAddress1)
