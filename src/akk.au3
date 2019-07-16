@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.20
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.21
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -81,7 +81,7 @@ Global Const $SmtpMailTrace = 1
 
 ;~ Global Const $LowSpaceThresholdPerc = 5
 Global $LowSpaceThresholdPerc
-Global $MailAddresses[0][2]
+Global $MailAddresses[10][2]
 #EndRegion
 #Region
 _Singleton("akk")
@@ -95,7 +95,7 @@ GetGlobalConfig()
 
 ;~ CleaningDownloads()
 
-CheckHomeDriveSpaceFree()
+;~ CheckHomeDriveSpaceFree()
 
 Sleep($T1)
 
@@ -110,9 +110,9 @@ Func GetGlobalConfig()
             $LowSpaceThresholdPerc = IniRead($IniGlobalPath, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
             For $i = 0 To 9 Step 1
                 $MailAddresses[$i][0] = IniRead($IniGlobalPath, "FreeSpaceCheck", "Mail" & $i & "Address", "")
-				$MailAddresses[$i][1] = IniRead($IniGlobalPath, "FreeSpaceCheck", "Mail" & $i & "Active", 0)
+                $MailAddresses[$i][1] = IniRead($IniGlobalPath, "FreeSpaceCheck", "Mail" & $i & "Active", 0)
             Next
-            $SmtpMailSmtpServer = IniRead($IniGlobalPath, "SmtpMail", "SmtpServer", "Default Value")
+            $SmtpMailSmtpServer = IniRead($IniGlobalPath, "SmtpMail", "SmtpServer", "")
             _ArrayDisplay($MailAddresses)
         EndIf
     EndIf
@@ -202,16 +202,20 @@ Func CheckHomeDriveSpaceFree()
     Local Const $iFreeSpace = DriveSpaceFree(@HomeDrive & "\")
     Local Const $iTotalSpace = DriveSpaceTotal(@HomeDrive & "\")
     Local Const $iFreeSpacePerc = ($iFreeSpace / $iTotalSpace) * 100
-;~     If $iFreeSpacePerc < $LowSpaceThresholdPerc Then
-    SendMailLowSpace(Round($iFreeSpacePerc, 2), $sLabel, $sSerial, $iFreeSpace, $iTotalSpace)
-;~     EndIf
-
+    If $iFreeSpacePerc < $LowSpaceThresholdPerc Then
+		For $i = 0 To 9 Step 1
+			If $MailAddresses[$i][0] <> "" And $MailAddresses[$i][1] = 1 Then
+				SendMailLowSpace($MailAddresses[$i][0], Round($iFreeSpacePerc, 2), $sLabel, $sSerial, $iFreeSpace, $iTotalSpace)
+				Sleep(3000)
+			EndIf
+		Next
+    EndIf
 EndFunc   ;==>CheckHomeDriveSpaceFree
 
-Func SendMailLowSpace($iFreeSpacePerc, $sLabel, $sSerial, $iFreeSpace, $iTotalSpace)
+Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $sSerial, $iFreeSpace, $iTotalSpace)
     Local $sFromName = "akk.exe (Gerrit)"
     Local $sFromAddress = "akk@kuechen-brauckhoff.de"
-    Local $sToAddress = "searinox@gmx.de"
+;~     Local $sToAddress = "searinox@gmx.de"
 ;~     Local $sToAddress = "heger@easyconnectit.de"
     Local $sSubject = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $iFreeSpacePerc & "% !"
     Local $asBody[0]
