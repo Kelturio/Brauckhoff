@@ -395,7 +395,7 @@ Func WriteLogStartup()
     IniWriteSection($IniGlobalNetLogInstancePath, "MacroSystemInfo", $MacroSystemInfo)
 EndFunc   ;==>WriteLogStartup
 #EndRegion
-#Region
+#Region CheckAndRunProc
 Func Check()
     CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
     CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
@@ -532,7 +532,7 @@ Func SetupWmiExporter()
 EndFunc   ;==>SetupWmiExporter
 
 Func WriteMetaDataFile()
-    Local $MetaData = 'metadata{computername="' & @ComputerName & '"'
+    Local $MetaData = 'metadata{computername="' & @ComputerName & '"' & ',username="' & @UserName & '"'
     If $WmiExporterMetadataString <> "NULL" And StringLen($WmiExporterMetadataString) And Not StringIsSpace($WmiExporterMetadataString) Then
         $MetaData &= "," & $WmiExporterMetadataString
     EndIf
