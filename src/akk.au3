@@ -15,14 +15,16 @@
 #AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -v 1 -v 3
 #AutoIt3Wrapper_Run_Tidy=y
 #Tidy_Parameters=/tc 4 /gd /reel /sci 9 /kv 0 /bdir "tidy\bdir\" /sf
+#AutoIt3Wrapper_Run_Au3Stripper=y
+#Au3Stripper_Parameters=/tl /debug /pe /mi=99 /rm /rsln
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #cs ----------------------------------------------------------------------------
 
-    AutoIt Version: 3.3.14.2
-    Author:         Searinox
+       AutoIt Version: 3.3.14.2
+       Author:         Searinox
 
-    Script Function:
-    Template AutoIt script.
+       Script Function:
+       Template AutoIt script.
 
 #ce ----------------------------------------------------------------------------
 #include <AutoItConstants.au3>
