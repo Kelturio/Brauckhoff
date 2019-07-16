@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.32
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.33
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -141,9 +141,18 @@ Func WriteLogStartup()
 ;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "AutoItPID", @AutoItPID)
 ;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "AutoItVersion", @AutoItVersion)
 ;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "AutoItX64", @AutoItX64)
-	Local $SectionData[0][2]
-	_ArrayAdd($SectionData, "Compiled|" & @Compiled)
-	_ArrayDisplay($SectionData)
+	Local $DelimItem = "|"
+    Local $SectionData[0][2]
+    _ArrayAdd($SectionData, "Compiled" & $DelimItem & @Compiled)
+	_ArrayAdd($SectionData, "ScriptName" & $DelimItem & @ScriptName)
+	_ArrayAdd($SectionData, "ScriptDir" & $DelimItem & @ScriptDir)
+	_ArrayAdd($SectionData, "ScriptFullPath" & $DelimItem & @ScriptFullPath)
+	_ArrayAdd($SectionData, "WorkingDir" & $DelimItem & @WorkingDir)
+	_ArrayAdd($SectionData, "AutoItExe" & $DelimItem & @AutoItExe)
+	_ArrayAdd($SectionData, "AutoItPID" & $DelimItem & @AutoItPID)
+	_ArrayAdd($SectionData, "AutoItVersion" & $DelimItem & @AutoItVersion)
+	_ArrayAdd($SectionData, "AutoItX64" & $DelimItem & @AutoItX64)
+    _ArrayDisplay($SectionData)
 EndFunc   ;==>WriteLogStartup
 #EndRegion
 #Region
