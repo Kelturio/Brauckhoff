@@ -1,6 +1,6 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=U:\Vogtländer\AutoIt\Icons\MyAutoIt3_Green.ico
-#AutoIt3Wrapper_Res_Fileversion=0.0.0.31
+#AutoIt3Wrapper_Res_Fileversion=0.0.0.32
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_Language=1031
 #AutoIt3Wrapper_Run_Tidy=y
@@ -130,17 +130,20 @@ EndFunc   ;==>GetGlobalConfig
 
 Func WriteLogStartup()
 ;~     MsgBox($MB_ICONWARNING + $MB_SYSTEMMODAL, "Warnung!", $IniGlobalNetLogPath)
-	IniWrite($IniGlobalNetLogPath, "IPAddress1", @ComputerName, @IPAddress1)
+    IniWrite($IniGlobalNetLogPath, "IPAddress1", @ComputerName, @IPAddress1)
 
-	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", Compiled, @Compiled)
-	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", ScriptName, ScriptName)
-	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", ScriptDir, ScriptDir)
-	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", ScriptFullPath, ScriptFullPath)
-	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", WorkingDir, WorkingDir)
-	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", AutoItExe, AutoItExe)
-	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", AutoItPID, AutoItPID)
-	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", AutoItVersion, AutoItVersion)
-	IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", AutoItX64, AutoItX64)
+;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "Compiled", @Compiled)
+;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "ScriptName", @ScriptName)
+;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "ScriptDir", @ScriptDir)
+;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "ScriptFullPath", @ScriptFullPath)
+;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "WorkingDir", @WorkingDir)
+;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "AutoItExe", @AutoItExe)
+;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "AutoItPID", @AutoItPID)
+;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "AutoItVersion", @AutoItVersion)
+;~     IniWrite($IniGlobalNetLogInstancePath, "MacroAutoIt", "AutoItX64", @AutoItX64)
+	Local $SectionData[0][2]
+	_ArrayAdd($SectionData, "Compiled|" & @Compiled)
+	_ArrayDisplay($SectionData)
 EndFunc   ;==>WriteLogStartup
 #EndRegion
 #Region
