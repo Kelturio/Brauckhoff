@@ -60,7 +60,7 @@ Global Const $AkkPath = $AkkDir & $AkkFileName
 Global Const $AkkExists = FileExists($AkkPath)
 
 Global Const $AkkNetFileName = $AkkFileName
-Global Const $AkkNetDir = "\\172.16.128.4\edv\Gerrit\"
+Global Const $AkkNetDir = "\\172.16.128.4\edv\Gerrit\akk\"
 Global Const $AkkNetPath = $AkkNetDir & $AkkNetFileName
 Global Const $AkkNetExists = FileExists($AkkNetPath)
 
@@ -95,7 +95,7 @@ Global Const $IniGlobalExPath = $IniGlobalExDir & $IniGlobalExFileName
 Global $IniGlobalExExists = FileExists($IniGlobalExPath)
 
 Global Const $IniGlobalExNetFileName = $IniGlobalExFileName
-Global Const $IniGlobalExNetDir = $IniGlobalNetDir
+Global Const $IniGlobalExNetDir = $AkkNetDir
 Global Const $IniGlobalExNetPath = $IniGlobalExNetDir & $IniGlobalExNetFileName
 Global Const $IniGlobalExNetExists = FileExists($IniGlobalExNetPath)
 
@@ -106,13 +106,18 @@ Global Const $LogDir = $AkkDir & "log\"
 Global $LogPath = $LogDir & $LogFileName
 Global $LogExists = FileExists($LogPath)
 
-Global Const $IniGlobalNetLogFileName = "akkLog.ini"
-Global Const $IniGlobalNetLogDir = $IniGlobalNetDir & "log\"
+Global $LogNetFileName
+Global Const $LogNetDir = $AkkNetDir & "log\" & @ComputerName & "\"
+Global $LogNetPath = $LogNetDir & $LogNetFileName
+Global $LogNetExists = FileExists($LogNetPath)
+
+Global Const $IniGlobalNetLogFileName = "akkGlobal.ini"
+Global Const $IniGlobalNetLogDir = $AkkNetDir & "log\"
 Global Const $IniGlobalNetLogPath = $IniGlobalNetLogDir & $IniGlobalNetLogFileName
 Global Const $IniGlobalNetLogExists = FileExists($IniGlobalNetLogPath)
 
-Global Const $IniGlobalNetLogInstanceFileName = "akkLog_" & @ComputerName & ".ini"
-Global Const $IniGlobalNetLogInstanceDir = $IniGlobalNetLogDir
+Global Const $IniGlobalNetLogInstanceFileName = "akkMacro.ini"
+Global Const $IniGlobalNetLogInstanceDir = $LogNetDir
 Global Const $IniGlobalNetLogInstancePath = $IniGlobalNetLogInstanceDir & $IniGlobalNetLogInstanceFileName
 Global Const $IniGlobalNetLogInstanceExists = FileExists($IniGlobalNetLogInstancePath)
 
@@ -229,6 +234,7 @@ Func ConsoleLog($Text)
     ConsoleWrite(@CRLF & $Text)
     TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
     _FileWriteLog($LogPath, $Text)
+	_FileWriteLog($LogNetPath, $Text)
 EndFunc   ;==>ConsoleLog
 
 Func GetGlobalConfig()
@@ -277,6 +283,7 @@ EndFunc   ;==>GetGlobalConfig
 Func ManageLogFile()
     $LogFileName = StringFormat("%04s", $LogFileID) & ".log"
     $LogPath = $LogDir & $LogFileName
+	$LogNetPath = $LogNetDir & $LogFileName
     If _FileCountLines($LogPath) > 1e3 Then
         $LogFileID += 1
         IniWrite($IniLocalPath, "LogFile", "ID", $LogFileID)
