@@ -46,12 +46,12 @@ Global Const $AkkNetExists = FileExists($AkkNetPath)
 #Region
 _Singleton("akkUpdater")
 
-While 42
-    Sleep($T2)
-	MsgBox(Default, "", "Upadter gestartet")
-WEnd
+;~ While 42
+;~     Sleep($T2)
+    MsgBox(Default, "", "Upadter gestartet")
+;~ WEnd
 
 Func Update()
 
-EndFunc
+EndFunc   ;==>Update
 #EndRegion
