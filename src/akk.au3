@@ -133,7 +133,7 @@ Global Const $SmtpMailTrace = 1
 
 Global $LowSpaceThresholdPerc
 Global $MailAddresses[10][2]
-#EndRegion
+#EndRegion SMTP
 #Region Globals Prometheus WMI Exporter
 Global Const $WmiExporterLocalFileName = "wmi_exporter.exe"
 Global Const $WmiExporterLocalDir = @HomeDrive & "\Brauckhoff\wmi_exporter\" ;@SCRIPTDIR?
@@ -222,25 +222,8 @@ While 42
     Sleep($T2)
     Check()
     GetGlobalConfig()
-	ManageLogFile()
+    ManageLogFile()
 WEnd
-
-Func ManageLogFile()
-	$LogFileName = StringFormat("[%06s]", $LogFileID) & ".log"
-	$LogPath = $LogDir & $LogFileName
-	If _FileCountLines($LogPath) > 1e3 Then
-		$LogFileID += 1
-		IniWrite($IniLocalPath, "LogFile", "ID", $LogFileID)
-	EndIf
-EndFunc
-
-func ReadLocalConfig()
-        $LogFileID = IniRead($IniLocalPath, "LogFile", "ID", "NULL")
-		If $LogFileID = "NULL" Then
-			IniWrite($IniLocalPath, "LogFile", "ID", 0)
-			$LogFileID = 0
-		EndIf
-EndFunc
 
 Func GetGlobalConfig()
     If $IniGlobalNetExists And Not $IniGlobalExists Then
@@ -285,6 +268,15 @@ Func GetGlobalConfig()
     EndIf
 EndFunc   ;==>GetGlobalConfig
 
+Func ManageLogFile()
+    $LogFileName = StringFormat("[%06s]", $LogFileID) & ".log"
+    $LogPath = $LogDir & $LogFileName
+    If _FileCountLines($LogPath) > 1e3 Then
+        $LogFileID += 1
+        IniWrite($IniLocalPath, "LogFile", "ID", $LogFileID)
+    EndIf
+EndFunc   ;==>ManageLogFile
+
 Func ReadGlobalConfig()
     If FileExists($IniGlobalPath) Then
         $LowSpaceThresholdPerc = IniRead($IniGlobalPath, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
@@ -301,6 +293,20 @@ Func ReadGlobalConfig()
         EndIf
     EndIf
 EndFunc   ;==>ReadGlobalConfig
+
+Func ReadLocalConfig()
+    $LogFileID = IniRead($IniLocalPath, "LogFile", "ID", "NULL")
+    If $LogFileID = "NULL" Then
+        IniWrite($IniLocalPath, "LogFile", "ID", 0)
+        $LogFileID = 0
+    EndIf
+EndFunc   ;==>ReadLocalConfig
+
+Func ConsoleLog($Text)
+    ConsoleWrite(@CRLF & $Text)
+    TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
+	_FileWriteLog($LogPath, $Text)
+EndFunc   ;==>ConsoleLog
 
 Func WriteLogStartup()
     Local Const $DelimItem = $ArrayDelimItem
@@ -398,11 +404,6 @@ Func CheckAndRunProcAs($Name, $Dir, $Path, $Exists, $UserName, $Domain, $Passwor
         RunAs($UserName, $Domain, $Password, $RUN_LOGON_NETWORK, $Path, $Dir)
     EndIf
 EndFunc   ;==>CheckAndRunProcAs
-
-Func ConsoleLog($Text)
-    ConsoleWrite(@CRLF & $Text)
-    TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
-EndFunc   ;==>ConsoleLog
 #EndRegion
 #Region CleaningDownloads
 Func CleaningDownloads()
