@@ -400,12 +400,12 @@ Func SetupWmiExporter()
     EndIf
     _ArrayAdd($WmiExporterMetadataArray, 'metadata{computername="' & @ComputerName & '"} 1')
     $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
-    _ArrayDisplay($WmiExporterMetadataArray)
+;~     _ArrayDisplay($WmiExporterMetadataArray)
     _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
-    _ArrayDisplay($WmiExporterMetadataArrayRet)
+;~     _ArrayDisplay($WmiExporterMetadataArrayRet)
     If Not $WmiExporterMetadataExists Or Not _ArrayCompare_M23($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet) Then
         _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
-		ConsoleLog("_FileWriteFromArray")
+        ConsoleLog("_FileWriteFromArray")
     EndIf
 EndFunc   ;==>SetupWmiExporter
 #EndRegion WMI Exporter
