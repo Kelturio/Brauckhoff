@@ -320,7 +320,8 @@ EndFunc   ;==>Check
 Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
     If $Exists And Not ProcessExists($Name) Then
         ConsoleLog($Name & " wird gestartet")
-        Run($Path, $Dir, $ShowFlag)
+;~         Run($Path, $Dir, $ShowFlag)
+		Run($Path, $Dir)
     EndIf
 EndFunc   ;==>CheckAndRunProc
 
