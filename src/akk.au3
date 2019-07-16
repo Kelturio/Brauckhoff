@@ -153,7 +153,7 @@ Global Const $WmiExporterMetadataPath = $WmiExporterMetadataDir & $WmiExporterMe
 Global $WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
 
 Global $WmiExporterMetadataString
-Global $WmiExporterMetadataArray[1]
+Global $WmiExporterMetadataArray[2]
 Global $WmiExporterMetadataArrayRet
 
 Global Const $WmiExporterParams = '' _
@@ -203,7 +203,7 @@ Func GetGlobalConfig()
     If $IniGlobalTime <> $IniGlobalNetTime Then
         $IniGlobalExists = FileCopy($IniGlobalNetPath, $IniGlobalPath, $FC_OVERWRITE + $FC_CREATEPATH)
         ConsoleLog("Reload Config " & $IniGlobalNetPath)
-		ReadGlobalConfig()
+        ReadGlobalConfig()
     EndIf
 
     Local $IniGlobalExTime = FileGetTime($IniGlobalExPath, $FT_MODIFIED, $FT_STRING)
@@ -211,10 +211,10 @@ Func GetGlobalConfig()
     If $IniGlobalExTime <> $IniGlobalExNetTime Then
         $IniGlobalExExists = FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
         ConsoleLog("Reload Config" & @CRLF & $IniGlobalExNetPath)
-		ReadGlobalConfig()
-		WriteMetaDataFile()
+        ReadGlobalConfig()
+        WriteMetaDataFile()
     EndIf
-EndFunc   ;==>CheckGlobalConfig
+EndFunc   ;==>GetGlobalConfig
 
 Func ReadGlobalConfig()
     If FileExists($IniGlobalPath) Then
@@ -231,7 +231,7 @@ Func ReadGlobalConfig()
             IniWrite($IniGlobalExNetPath, "MetaData", @ComputerName, "")
         EndIf
     EndIf
-EndFunc   ;==>GetGlobalConfig
+EndFunc   ;==>ReadGlobalConfig
 
 Func WriteLogStartup()
     Local Const $DelimItem = $ArrayDelimItem
@@ -374,7 +374,7 @@ EndFunc   ;==>FileDirMoveRec
 Func GetDownloadsLastCleaningDate()
     Return IniRead($IniLocalPath, "Downloads", "LastCleaningDate", "Default Value")
 EndFunc   ;==>GetDownloadsLastCleaningDate
-#EndRegion
+#EndRegion CleaningDownloads
 #Region FreeSpaceCheck
 Func ByteSuffix($iBytes)
     Local $iIndex = 0, $aArray = [' bytes', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB']
@@ -440,16 +440,16 @@ Func SetupWmiExporter()
     If Not FileExists($WmiExporterCollectorTextfileDir) Then
         DirCreate($WmiExporterCollectorTextfileDir)
     EndIf
-	WriteMetaDataFile()
+    WriteMetaDataFile()
 EndFunc   ;==>SetupWmiExporter
 
 Func WriteMetaDataFile()
-	Local $MetaData = 'metadata{computername="' & @ComputerName & '"'
-	If $WmiExporterMetadataString <> "NULL" Then
-		$MetaData += "," & $WmiExporterMetadataString
-	EndIf
-	$MetaData += '} 1'
-	$WmiExporterMetadataArray[1] = $MetaData
+    Local $MetaData = 'metadata{computername="' & @ComputerName & '"'
+    If $WmiExporterMetadataString <> "NULL" Then
+        $MetaData += "," & $WmiExporterMetadataString
+    EndIf
+    $MetaData += '} 1'
+    $WmiExporterMetadataArray[1] = $MetaData
     $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
     _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
     If Not $WmiExporterMetadataExists Or Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet) Then
@@ -457,7 +457,7 @@ Func WriteMetaDataFile()
         ConsoleLog("_FileWriteFromArray" & @CRLF & $WmiExporterMetadataPath)
         $WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
     EndIf
-EndFunc
+EndFunc   ;==>WriteMetaDataFile
 #EndRegion WMI Exporter
 #Region UDF
 ;~ https://www.autoitscript.com/forum/topic/182506-array-comparison/
