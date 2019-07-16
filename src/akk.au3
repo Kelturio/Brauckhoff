@@ -75,12 +75,12 @@ Global Const $AkkUpdaterNetPath = $AkkUpdaterNetDir & $AkkUpdaterNetFileName
 Global Const $AkkUpdaterNetExists = FileExists($AkkUpdaterNetPath)
 
 Global Const $IniLocalFileName = "akk.ini"
-Global Const $IniLocalDir = @ScriptDir & "\"
+Global Const $IniLocalDir = $AkkDir
 Global Const $IniLocalPath = $IniLocalDir & $IniLocalFileName
 Global Const $IniLocalExists = FileExists($IniLocalPath)
 
 Global Const $IniGlobalFileName = "akkGlobalConfig.ini"
-Global Const $IniGlobalDir = @ScriptDir & "\"
+Global Const $IniGlobalDir = $AkkDir
 Global Const $IniGlobalPath = $IniGlobalDir & $IniGlobalFileName
 Global $IniGlobalExists = FileExists($IniGlobalPath)
 
@@ -98,6 +98,13 @@ Global Const $IniGlobalExNetFileName = $IniGlobalExFileName
 Global Const $IniGlobalExNetDir = $IniGlobalNetDir
 Global Const $IniGlobalExNetPath = $IniGlobalExNetDir & $IniGlobalExNetFileName
 Global Const $IniGlobalExNetExists = FileExists($IniGlobalExNetPath)
+
+Global $LogFileID
+
+Global $LogFileName
+Global Const $LogDir = $AkkDir & "log\"
+Global $LogPath = $LogDir & $LogFileName
+Global $LogExists = FileExists($LogPath)
 
 Global Const $IniGlobalNetLogFileName = "akkLog.ini"
 Global Const $IniGlobalNetLogDir = $IniGlobalNetDir & "log\"
@@ -117,7 +124,7 @@ Global $MacroAutoIt[1][2]
 Global $MacroDirectory[1][2]
 Global $MacroSystemInfo[1][2]
 #EndRegion
-#Region
+#Region SMTP
 Global $SmtpMailSmtpServer = ""
 Global Const $SmtpMailEHLO = @ComputerName
 Global Const $SmtpMailFirst = -1
@@ -187,6 +194,10 @@ ConsoleLog($WmiExporterParams)
 #Region
 _Singleton("akk")
 
+ReadLocalConfig()
+
+ManageLogFile()
+
 ConsoleWrite(@CRLF & "akk.exe läuft")
 ConsoleWrite(@CRLF & $SpawnPath)
 ConsoleWrite(@CRLF & $KPSInfoPath)
@@ -211,7 +222,25 @@ While 42
     Sleep($T2)
     Check()
     GetGlobalConfig()
+	ManageLogFile()
 WEnd
+
+Func ManageLogFile()
+	$LogFileName = StringFormat("[%06s]", $LogFileID) & ".log"
+	$LogPath = $LogDir & $LogFileName
+	If _FileCountLines($LogPath) > 1e3 Then
+		$LogFileID += 1
+		IniWrite($IniLocalPath, "LogFile", "ID", $LogFileID)
+	EndIf
+EndFunc
+
+func ReadLocalConfig()
+        $LogFileID = IniRead($IniLocalPath, "LogFile", "ID", "NULL")
+		If $LogFileID = "NULL" Then
+			IniWrite($IniLocalPath, "LogFile", "ID", 0)
+			$LogFileID = 0
+		EndIf
+EndFunc
 
 Func GetGlobalConfig()
     If $IniGlobalNetExists And Not $IniGlobalExists Then
@@ -413,7 +442,7 @@ Func FileDirMoveRec($SourceDir, $DestDir)
 EndFunc   ;==>FileDirMoveRec
 
 Func GetDownloadsLastCleaningDate()
-    Return IniRead($IniLocalPath, "Downloads", "LastCleaningDate", "Default Value")
+    Return IniRead($IniLocalPath, "Downloads", "LastCleaningDate", "NULL")
 EndFunc   ;==>GetDownloadsLastCleaningDate
 #EndRegion CleaningDownloads
 #Region FreeSpaceCheck
@@ -433,9 +462,7 @@ Func CheckHomeDriveSpaceFree()
     Local Const $iTotalSpace = DriveSpaceTotal(@HomeDrive & "\")
     Local Const $iFreeSpacePerc = ($iFreeSpace / $iTotalSpace) * 100
     If $iFreeSpacePerc < $LowSpaceThresholdPerc Then
-        ConsoleLog("LastMailSendDate " & IniRead($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", "Default Value"))
-        ConsoleLog(_DateToDayValue(@YEAR, @MON, @MDAY) - IniRead($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", "Default Value"))
-        If (_DateToDayValue(@YEAR, @MON, @MDAY) - IniRead($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", "Default Value")) >= 1 Then
+        If (_DateToDayValue(@YEAR, @MON, @MDAY) - IniRead($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", "NULL")) >= 1 Then
             IniWrite($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", _DateToDayValue(@YEAR, @MON, @MDAY))
             For $i = 0 To 9 Step 1
                 If $MailAddresses[$i][0] <> "" And $MailAddresses[$i][1] = 1 Then
