@@ -6,3 +6,4 @@ bin/akk.exe
 bin/akkUpdater.exe
 src/akkUpdater.exe
 src/akk_tidy.txt
+src/log/0000.log
