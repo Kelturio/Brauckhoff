@@ -275,7 +275,7 @@ Func GetGlobalConfig()
 EndFunc   ;==>GetGlobalConfig
 
 Func ManageLogFile()
-    $LogFileName = StringFormat("[%06s]", $LogFileID) & ".log"
+    $LogFileName = StringFormat("%04s", $LogFileID) & ".log"
     $LogPath = $LogDir & $LogFileName
     If _FileCountLines($LogPath) > 1e3 Then
         $LogFileID += 1
