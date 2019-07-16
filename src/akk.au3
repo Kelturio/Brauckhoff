@@ -199,9 +199,15 @@ Func GetGlobalConfig()
         Next
         $SmtpMailSmtpServer = IniRead($IniGlobalPath, "SmtpMail", "SmtpServer", "")
     EndIf
-	If $IniGlobalExNetExists Then
+    If $IniGlobalExNetExists Then
         FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
     EndIf
+	If FileExists($IniGlobalExPath) Then
+		Local $MetaData = IniRead($IniGlobalExPath, "MetaData", @ComputerName, "NULL")
+		If $MetaData = "NULL" Then
+			IniWrite($IniGlobalExNetPath, "MetaData", @ComputerName, "")
+		EndIf
+	EndIf
 EndFunc   ;==>GetGlobalConfig
 
 Func WriteLogStartup()
@@ -399,7 +405,7 @@ Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $sSerial, $iFreeSpa
         MsgBox($MB_ICONWARNING + $MB_SYSTEMMODAL, "Warnung!", $Warning)
     EndIf
 EndFunc   ;==>SendMailLowSpace
-#EndRegion
+#EndRegion FreeSpaceCheck
 #Region WMI Exporter
 Func SetupWmiExporter()
     ProcessClose($WmiExporterLocalFileName)
@@ -417,7 +423,7 @@ Func SetupWmiExporter()
     If Not $WmiExporterMetadataExists Or Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet) Then
         _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
         ConsoleLog("_FileWriteFromArray" & @CRLF & $WmiExporterMetadataPath)
-		$WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
+        $WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
     EndIf
 EndFunc   ;==>SetupWmiExporter
 #EndRegion WMI Exporter
