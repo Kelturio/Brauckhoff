@@ -1,0 +1,349 @@
+========================================================================================================
+===  Tidy report for :C:\Users\bauer\Documents\GitHub\Brauckhoff\src\akkUpdater.au3
+========================================================================================================
+
+00001    #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+00002    #AutoIt3Wrapper_Icon=icons\MyAutoIt3_Yellow.ico
+00003    #AutoIt3Wrapper_Outfile=..\bin\akkUpdater.exe
+00004    #AutoIt3Wrapper_Res_Comment=Hallo Werner!
+00005    #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot Updater
+00006    #AutoIt3Wrapper_Res_Fileversion=1.0.0.5
+00007    #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
+00008    #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot Updater
+00009    #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
+00010    #AutoIt3Wrapper_Res_LegalCopyright=Searinox
+00011    #AutoIt3Wrapper_Res_LegalTradeMarks=Akk
+00012    #AutoIt3Wrapper_Res_SaveSource=y
+00013    #AutoIt3Wrapper_Res_Language=1031
+00014    #AutoIt3Wrapper_Res_Field=Made By|Searinox
+00015    #AutoIt3Wrapper_Run_AU3Check=n
+00016    #AutoIt3Wrapper_AU3Check_Stop_OnWarning=y
+00017    #AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -v 1 -v 3
+00018    #AutoIt3Wrapper_Run_Before=call "..\compile\before.bat" %scriptdir% %scriptfile% "..\compile\log.txt"
+00019    #AutoIt3Wrapper_Run_After=call "..\compile\after.bat" %scriptdir% %scriptfile% "..\compile\log.txt"
+00020    #AutoIt3Wrapper_Run_Tidy=y
+00021    #Tidy_Parameters=/tc 4 /gd /reel /sci 9 /kv 0 /bdir "tidy\bdir\" /sf
+00022    #AutoIt3Wrapper_Run_Au3Stripper=y
+00023    #Au3Stripper_Parameters=/tl /debug /pe /mi=99 /rm /rsln
+00024    #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+00025    #cs ----------------------------------------------------------------------------
+00026       
+00027    #ce ----------------------------------------------------------------------------
+00028    #include <AutoItConstants.au3>
+00029    #include <MsgBoxConstants.au3>
+00030    #include <TrayConstants.au3>
+00031    #include <FileConstants.au3>
+00032    #include <File.au3>
+00033    #include <Misc.au3>
+00034    #Region
+00035    Opt("MustDeclareVars", 1) ;0=no, 1=require pre-declaration
+00036    Opt("TrayAutoPause", 0) ;0=no pause, 1=Pause
+00037    #EndRegion
+00038    #Region
+00039    Global Const $T1 = 5e3
+00040    Global Const $T2 = 60e3
+00041    Global Const $TrayTipTimeout = 15
+00042    
+00043    Global Const $RootFileName = ""
+00044    Global Const $RootDir = "\\172.16.128.4\edv\Gerrit\"
+00045    Global Const $RootPath = $RootDir & $RootFileName
+00046    Global Const $RootExists = FileExists($RootPath)
+00047    
+00048    Global Const $AkkRootFileName = ""
+00049    Global Const $AkkRootDir = $RootDir & "akk\"
+00050    Global Const $AkkRootPath = $AkkRootDir & $AkkRootFileName
+00051    Global Const $AkkRootExists = FileExists($AkkRootPath)
+00052    
+00053    Global Const $AkkFileName = "akk.exe"
+00054    Global Const $AkkDir = @ScriptDir & "\"
+00055    Global Const $AkkPath = $AkkDir & $AkkFileName
+00056    Global $AkkExists = FileExists($AkkPath)
+00057    
+00058    Global Const $AkkNetFileName = $AkkFileName
+00059    Global Const $AkkNetDir = $RootDir
+00060    Global Const $AkkNetPath = $AkkNetDir & $AkkNetFileName
+00061    Global Const $AkkNetExists = FileExists($AkkNetPath)
+00062    
+00063    Global Const $IniLocalFileName = "akk.ini"
+00064    Global Const $IniLocalDir = $AkkDir
+00065    Global Const $IniLocalPath = $IniLocalDir & $IniLocalFileName
+00066    Global Const $IniLocalExists = FileExists($IniLocalPath)
+00067    
+00068    Global $LogFileID
+00069    
+00070    Global $LogFileName = ""
+00071    Global Const $LogDir = $AkkDir & "log\"
+00072    Global $LogPath = $LogDir & $LogFileName
+00073    Global $LogExists = FileExists($LogPath)
+00074    
+00075    Global $LogNetFileName = ""
+00076    Global Const $LogNetDir = $AkkRootDir & "log\" & @ComputerName & "\"
+00077    Global $LogNetPath = $LogNetDir & $LogNetFileName
+00078    Global $LogNetExists = FileExists($LogNetPath)
+00079    #EndRegion
+00080    #Region
+00081    _Singleton("akkUpdater")
+00082    
+00083    ConsoleLog("akkUpdater.exe gestartet")
+00084    
+00085    Sleep($T1)
+00086    
+00087    ReadLocalConfig()
+00088    
+00089    ManageLogFile()
+00090    
+00091  +-While 42
+00092  |        Update()
+00093  |        Sleep($T2)
+00094  +-WEnd
+00095    
+00096  +-Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
+00097  |  +-    If $Exists And Not ProcessExists($Name) Then
+00098  |  |            ConsoleLog($Name & " wird gestartet")
+00099  |  |            Return Run($Path, $Dir, $ShowFlag)
+00100  |  +-    EndIf
+00101  |        Return 0
+00102  +-EndFunc   ;==>CheckAndRunProc
+00103    
+00104  +-Func ConsoleLog($Text)
+00105  |        ConsoleWrite(@CRLF & $Text)
+00106  |        If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
+00107  |        _FileWriteLog($LogPath, $Text)
+00108  |        _FileWriteLog($LogNetPath, $Text)
+00109  +-EndFunc   ;==>ConsoleLog
+00110    
+00111  +-Func ManageLogFile()
+00112  |        $LogFileName = StringFormat("%04s", $LogFileID) & ".log"
+00113  |        $LogPath = $LogDir & $LogFileName
+00114  |        $LogNetPath = $LogNetDir & $LogFileName
+00115  |  +-    If _FileCountLines($LogPath) > 1e3 Then
+00116  |  |            $LogFileID += 1
+00117  |  |            IniWrite($IniLocalPath, "LogFile", "ID", $LogFileID)
+00118  |  +-    EndIf
+00119  |        IniWrite($IniLocalPath, "LogFile", "LogPath", $LogPath)
+00120  |        IniWrite($IniLocalPath, "LogFile", "LogNetPath", $LogNetPath)
+00121  +-EndFunc   ;==>ManageLogFile
+00122    
+00123  +-Func ReadLocalConfig()
+00124  |        $LogFileID = IniRead($IniLocalPath, "LogFile", "ID", "NULL")
+00125  |  +-    If $LogFileID = "NULL" Then
+00126  |  |            IniWrite($IniLocalPath, "LogFile", "ID", 0)
+00127  |  |            $LogFileID = 0
+00128  |  +-    EndIf
+00129  +-EndFunc   ;==>ReadLocalConfig
+00130    
+00131  +-Func Update()
+00132  |        ProcessClose($AkkFileName)
+00133  |        Sleep($T1)
+00134  |  +-    If Not ProcessExists($AkkFileName) Then
+00135  |  |            $AkkExists = FileCopy($AkkNetPath, $AkkPath, $FC_OVERWRITE + $FC_CREATEPATH)
+00136  |  |  +-        If CheckAndRunProc($AkkFileName, $AkkDir, $AkkPath, $AkkExists) Then
+00137  |  |  |                Exit
+00138  |  |  +-        Else
+00139  |  |  |                ConsoleLog("Error CheckAndRunProc")
+00140  |  |  +-        EndIf
+00141  |  +-    EndIf
+00142  +-EndFunc   ;==>Update
+00143    #EndRegion
+
+======================
+=== xref reports =====
+======================
+
+== User functions =================================================================================================
+                          Func
+Function name             Row     Referenced at Row(s)
+========================= ====== ==================================================================================
+CheckAndRunProc           00096 
+ConsoleLog                00104 
+ManageLogFile             00111 
+ReadLocalConfig           00123 
+Update                    00131 
+
+#### indicates that this specific variable only occurs one time in the script.
+---- indicates that this specific variable isn't declared with Dim/Local/Global/Const.
+
+== Variables ======================================================================================================
+Variable name             Dim   Used in Row(s)
+========================= ===== ===================================================================================
+#Au3Stripper_Parameters   ----- 00023
+#AutoIt3Wrapper_AU3Check_Parameters  ----- 00017
+#AutoIt3Wrapper_AU3Check_Stop_OnWarning  ----- 00016
+#AutoIt3Wrapper_Icon      ----- 00002
+#AutoIt3Wrapper_Outfile   ----- 00003
+#AutoIt3Wrapper_Res_Comment  ----- 00004
+#AutoIt3Wrapper_Res_CompanyName  ----- 00009
+#AutoIt3Wrapper_Res_Description  ----- 00005
+#AutoIt3Wrapper_Res_Field  ----- 00014
+#AutoIt3Wrapper_Res_Fileversion  ----- 00006
+#AutoIt3Wrapper_Res_Fileversion_AutoIncrement  ----- 00007
+#AutoIt3Wrapper_Res_Language  ----- 00013
+#AutoIt3Wrapper_Res_LegalCopyright  ----- 00010
+#AutoIt3Wrapper_Res_LegalTradeMarks  ----- 00011
+#AutoIt3Wrapper_Res_ProductName  ----- 00008
+#AutoIt3Wrapper_Res_SaveSource  ----- 00012
+#AutoIt3Wrapper_Run_AU3Check  ----- 00015
+#AutoIt3Wrapper_Run_After  ----- 00019
+#AutoIt3Wrapper_Run_Au3Stripper  ----- 00022
+#AutoIt3Wrapper_Run_Before  ----- 00018
+#AutoIt3Wrapper_Run_Tidy  ----- 00020
+#EndRegion                ----- 00024 00037 00079 00143
+#Region                   ----- 00001 00034 00038 00080
+#Tidy_Parameters          ----- 00021
+#include                  ----- 00028 00029 00030 00031 00032 00033
+$AkkDir                   ----- 00054 00055 00064 00071 00136
+$AkkExists                ----- 00056 00135 00136
+$AkkFileName              ----- 00053 00055 00058 00132 00134 00136
+$AkkNetDir                ----- 00059 00060
+$AkkNetExists             ----- 00061
+$AkkNetFileName           ----- 00058 00060
+$AkkNetPath               ----- 00060 00061 00135
+$AkkPath                  ----- 00055 00056 00135 00136
+$AkkRootDir               ----- 00049 00050 00076
+$AkkRootExists            ----- 00051
+$AkkRootFileName          ----- 00048 00050
+$AkkRootPath              ----- 00050 00051
+$Dir                      ----- 00096 00099
+$Exists                   ----- 00096 00097
+$FC_CREATEPATH            ----- 00135
+$FC_OVERWRITE             ----- 00135
+$IniLocalDir              ----- 00064 00065
+$IniLocalExists           ----- 00066
+$IniLocalFileName         ----- 00063 00065
+$IniLocalPath             ----- 00065 00066 00117 00119 00120 00124 00126
+$LogDir                   ----- 00071 00072 00113
+$LogExists                ----- 00073
+$LogFileID                ----- 00068 00112 00116 00117 00124 00125 00127
+$LogFileName              ----- 00070 00072 00112 00113 00114
+$LogNetDir                ----- 00076 00077 00114
+$LogNetExists             ----- 00078
+$LogNetFileName           ----- 00075 00077
+$LogNetPath               ----- 00077 00078 00108 00114 00120
+$LogPath                  ----- 00072 00073 00107 00113 00115 00119
+$Name                     ----- 00096 00097 00098
+$Path                     ----- 00096 00099
+$RootDir                  ----- 00044 00045 00049 00059
+$RootExists               ----- 00046
+$RootFileName             ----- 00043 00045
+$RootPath                 ----- 00045 00046
+$ShowFlag                 ----- 00096 00099
+$T1                       ----- 00039 00085 00133
+$T2                       ----- 00040 00093
+$TIP_ICONEXCLAMATION      ----- 00106
+$Text                     ----- 00104 00105 00106 00107 00108
+$TrayTipTimeout           ----- 00041 00106
+0                         ----- 00036 00101 00126 00127
+1                         ----- 00035 00116
+15                        ----- 00041
+1e3                       ----- 00115
+42                        ----- 00091
+5e3                       ----- 00039
+60e3                      ----- 00040
+@CRLF                     ----- 00105
+@ComputerName             ----- 00076
+@OSArch                   ----- 00106
+@SW_HIDE                  ----- 00096
+@ScriptDir                ----- 00054
+#### AkkDir               00054
+#### AkkExists            00056
+#### AkkFileName          00053
+#### AkkNetDir            00059
+#### AkkNetExists         00061
+#### AkkNetFileName       00058
+#### AkkNetPath           00060
+#### AkkPath              00055
+#### AkkRootDir           00049
+#### AkkRootExists        00051
+#### AkkRootFileName      00048
+#### AkkRootPath          00050
+And                       ----- 00097
+AutoItConstants           ----- 00028
+Const                     ----- 00039 00040 00041 00043 00044 00045 00046 00048 00049 00050 00051 00053 00054 00055 
+                                00058 00059 00060 00061 00063 00064 00065 00066 00071 00076
+#### Dir                  00096
+Else                      ----- 00138
+EndFunc                   ----- 00102 00109 00121 00129 00142
+EndIf                     ----- 00100 00118 00128 00140 00141
+#### Exists               00096
+Exit                      ----- 00137
+File                      ----- 00032
+FileConstants             ----- 00031
+Func                      ----- 00096 00104 00111 00123 00131
+Global                    ----- 00039 00040 00041 00043 00044 00045 00046 00048 00049 00050 00051 00053 00054 00055 
+                                00056 00058 00059 00060 00061 00063 00064 00065 00066 00068 00070 00071 00072 00073 
+                                00075 00076 00077 00078
+If                        ----- 00097 00106 00115 00125 00134 00136
+#### IniLocalDir          00064
+#### IniLocalExists       00066
+#### IniLocalFileName     00063
+#### IniLocalPath         00065
+#### LogDir               00071
+#### LogExists            00073
+#### LogFileID            00068
+#### LogFileName          00070
+#### LogNetDir            00076
+#### LogNetExists         00078
+#### LogNetFileName       00075
+#### LogNetPath           00077
+#### LogPath              00072
+Misc                      ----- 00033
+MsgBoxConstants           ----- 00029
+#### Name                 00096
+Not                       ----- 00097 00134
+#### Path                 00096
+Return                    ----- 00099 00101
+#### RootDir              00044
+#### RootExists           00046
+#### RootFileName         00043
+#### RootPath             00045
+#### ShowFlag             00096
+#### T1                   00039
+#### T2                   00040
+#### Text                 00104
+Then                      ----- 00097 00106 00115 00125 00134 00136
+TrayConstants             ----- 00030
+#### TrayTipTimeout       00041
+WEnd                      ----- 00094
+While                     ----- 00091
+au3                       ----- 00028 00029 00030 00031 00032 00033
+== Sort Func Names Within #regions =====================================================================
+ --------------- Current sequence  ----------------------------------------------------------- 
+0000000001   #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+0000000024   #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+0000000034   #Region
+0000000037   #EndRegion
+0000000038   #Region
+0000000079   #EndRegion
+0000000080   #Region
+0000000096   Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
+0000000102   EndFunc   ;==>CheckAndRunProc
+0000000104   Func ConsoleLog($Text)
+0000000109   EndFunc   ;==>ConsoleLog
+0000000111   Func ManageLogFile()
+0000000121   EndFunc   ;==>ManageLogFile
+0000000123   Func ReadLocalConfig()
+0000000129   EndFunc   ;==>ReadLocalConfig
+0000000131   Func Update()
+0000000142   EndFunc   ;==>Update
+0000000143   #EndRegion
+ --------------- New Sequence      ----------------------------------------------------------- 
+0000000001   #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+0000000024   #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
+0000000034   #Region
+0000000037   #EndRegion
+0000000038   #Region
+0000000079   #EndRegion
+0000000080   #Region
+0000000096   Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
+0000000102   EndFunc   ;==>CheckAndRunProc
+0000000104   Func ConsoleLog($Text)
+0000000109   EndFunc   ;==>ConsoleLog
+0000000111   Func ManageLogFile()
+0000000121   EndFunc   ;==>ManageLogFile
+0000000123   Func ReadLocalConfig()
+0000000129   EndFunc   ;==>ReadLocalConfig
+0000000131   Func Update()
+0000000142   EndFunc   ;==>Update
+0000000143   #EndRegion
+== END Sort Func Names Within #Region - #EndRegion =====================================================
+
