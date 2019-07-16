@@ -108,32 +108,32 @@ Global Const $WmiExporterGlobalNetSetupPath = $WmiExporterGlobalNetSetupDir & $W
 Global Const $WmiExporterGlobalNetSetupExists = FileExists($WmiExporterGlobalNetSetupPath)
 
 Global Const $WmiExporterCollectorsEnabled = "" _
-         & "" _ ;~          & "ad" _ ; Active Directory Domain Services
-         & "" _ ;~          & ",cpu" _ ; CPU usage
+         & "" _ ;~ & "ad" _ ; Active Directory Domain Services
+         & "" _ ;~ & ",cpu" _ ; CPU usage
          & "cs" _ ; "Computer System" metrics (system properties, num cpus/total memory)
-         & "" _ ;~          & ",dns" _ ; DNS Server
-         & "" _ ;~          & ",hyperv" _ ; Hyper-V hosts
-         & "" _ ;~          & ",iis" _ ; IIS sites and applications
+         & "" _ ;~ & ",dns" _ ; DNS Server
+         & "" _ ;~ & ",hyperv" _ ; Hyper-V hosts
+         & "" _ ;~ & ",iis" _ ; IIS sites and applications
          & ",logical_disk" _ ; Logical disks, disk I/O
          & ",memory" _ ; Memory usage metrics
-         & "" _ ;~          & ",msmq" _ ; MSMQ queues
-         & "" _ ;~          & ",mssql" _ ; SQL Server Performance Objects metrics
-         & "" _ ;~          & ",netframework_clrexceptions" _ ; .NET Framework CLR Exceptions
-         & "" _ ;~          & ",netframework_clrinterop" _ ; .NET Framework Interop Metrics
-         & "" _ ;~          & ",netframework_clrjit" _ ; .NET Framework JIT metrics
-         & "" _ ;~          & ",netframework_clrloading" _ ; .NET Framework CLR Loading metrics
-         & "" _ ;~          & ",netframework_clrlocksandthreads" _ ; .NET Framework locks and metrics threads
-         & "" _ ;~          & ",netframework_clrmemory" _ ; .NET Framework Memory metrics
-         & "" _ ;~          & ",netframework_clrremoting" _ ; .NET Framework Remoting metrics
-         & "" _ ;~          & ",netframework_clrsecurity" _ ; .NET Framework Security Check metrics
+         & "" _ ;~ & ",msmq" _ ; MSMQ queues
+         & "" _ ;~ & ",mssql" _ ; SQL Server Performance Objects metrics
+         & "" _ ;~ & ",netframework_clrexceptions" _ ; .NET Framework CLR Exceptions
+         & "" _ ;~ & ",netframework_clrinterop" _ ; .NET Framework Interop Metrics
+         & "" _ ;~ & ",netframework_clrjit" _ ; .NET Framework JIT metrics
+         & "" _ ;~ & ",netframework_clrloading" _ ; .NET Framework CLR Loading metrics
+         & "" _ ;~ & ",netframework_clrlocksandthreads" _ ; .NET Framework locks and metrics threads
+         & "" _ ;~ & ",netframework_clrmemory" _ ; .NET Framework Memory metrics
+         & "" _ ;~ & ",netframework_clrremoting" _ ; .NET Framework Remoting metrics
+         & "" _ ;~ & ",netframework_clrsecurity" _ ; .NET Framework Security Check metrics
          & ",net" _ ; Network interface I/O
          & ",os" _ ; OS metrics (memory, processes, users)
          & ",process" _ ; Per-process metrics
          & ",service" _ ; Service state metrics
          & ",system" _ ; System calls
-         & "" _ ;~          & ",tcp" _ ; TCP connections
+         & "" _ ;~ & ",tcp" _ ; TCP connections
          & ",textfile" _ ; Read prometheus metrics from a text file
-         & "" _ ;~          & ",vmware" ; Performance counters installed by the Vmware Guest agent
+         & "" _ ;~ & ",vmware" ; Performance counters installed by the Vmware Guest agent
 
 Global Const $WmiExporterCollectorTextfileDir = $WmiExporterLocalDir & "textfile_inputs\"
 
@@ -260,8 +260,8 @@ EndFunc   ;==>WriteLogStartup
 Func Check()
     CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
     CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
-;~     CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
-    CheckAndRunProc($WmiExporterLocalFileName, "", $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
+    CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
+;~     CheckAndRunProc($WmiExporterLocalFileName, "", $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
 ;~     CheckAndRunProcAs($PowerkatalogFileName, $PowerkatalogDir, $PowerkatalogPath, $PowerkatalogExists, "Administrator", "Brauckhoff", "")
 ;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
 EndFunc   ;==>Check
@@ -391,5 +391,6 @@ Func SetupWmiExporter()
     If Not FileExists($WmiExporterCollectorTextfileDir) Then
         DirCreate($WmiExporterCollectorTextfileDir)
     EndIf
+
 EndFunc   ;==>SetupWmiExporter
 #EndRegion WMI Exporter
