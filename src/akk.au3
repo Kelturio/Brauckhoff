@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=..\bin\akk.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.55
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.58
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -42,6 +42,7 @@ Opt("TrayAutoPause", 0) ;0=no pause, 1=Pause
 Global Const $T1 = 15e3
 Global Const $T2 = 15e3
 Global Const $TrayTipTimeout = 15
+Global $Cycle = 0
 
 Global Const $SpawnFileName = "ShadowSpawn.exe"
 Global Const $SpawnDir = @MyDocumentsDir & "\Isopedia GmbH\ShadowSpawn\"
@@ -188,34 +189,34 @@ Global Const $WmiExporterX64GlobalNetSetupDir = $AkkRootDir & "wmi_exporter\"
 Global Const $WmiExporterX64GlobalNetSetupPath = $WmiExporterX64GlobalNetSetupDir & $WmiExporterX64GlobalNetSetupFileName
 Global Const $WmiExporterX64GlobalNetSetupExists = FileExists($WmiExporterX64GlobalNetSetupPath)
 
-Global Const $WmiExporterCollectorsEnabled = "" _
-         & "" _ ;~ & "ad" _ ; Active Directory Domain Services
-         & "" _ ;~ & ",cpu" _ ; CPU usage
-         & "cs" _ ; "Computer System" metrics (system properties, num cpus/total memory)
-         & "" _ ;~ & ",dns" _ ; DNS Server
-         & "" _ ;~ & ",hyperv" _ ; Hyper-V hosts
-         & "" _ ;~ & ",iis" _ ; IIS sites and applications
-         & ",logical_disk" _ ; Logical disks, disk I/O
-         & ",memory" _ ; Memory usage metrics
-         & "" _ ;~ & ",msmq" _ ; MSMQ queues
-         & "" _ ;~ & ",mssql" _ ; SQL Server Performance Objects metrics
-         & "" _ ;~ & ",netframework_clrexceptions" _ ; .NET Framework CLR Exceptions
-         & "" _ ;~ & ",netframework_clrinterop" _ ; .NET Framework Interop Metrics
-         & "" _ ;~ & ",netframework_clrjit" _ ; .NET Framework JIT metrics
-         & "" _ ;~ & ",netframework_clrloading" _ ; .NET Framework CLR Loading metrics
-         & "" _ ;~ & ",netframework_clrlocksandthreads" _ ; .NET Framework locks and metrics threads
-         & "" _ ;~ & ",netframework_clrmemory" _ ; .NET Framework Memory metrics
-         & "" _ ;~ & ",netframework_clrremoting" _ ; .NET Framework Remoting metrics
-         & "" _ ;~ & ",netframework_clrsecurity" _ ; .NET Framework Security Check metrics
-         & ",net" _ ; Network interface I/O
-         & ",os" _ ; OS metrics (memory, processes, users)
-         & ",process" _ ; Per-process metrics
-         & ",service" _ ; Service state metrics
-         & ",system" _ ; System calls
-         & "" _ ;~ & ",tcp" _ ; TCP connections
-         & ",textfile" _ ; Read prometheus metrics from a text file
-         & "" _ ;~ & ",vmware" ; Performance counters installed by the Vmware Guest agent
-        
+Global Const $WmiExporterCollectorsEnabled = "cs,logical_disk,memory,net,os,process,service,system,textfile"
+;~          & "" _ ;~ & "ad" _ ; Active Directory Domain Services
+;~          & "" _ ;~ & ",cpu" _ ; CPU usage
+;~          & "cs" _ ; "Computer System" metrics (system properties, num cpus/total memory)
+;~          & "" _ ;~ & ",dns" _ ; DNS Server
+;~          & "" _ ;~ & ",hyperv" _ ; Hyper-V hosts
+;~          & "" _ ;~ & ",iis" _ ; IIS sites and applications
+;~          & ",logical_disk" _ ; Logical disks, disk I/O
+;~          & ",memory" _ ; Memory usage metrics
+;~          & "" _ ;~ & ",msmq" _ ; MSMQ queues
+;~          & "" _ ;~ & ",mssql" _ ; SQL Server Performance Objects metrics
+;~          & "" _ ;~ & ",netframework_clrexceptions" _ ; .NET Framework CLR Exceptions
+;~          & "" _ ;~ & ",netframework_clrinterop" _ ; .NET Framework Interop Metrics
+;~          & "" _ ;~ & ",netframework_clrjit" _ ; .NET Framework JIT metrics
+;~          & "" _ ;~ & ",netframework_clrloading" _ ; .NET Framework CLR Loading metrics
+;~          & "" _ ;~ & ",netframework_clrlocksandthreads" _ ; .NET Framework locks and metrics threads
+;~          & "" _ ;~ & ",netframework_clrmemory" _ ; .NET Framework Memory metrics
+;~          & "" _ ;~ & ",netframework_clrremoting" _ ; .NET Framework Remoting metrics
+;~          & "" _ ;~ & ",netframework_clrsecurity" _ ; .NET Framework Security Check metrics
+;~          & ",net" _ ; Network interface I/O
+;~          & ",os" _ ; OS metrics (memory, processes, users)
+;~          & ",process" _ ; Per-process metrics
+;~          & ",service" _ ; Service state metrics
+;~          & ",system" _ ; System calls
+;~          & "" _ ;~ & ",tcp" _ ; TCP connections
+;~          & ",textfile" _ ; Read prometheus metrics from a text file
+;~          & "" _ ;~ & ",vmware" ; Performance counters installed by the Vmware Guest agent
+
 Global Const $WmiExporterCollectorTextfileDir = $WmiExporterLocalDir & "textfile_inputs\"
 
 Global Const $WmiExporterMetadataFileName = "metadata.prom"
@@ -245,7 +246,7 @@ ConsoleLog($SpawnPath)
 ConsoleLog($KPSInfoPath)
 ConsoleLog($WmiExporterLocalPath)
 ConsoleLog("werden überwacht")
-ConsoleLog($WmiExporterParams)
+;~ ConsoleLog($WmiExporterParams)
 
 GetGlobalConfig()
 
@@ -264,16 +265,18 @@ Sleep($T1)
 While 42
     Sleep($T2)
     Check()
-    GetGlobalConfig()
-    ManageLogFile()
+    If (Mod($Cycle, 20) = 0) Then GetGlobalConfig()
+    If (Mod($Cycle, 20) = 0) Then ManageLogFile()
+    $Cycle += 1
 WEnd
 
 Func ConsoleLog($Text)
+    $Text = "C" & $Cycle & ": " & $Text
     ConsoleWrite(@CRLF & $Text)
     If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
     _FileWriteLog($LogPath, $Text)
     _FileWriteLog($LogNetPath, $Text)
-    _FileWriteLog($LogGlobalNetPath, @UserName & "@" & @ComputerName & ": " & $Text)
+    _FileWriteLog($LogGlobalNetPath, @UserName & "@" & @ComputerName & " " & $Text)
 EndFunc   ;==>ConsoleLog
 
 Func GetGlobalConfig()
@@ -299,7 +302,7 @@ Func GetGlobalConfig()
     Local $IniGlobalExNetTime = FileGetTime($IniGlobalExNetPath, $FT_MODIFIED, $FT_STRING)
     If $IniGlobalExTime <> $IniGlobalExNetTime Then
         $IniGlobalExExists = FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
-        ConsoleLog("Reload Config " & $IniGlobalExNetPath)
+        ConsoleLog("Reload Config Ex" & $IniGlobalExNetPath)
         ReadGlobalConfig()
         WriteMetaDataFile()
     EndIf
@@ -363,6 +366,7 @@ EndFunc   ;==>ReadLocalConfig
 Func WriteLogStartup()
     Local Const $DelimItem = $ArrayDelimItem
     IniWrite($IniGlobalNetLogPath, "IPAddress1", @ComputerName, @IPAddress1)
+    IniWrite($IniGlobalNetLogPath, "AkkVersion", @ComputerName, FileGetVersion(@ScriptFullPath))
 
     _ArrayAdd($MacroAutoIt, "Compiled" & $DelimItem & @Compiled, 0, $DelimItem)
     _ArrayAdd($MacroAutoIt, "ScriptName" & $DelimItem & @ScriptName, 0, $DelimItem)
