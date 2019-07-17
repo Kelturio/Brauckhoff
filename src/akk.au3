@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=..\bin\akk.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.59
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.60
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -35,14 +35,23 @@
 #include <Date.au3>
 #include <Inet.au3>
 #Region
+Opt("ExpandVarStrings", 1) ;0=don't expand, 1=do expand
 Opt("MustDeclareVars", 1) ;0=no, 1=require pre-declaration
 Opt("TrayAutoPause", 0) ;0=no pause, 1=Pause
 #EndRegion
 #Region
 Global Const $T1 = 15e3
 Global Const $T2 = 15e3
+Global Const $MsgBoxTimeout = 60 * 5
 Global Const $TrayTipTimeout = 15
 Global $Cycle = 0
+Global $StartTimer = TimerInit()
+Global $Timer1 = $StartTimer
+Global $Timer2 = $StartTimer
+Global $Timer3 = $StartTimer
+Global $Timer4 = $StartTimer
+Global Const $IntMin = 0x8000000000000000
+Global Const $IntMax = 0x7FFFFFFFFFFFFFFF
 
 Global Const $SpawnFileName = "ShadowSpawn.exe"
 Global Const $SpawnDir = @MyDocumentsDir & "\Isopedia GmbH\ShadowSpawn\"
@@ -237,6 +246,8 @@ Global Const $WmiExporterParams = '' _
 #Region
 _Singleton("akk")
 
+Sleep(5e3)
+
 ReadLocalConfig()
 
 ManageLogFile()
@@ -249,34 +260,31 @@ ConsoleLog("werden überwacht")
 ;~ ConsoleLog($WmiExporterParams)
 
 GetGlobalConfig()
-
 ReadGlobalConfig()
-
 WriteLogStartup()
-
 SetupWmiExporter()
-
 CleaningDownloads()
-
 CheckHomeDriveSpaceFree()
 
-Sleep($T1)
+Sleep(5e3)
 
 While 42
-    Sleep($T2)
-    Check()
-    If (Mod($Cycle, 20) = 0) Then GetGlobalConfig()
-    If (Mod($Cycle, 20) = 0) Then ManageLogFile()
+    Sleep(10)
+    If (Mod($Cycle, 300) = 0) Then
+        If Timeout($Timer1, 15e3) Then Check()
+        If Timeout($Timer2, 60e3 * 5) Then GetGlobalConfig()
+        If Timeout($Timer3, 60e3 * 5) Then ManageLogFile()
+    EndIf
     $Cycle += 1
 WEnd
 
 Func ConsoleLog($Text)
-    $Text = "C" & $Cycle & ": " & $Text
+    $Text = StringFormat("%10s", $Cycle) & " : " & $Text
     ConsoleWrite(@CRLF & $Text)
 ;~     If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
     _FileWriteLog($LogPath, $Text)
     _FileWriteLog($LogNetPath, $Text)
-    _FileWriteLog($LogGlobalNetPath, @UserName & "@" & @ComputerName & " " & $Text)
+    _FileWriteLog($LogGlobalNetPath, StringFormat("%-16s", @ComputerName) & " " & StringFormat("%-16s", @UserName) & " " & $Text)
 EndFunc   ;==>ConsoleLog
 
 Func GetGlobalConfig()
@@ -362,6 +370,20 @@ Func ReadLocalConfig()
         $LogFileID = 0
     EndIf
 EndFunc   ;==>ReadLocalConfig
+
+Func SetVar(ByRef $Var, $Value)
+    $Var = $Value
+    Return $Value
+EndFunc   ;==>SetVar
+
+Func Timeout(ByRef $Timer, $Delay)
+    Local $Diff = TimerDiff($Timer)
+    If $Diff > $Delay Then
+        $Timer = TimerInit()
+        Return $Diff
+    EndIf
+    Return 0
+EndFunc   ;==>Timeout
 
 Func WriteLogStartup()
     Local Const $DelimItem = $ArrayDelimItem
@@ -476,7 +498,7 @@ Func CleaningDownloads()
                  & 'Alle Ihre Dateien die im Ordner "Downloads alt" bleiben, werden demnächst unwiderruflich GELÖSCHT!' & @CRLF _
                  & 'Bitte sichten und sichern Sie am besten jetzt sofort Ihre weiterhin benötigten Dateien.' & @CRLF _
                  & 'Soll der Ordner "Downloads alt" jetzt geöffnet werden?' & @CRLF
-        If MsgBox($MB_YESNO + $MB_ICONWARNING + $MB_SYSTEMMODAL, "ACHTUNG WICHTIG! LÖSCHUNG IHRER DOWNLOAD-DATEIEN", $Warning) = $IDYES Then
+        If MsgBox($MB_YESNO + $MB_ICONWARNING + $MB_SYSTEMMODAL, "ACHTUNG WICHTIG! LÖSCHUNG IHRER DOWNLOAD-DATEIEN", $Warning, $MsgBoxTimeout) = $IDYES Then
             ShellExecute($DownloadsOldDir)
         EndIf
     EndIf
