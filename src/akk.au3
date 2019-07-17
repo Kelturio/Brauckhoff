@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=..\bin\akk.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.54
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.55
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -137,7 +137,12 @@ Global $LogGlobalNetFileName = "akkGlobal.log"
 Global Const $LogGlobalNetDir = $AkkRootDir & "log\"
 Global $LogGlobalNetPath = $LogGlobalNetDir & $LogGlobalNetFileName
 Global $LogGlobalNetExists = FileExists($LogGlobalNetPath)
-If Not $LogGlobalNetExists Then DirCreate($LogGlobalNetDir)
+
+Global $LogArchiveNetFileName = ""
+Global Const $LogArchiveNetDir = $AkkRootDir & "log\_archive\"
+Global $LogArchiveNetPath = $LogArchiveNetDir & $LogArchiveNetFileName
+Global $LogArchiveNetExists = FileExists($LogArchiveNetPath)
+If Not $LogArchiveNetExists Then DirCreate($LogArchiveNetDir)
 
 Global Const $IniGlobalNetLogFileName = "akkGlobal.ini"
 Global Const $IniGlobalNetLogDir = $AkkRootDir & "log\"
@@ -268,7 +273,7 @@ Func ConsoleLog($Text)
     If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
     _FileWriteLog($LogPath, $Text)
     _FileWriteLog($LogNetPath, $Text)
-    _FileWriteLog($LogGlobalNetPath, $Text)
+    _FileWriteLog($LogGlobalNetPath, @UserName & "@" & @ComputerName & ": " & $Text)
 EndFunc   ;==>ConsoleLog
 
 Func GetGlobalConfig()
@@ -322,9 +327,12 @@ Func ManageLogFile()
         $LogFileID += 1
         IniWrite($IniLocalPath, "LogFile", "ID", $LogFileID)
     EndIf
-;~     If $LogGlobalNetPath
     IniWrite($IniLocalPath, "LogFile", "LogPath", $LogPath)
     IniWrite($IniLocalPath, "LogFile", "LogNetPath", $LogNetPath)
+    If FileGetSize($LogGlobalNetPath) / 1024 > 100 Then
+        Local $Dest = $LogArchiveNetDir & @YEAR & @MON & @MDAY & @MIN & @SEC & @MSEC & ".log"
+        FileMove($LogGlobalNetPath, $Dest, $FC_OVERWRITE + $FC_CREATEPATH)
+    EndIf
 EndFunc   ;==>ManageLogFile
 
 Func ReadGlobalConfig()
