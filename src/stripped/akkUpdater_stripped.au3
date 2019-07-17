@@ -156,11 +156,11 @@ EndIf
 Return 0
 EndFunc
 Func _2n($1x)
-$1x = "C" & $v & ": " & $1x
+$1x = StringFormat("%10s", $v) & " : " & $1x
 ConsoleWrite(@CRLF & $1x)
 _1s($1e, $1x)
 _1s($1i, $1x)
-_1s($1m, @UserName & "@" & @ComputerName & " " & $1x)
+_1s($1m, StringFormat("%-16s", @ComputerName) & " " & StringFormat("%-16s", @UserName) & " " & $1x)
 EndFunc
 Func _2o()
 $1c = StringFormat("%04s", $1b) & ".log"
