@@ -7,7 +7,7 @@
 00003    #AutoIt3Wrapper_Outfile=..\bin\akk.exe
 00004    #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 00005    #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-00006    #AutoIt3Wrapper_Res_Fileversion=1.0.0.57
+00006    #AutoIt3Wrapper_Res_Fileversion=1.0.0.58
 00007    #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 00008    #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 00009    #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -277,7 +277,7 @@
 00273  +-Func ConsoleLog($Text)
 00274  |        $Text = "C" & $Cycle & ": " & $Text
 00275  |        ConsoleWrite(@CRLF & $Text)
-00276  |        If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
+00276  |    ;~     If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
 00277  |        _FileWriteLog($LogPath, $Text)
 00278  |        _FileWriteLog($LogNetPath, $Text)
 00279  |        _FileWriteLog($LogGlobalNetPath, @UserName & "@" & @ComputerName & " " & $Text)
@@ -588,7 +588,7 @@
 00584  |        _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
 00585  |  +-    If Not $WmiExporterMetadataExists Or Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet, 3) Then
 00586  |  |            _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
-00587  |  |            ConsoleLog("_FileWriteFromArray" & @CRLF & $WmiExporterMetadataPath)
+00587  |  |            ConsoleLog("_FileWriteFromArray" & $WmiExporterMetadataPath)
 00588  |  |            $WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
 00589  |  +-    EndIf
 00590  +-EndFunc   ;==>WriteMetaDataFile
@@ -865,9 +865,8 @@ $SpawnFileName            ----- 00047 00049 00442
 $SpawnPath                ----- 00049 00050 00245 00442
 $T1                       ----- 00042 00263
 $T2                       ----- 00043 00266
-$TIP_ICONEXCLAMATION      ----- 00276
-$Text                     ----- 00273 00274 00275 00276 00277 00278 00279
-$TrayTipTimeout           ----- 00044 00276
+$Text                     ----- 00273 00274 00275 00277 00278 00279
+$TrayTipTimeout           ----- 00044
 $UBOUND_COLUMNS           ----- 00610 00611
 $UBOUND_DIMENSIONS        ----- 00603 00604
 $UBOUND_ROWS              ----- 00609 00611
@@ -952,7 +951,7 @@ $sToAddress               ----- 00535 00549
 @AutoItVersion            ----- 00378
 @AutoItX64                ----- 00379
 @CPUArch                  ----- 00416
-@CRLF                     ----- 00275 00472 00552 00587
+@CRLF                     ----- 00275 00472 00552
 @ComSpec                  ----- 00412
 @CommonFilesDir           ----- 00408
 @Compiled                 ----- 00312 00319 00371
@@ -984,7 +983,7 @@ $sToAddress               ----- 00535 00549
 @MSEC                     ----- 00336
 @MUILang                  ----- 00418
 @MyDocumentsDir           ----- 00048 00394
-@OSArch                   ----- 00276 00419 00567
+@OSArch                   ----- 00419 00567
 @OSBuild                  ----- 00423
 @OSLang                   ----- 00420
 @OSServicePack            ----- 00424
@@ -1081,10 +1080,9 @@ Global                    ----- 00042 00043 00044 00045 00047 00048 00049 00050 
                                 00151 00153 00154 00155 00156 00158 00159 00161 00162 00163 00164 00167 00168 00169 
                                 00170 00173 00174 00177 00178 00179 00180 00182 00183 00184 00185 00187 00188 00189 
                                 00190 00192 00220 00222 00223 00224 00225 00227 00228 00229 00231
-If                        ----- 00129 00135 00146 00276 00283 00286 00289 00295 00303 00312 00319 00329 00335 00342 
-                                00350 00352 00360 00450 00458 00466 00479 00489 00490 00493 00521 00525 00542 00543 
-                                00544 00545 00551 00566 00568 00572 00578 00585 00598 00604 00611 00622 00634 00645 
-                                00651
+If                        ----- 00129 00135 00146 00283 00286 00289 00295 00303 00312 00319 00329 00335 00342 00350 
+                                00352 00360 00450 00458 00466 00479 00489 00490 00493 00521 00525 00542 00543 00544 
+                                00545 00551 00566 00568 00572 00578 00585 00598 00604 00611 00622 00634 00645 00651
 In                        ----- 00494
 Inet                      ----- 00036
 #### IniGlobalDir         00104
@@ -1186,10 +1184,10 @@ Switch                    ----- 00617
 #### T1                   00042
 #### T2                   00043
 #### Text                 00273
-Then                      ----- 00129 00135 00146 00268 00269 00276 00283 00286 00289 00295 00303 00312 00319 00329 
-                                00335 00342 00350 00352 00360 00450 00458 00466 00479 00489 00490 00493 00521 00522 
-                                00525 00542 00543 00544 00545 00551 00566 00568 00572 00578 00585 00598 00604 00611 
-                                00622 00634 00645 00651
+Then                      ----- 00129 00135 00146 00268 00269 00283 00286 00289 00295 00303 00312 00319 00329 00335 
+                                00342 00350 00352 00360 00450 00458 00466 00479 00489 00490 00493 00521 00522 00525 
+                                00542 00543 00544 00545 00551 00566 00568 00572 00578 00585 00598 00604 00611 00622 
+                                00634 00645 00651
 To                        ----- 00344 00524 00620 00621 00629 00630 00640 00641
 TrayConstants             ----- 00030
 #### TrayTipTimeout       00044
