@@ -796,7 +796,6 @@ WEnd
 Func _7k($78)
 $78 = "C" & $48 & ": " & $78
 ConsoleWrite(@CRLF & $78)
-If @OSArch <> "WIN_10" Then TrayTip("", $78, 15, 2)
 _1s($5u, $78)
 _1s($5y, $78)
 _1s($62, @UserName & "@" & @ComputerName & " " & $78)
@@ -1045,7 +1044,7 @@ $75[0] = UBound($75) - 1
 _1q($72, $76)
 If Not $73 Or Not _82($75, $76, 3) Then
 _1r($72, $75, 1)
-_7k("_FileWriteFromArray" & @CRLF & $72)
+_7k("_FileWriteFromArray" & $72)
 $73 = FileExists($72)
 EndIf
 EndFunc
