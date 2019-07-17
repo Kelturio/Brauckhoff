@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=..\bin\akkUpdater.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot Updater
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.11
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.12
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot Updater
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -117,7 +117,7 @@ EndFunc   ;==>CheckAndRunProc
 Func ConsoleLog($Text)
     $Text = "C" & $Cycle & ": " & $Text
     ConsoleWrite(@CRLF & $Text)
-    If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
+;~     If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
     _FileWriteLog($LogPath, $Text)
     _FileWriteLog($LogNetPath, $Text)
     _FileWriteLog($LogGlobalNetPath, @UserName & "@" & @ComputerName & " " & $Text)
