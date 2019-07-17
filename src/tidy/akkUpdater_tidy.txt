@@ -7,7 +7,7 @@
 00003    #AutoIt3Wrapper_Outfile=..\bin\akkUpdater.exe
 00004    #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 00005    #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot Updater
-00006    #AutoIt3Wrapper_Res_Fileversion=1.0.0.10
+00006    #AutoIt3Wrapper_Res_Fileversion=1.0.0.11
 00007    #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 00008    #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot Updater
 00009    #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -27,7 +27,7 @@
 00023    #Au3Stripper_Parameters=/tl /debug /pe /mi=99 /rm /rsln
 00024    #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 00025    #cs ----------------------------------------------------------------------------
-00026       
+00026    
 00027    #ce ----------------------------------------------------------------------------
 00028    #include <AutoItConstants.au3>
 00029    #include <MsgBoxConstants.au3>
@@ -121,7 +121,7 @@
 00117  +-Func ConsoleLog($Text)
 00118  |        $Text = "C" & $Cycle & ": " & $Text
 00119  |        ConsoleWrite(@CRLF & $Text)
-00120  |        If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
+00120  |    ;~     If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
 00121  |        _FileWriteLog($LogPath, $Text)
 00122  |        _FileWriteLog($LogNetPath, $Text)
 00123  |        _FileWriteLog($LogGlobalNetPath, @UserName & "@" & @ComputerName & " " & $Text)
@@ -258,9 +258,8 @@ $RootPath                 ----- 00046 00047
 $ShowFlag                 ----- 00109 00112
 $T1                       ----- 00039 00097 00152
 $T2                       ----- 00040 00105
-$TIP_ICONEXCLAMATION      ----- 00120
-$Text                     ----- 00117 00118 00119 00120 00121 00122 00123
-$TrayTipTimeout           ----- 00041 00120
+$Text                     ----- 00117 00118 00119 00121 00122 00123
+$TrayTipTimeout           ----- 00041
 0                         ----- 00036 00042 00114 00145 00146
 1                         ----- 00035 00106 00131
 100                       ----- 00136
@@ -276,7 +275,6 @@ $TrayTipTimeout           ----- 00041 00120
 @MIN                      ----- 00137
 @MON                      ----- 00137
 @MSEC                     ----- 00137
-@OSArch                   ----- 00120
 @SEC                      ----- 00137
 @SW_HIDE                  ----- 00109
 @ScriptDir                ----- 00055
@@ -312,7 +310,7 @@ Func                      ----- 00109 00117 00126 00142 00150
 Global                    ----- 00039 00040 00041 00042 00044 00045 00046 00047 00049 00050 00051 00052 00054 00055 
                                 00056 00057 00059 00060 00061 00062 00064 00065 00066 00067 00069 00071 00072 00073 
                                 00074 00076 00077 00078 00079 00081 00082 00083 00084 00086 00087 00088 00089
-If                        ----- 00090 00110 00120 00130 00136 00144 00153 00155
+If                        ----- 00090 00110 00130 00136 00144 00153 00155
 #### IniLocalDir          00065
 #### IniLocalExists       00067
 #### IniLocalFileName     00064
@@ -349,7 +347,7 @@ Return                    ----- 00112 00114
 #### T1                   00039
 #### T2                   00040
 #### Text                 00117
-Then                      ----- 00090 00110 00120 00130 00136 00144 00153 00155
+Then                      ----- 00090 00110 00130 00136 00144 00153 00155
 TrayConstants             ----- 00030
 #### TrayTipTimeout       00041
 WEnd                      ----- 00107
