@@ -660,124 +660,125 @@ Return 0
 EndFunc
 Opt("MustDeclareVars", 1)
 Opt("TrayAutoPause", 0)
-Global Const $48 = "ShadowSpawn.exe"
-Global Const $49 = @MyDocumentsDir & "\Isopedia GmbH\ShadowSpawn\"
-Global Const $4a = $49 & $48
-Global Const $4b = FileExists($4a)
-Global Const $4c = @ProgramFilesDir & "\KPS designstudio\KPSInfo\"
-Global Const $4d = $4c & "KPSInfo.exe"
-Global Const $4e = FileExists($4d)
-Global Const $4f = "Powerkatalog-Schnittstelle.exe"
-Global Const $4g = @ProgramFilesDir & "\KPS designstudio\Powerkatalog-Schnittstelle\"
-Global Const $4h = $4g & $4f
-Global Const $4i = FileExists($4h)
-Global Const $4j = "SHDUpdater_min.exe"
-Global Const $4k = @ProgramFilesDir & "\SHDUpdater\"
-Global Const $4l = $4k & $4j
-Global Const $4m = FileExists($4l)
-Global Const $4n = "\\172.16.128.4\edv\Gerrit\"
-Global Const $4o = $4n & ""
-Global Const $4p = FileExists($4o)
-Global Const $4q = $4n & "akk\"
-Global Const $4r = $4q & ""
-Global Const $4s = FileExists($4r)
-Global Const $4t = @ScriptDir & "\"
-Global Const $4u = $4t & "akk.exe"
-Global Const $4v = FileExists($4u)
-Global Const $4w = $4n
-Global Const $4x = $4w & "akk.exe"
-Global Const $4y = FileExists($4x)
-Global Const $4z = "akkUpdater.exe"
-Global Const $50 = $4t
-Global Const $51 = $50 & $4z
-Global $52 = FileExists($51)
-Global Const $53 = $4z
-Global Const $54 = $4n
-Global Const $55 = $54 & $53
-Global Const $56 = FileExists($55)
-Global Const $57 = $4t
-Global Const $58 = $57 & "akk.ini"
-Global Const $59 = FileExists($58)
-Global Const $5a = "akkGlobalConfig.ini"
-Global Const $5b = $4t
-Global Const $5c = $5b & $5a
-Global $5d = FileExists($5c)
-Global Const $5e = $5a
-Global Const $5f = $4q
-Global Const $5g = $5f & $5e
-Global Const $5h = FileExists($5g)
-Global Const $5i = "akkGlobalConfigExtended.ini"
-Global Const $5j = $5b
-Global Const $5k = $5j & $5i
-Global $5l = FileExists($5k)
-Global Const $5m = $5i
-Global Const $5n = $4q
-Global Const $5o = $5n & $5m
-Global Const $5p = FileExists($5o)
-Global $5q
-Global $5r = ""
-Global Const $5s = $4t & "log\"
-Global $5t = $5s & $5r
-Global $5u = FileExists($5t)
-If Not $5u Then DirCreate($5s)
-Global $5v = ""
-Global Const $5w = $4q & "log\" & @ComputerName & "\"
-Global $5x = $5w & $5v
-Global $5y = FileExists($5x)
-If Not $5y Then DirCreate($5w)
-Global $5z = "akkGlobal.log"
-Global Const $60 = $4q & "log\"
-Global $61 = $60 & $5z
-Global $62 = FileExists($61)
-Global $63 = ""
-Global Const $64 = $4q & "log\_archive\"
-Global $65 = $64 & $63
-Global $66 = FileExists($65)
-If Not $66 Then DirCreate($64)
-Global Const $67 = $4q & "log\"
-Global Const $68 = $67 & "akkGlobal.ini"
-Global Const $69 = FileExists($68)
-Global Const $6a = $5w
-Global Const $6b = $6a & "akkMacro.ini"
-Global Const $6c = FileExists($6b)
-Global Const $6d = @UserProfileDir & "\Downloads"
-Global Const $6e = $6d & " alt"
-Global $6f[1][2]
+Global $48 = 0
+Global Const $49 = "ShadowSpawn.exe"
+Global Const $4a = @MyDocumentsDir & "\Isopedia GmbH\ShadowSpawn\"
+Global Const $4b = $4a & $49
+Global Const $4c = FileExists($4b)
+Global Const $4d = @ProgramFilesDir & "\KPS designstudio\KPSInfo\"
+Global Const $4e = $4d & "KPSInfo.exe"
+Global Const $4f = FileExists($4e)
+Global Const $4g = "Powerkatalog-Schnittstelle.exe"
+Global Const $4h = @ProgramFilesDir & "\KPS designstudio\Powerkatalog-Schnittstelle\"
+Global Const $4i = $4h & $4g
+Global Const $4j = FileExists($4i)
+Global Const $4k = "SHDUpdater_min.exe"
+Global Const $4l = @ProgramFilesDir & "\SHDUpdater\"
+Global Const $4m = $4l & $4k
+Global Const $4n = FileExists($4m)
+Global Const $4o = "\\172.16.128.4\edv\Gerrit\"
+Global Const $4p = $4o & ""
+Global Const $4q = FileExists($4p)
+Global Const $4r = $4o & "akk\"
+Global Const $4s = $4r & ""
+Global Const $4t = FileExists($4s)
+Global Const $4u = @ScriptDir & "\"
+Global Const $4v = $4u & "akk.exe"
+Global Const $4w = FileExists($4v)
+Global Const $4x = $4o
+Global Const $4y = $4x & "akk.exe"
+Global Const $4z = FileExists($4y)
+Global Const $50 = "akkUpdater.exe"
+Global Const $51 = $4u
+Global Const $52 = $51 & $50
+Global $53 = FileExists($52)
+Global Const $54 = $50
+Global Const $55 = $4o
+Global Const $56 = $55 & $54
+Global Const $57 = FileExists($56)
+Global Const $58 = $4u
+Global Const $59 = $58 & "akk.ini"
+Global Const $5a = FileExists($59)
+Global Const $5b = "akkGlobalConfig.ini"
+Global Const $5c = $4u
+Global Const $5d = $5c & $5b
+Global $5e = FileExists($5d)
+Global Const $5f = $5b
+Global Const $5g = $4r
+Global Const $5h = $5g & $5f
+Global Const $5i = FileExists($5h)
+Global Const $5j = "akkGlobalConfigExtended.ini"
+Global Const $5k = $5c
+Global Const $5l = $5k & $5j
+Global $5m = FileExists($5l)
+Global Const $5n = $5j
+Global Const $5o = $4r
+Global Const $5p = $5o & $5n
+Global Const $5q = FileExists($5p)
+Global $5r
+Global $5s = ""
+Global Const $5t = $4u & "log\"
+Global $5u = $5t & $5s
+Global $5v = FileExists($5u)
+If Not $5v Then DirCreate($5t)
+Global $5w = ""
+Global Const $5x = $4r & "log\" & @ComputerName & "\"
+Global $5y = $5x & $5w
+Global $5z = FileExists($5y)
+If Not $5z Then DirCreate($5x)
+Global $60 = "akkGlobal.log"
+Global Const $61 = $4r & "log\"
+Global $62 = $61 & $60
+Global $63 = FileExists($62)
+Global $64 = ""
+Global Const $65 = $4r & "log\_archive\"
+Global $66 = $65 & $64
+Global $67 = FileExists($66)
+If Not $67 Then DirCreate($65)
+Global Const $68 = $4r & "log\"
+Global Const $69 = $68 & "akkGlobal.ini"
+Global Const $6a = FileExists($69)
+Global Const $6b = $5x
+Global Const $6c = $6b & "akkMacro.ini"
+Global Const $6d = FileExists($6c)
+Global Const $6e = @UserProfileDir & "\Downloads"
+Global Const $6f = $6e & " alt"
 Global $6g[1][2]
 Global $6h[1][2]
-Global $6i = ""
-Global Const $6j = @ComputerName
-Global $6k
-Global $6l[10][2]
-Global Const $6m = "wmi_exporter.exe"
-Global Const $6n = @HomeDrive & "\Brauckhoff\wmi_exporter\"
-Global Const $6o = $6n & $6m
-Global $6p = FileExists($6o)
-Global Const $6q = "wmi_exporter-0.7.999-preview.2-386.exe"
-Global Const $6r = $4q & "wmi_exporter\"
-Global Const $6s = $6r & $6q
-Global Const $6t = FileExists($6s)
-Global Const $6u = "wmi_exporter-0.7.999-preview.2-amd64.exe"
-Global Const $6v = $4q & "wmi_exporter\"
-Global Const $6w = $6v & $6u
-Global Const $6x = FileExists($6w)
-Global Const $6y = "" & "" & "" & "cs" & "" & "" & "" & ",logical_disk" & ",memory" & "" & "" & "" & "" & "" & "" & "" & "" & "" & "" & ",net" & ",os" & ",process" & ",service" & ",system" & "" & ",textfile" & "" Global Const $6z = $6n & "textfile_inputs\"
-Global Const $70 = $6z
-Global Const $71 = $70 & "metadata.prom"
-Global $72 = FileExists($71)
-Global $73
-Global $74[2]
-Global $75
-Global Const $76 = '' & ' --log.format logger:eventlog?name=wmi_exporter' & ' --collectors.enabled ' & $6y & ' --telemetry.addr :9182 ' & ' --collector.textfile.directory ' & $6z
+Global $6i[1][2]
+Global $6j = ""
+Global Const $6k = @ComputerName
+Global $6l
+Global $6m[10][2]
+Global Const $6n = "wmi_exporter.exe"
+Global Const $6o = @HomeDrive & "\Brauckhoff\wmi_exporter\"
+Global Const $6p = $6o & $6n
+Global $6q = FileExists($6p)
+Global Const $6r = "wmi_exporter-0.7.999-preview.2-386.exe"
+Global Const $6s = $4r & "wmi_exporter\"
+Global Const $6t = $6s & $6r
+Global Const $6u = FileExists($6t)
+Global Const $6v = "wmi_exporter-0.7.999-preview.2-amd64.exe"
+Global Const $6w = $4r & "wmi_exporter\"
+Global Const $6x = $6w & $6v
+Global Const $6y = FileExists($6x)
+Global Const $6z = "cs,logical_disk,memory,net,os,process,service,system,textfile"
+Global Const $70 = $6o & "textfile_inputs\"
+Global Const $71 = $70
+Global Const $72 = $71 & "metadata.prom"
+Global $73 = FileExists($72)
+Global $74
+Global $75[2]
+Global $76
+Global Const $77 = '' & ' --log.format logger:eventlog?name=wmi_exporter' & ' --collectors.enabled ' & $6z & ' --telemetry.addr :9182 ' & ' --collector.textfile.directory ' & $70
 _2g("akk")
 _7o()
 _7m()
 _7k("akk.exe läuft")
-_7k($4a)
-_7k($4d)
-_7k($6o)
+_7k($4b)
+_7k($4e)
+_7k($6p)
 _7k("werden überwacht")
-_7k($76)
 _7l()
 _7n()
 _7p()
@@ -788,308 +789,311 @@ Sleep(15e3)
 While 42
 Sleep(15e3)
 _7q()
-_7l()
-_7m()
+If(Mod($48, 20) = 0) Then _7l()
+If(Mod($48, 20) = 0) Then _7m()
+$48 += 1
 WEnd
-Func _7k($77)
-ConsoleWrite(@CRLF & $77)
-If @OSArch <> "WIN_10" Then TrayTip("", $77, 15, 2)
-_1s($5t, $77)
-_1s($5x, $77)
-_1s($61, @UserName & "@" & @ComputerName & ": " & $77)
+Func _7k($78)
+$78 = "C" & $48 & ": " & $78
+ConsoleWrite(@CRLF & $78)
+If @OSArch <> "WIN_10" Then TrayTip("", $78, 15, 2)
+_1s($5u, $78)
+_1s($5y, $78)
+_1s($62, @UserName & "@" & @ComputerName & " " & $78)
 EndFunc
 Func _7l()
-If $5h And Not $5d Then
-$5d = FileCopy($5g, $5c, 1 + 8)
+If $5i And Not $5e Then
+$5e = FileCopy($5h, $5d, 1 + 8)
 EndIf
-If $5p And Not $5l Then
-$5l = FileCopy($5o, $5k, 1 + 8)
+If $5q And Not $5m Then
+$5m = FileCopy($5p, $5l, 1 + 8)
 EndIf
-If $56 And Not $52 Then
-$52 = FileCopy($55, $51, 1 + 8)
+If $57 And Not $53 Then
+$53 = FileCopy($56, $52, 1 + 8)
 EndIf
-Local $78 = FileGetTime($5c, 0, 1)
-Local $79 = FileGetTime($5g, 0, 1)
-If $78 <> $79 Then
-$5d = FileCopy($5g, $5c, 1 + 8)
-_7k("Reload Config " & $5g)
+Local $79 = FileGetTime($5d, 0, 1)
+Local $7a = FileGetTime($5h, 0, 1)
+If $79 <> $7a Then
+$5e = FileCopy($5h, $5d, 1 + 8)
+_7k("Reload Config " & $5h)
 _7n()
 EndIf
-Local $7a = FileGetTime($5k, 0, 1)
-Local $7b = FileGetTime($5o, 0, 1)
-If $7a <> $7b Then
-$5l = FileCopy($5o, $5k, 1 + 8)
-_7k("Reload Config " & $5o)
+Local $7b = FileGetTime($5l, 0, 1)
+Local $7c = FileGetTime($5p, 0, 1)
+If $7b <> $7c Then
+$5m = FileCopy($5p, $5l, 1 + 8)
+_7k("Reload Config Ex" & $5p)
 _7n()
 _81()
 EndIf
-Local $7c = FileGetTime($51, 0, 1)
-Local $7d = FileGetTime($55, 0, 1)
-If $7c <> $7d And @Compiled Then
-$52 = FileCopy($55, $51, 1 + 8)
-_7k("Reload Akk Updater " & $55)
+Local $7d = FileGetTime($52, 0, 1)
+Local $7e = FileGetTime($56, 0, 1)
+If $7d <> $7e And @Compiled Then
+$53 = FileCopy($56, $52, 1 + 8)
+_7k("Reload Akk Updater " & $56)
 EndIf
-Local $7e = FileGetTime($4u, 0, 1)
-Local $7f = FileGetTime($4x, 0, 1)
-If $7e <> $7f And @Compiled Then
-_7r($4z, $50, $51, $52)
-_7k("Reload Akk " & $4x)
+Local $7f = FileGetTime($4v, 0, 1)
+Local $7g = FileGetTime($4y, 0, 1)
+If $7f <> $7g And @Compiled Then
+_7r($50, $51, $52, $53)
+_7k("Reload Akk " & $4y)
 EndIf
 EndFunc
 Func _7m()
-$5r = StringFormat("%04s", $5q) & ".log"
-$5t = $5s & $5r
-$5x = $5w & $5r
-If _1i($5t) > 1e3 Then
-$5q += 1
-IniWrite($58, "LogFile", "ID", $5q)
+$5s = StringFormat("%04s", $5r) & ".log"
+$5u = $5t & $5s
+$5y = $5x & $5s
+If _1i($5u) > 1e3 Then
+$5r += 1
+IniWrite($59, "LogFile", "ID", $5r)
 EndIf
-IniWrite($58, "LogFile", "LogPath", $5t)
-IniWrite($58, "LogFile", "LogNetPath", $5x)
-If FileGetSize($61) / 1024 > 100 Then
-Local $7g = $64 & @YEAR & @MON & @MDAY & @MIN & @SEC & @MSEC & ".log"
-FileMove($61, $7g, 1 + 8)
+IniWrite($59, "LogFile", "LogPath", $5u)
+IniWrite($59, "LogFile", "LogNetPath", $5y)
+If FileGetSize($62) / 1024 > 100 Then
+Local $7h = $65 & @YEAR & @MON & @MDAY & @MIN & @SEC & @MSEC & ".log"
+FileMove($62, $7h, 1 + 8)
 EndIf
 EndFunc
 Func _7n()
-If FileExists($5c) Then
-$6k = IniRead($5c, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
+If FileExists($5d) Then
+$6l = IniRead($5d, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
 For $w = 0 To 9 Step 1
-$6l[$w][0] = IniRead($5c, "FreeSpaceCheck", "Mail" & $w & "Address", "")
-$6l[$w][1] = IniRead($5c, "FreeSpaceCheck", "Mail" & $w & "Active", 0)
+$6m[$w][0] = IniRead($5d, "FreeSpaceCheck", "Mail" & $w & "Address", "")
+$6m[$w][1] = IniRead($5d, "FreeSpaceCheck", "Mail" & $w & "Active", 0)
 Next
-$6i = IniRead($5c, "SmtpMail", "SmtpServer", "")
+$6j = IniRead($5d, "SmtpMail", "SmtpServer", "")
 EndIf
-If FileExists($5k) Then
-$73 = IniRead($5k, "MetaData", @ComputerName, "NULL")
-If $73 = "NULL" Then
-IniWrite($5o, "MetaData", @ComputerName, "")
+If FileExists($5l) Then
+$74 = IniRead($5l, "MetaData", @ComputerName, "NULL")
+If $74 = "NULL" Then
+IniWrite($5p, "MetaData", @ComputerName, "")
 EndIf
 EndIf
 EndFunc
 Func _7o()
-$5q = IniRead($58, "LogFile", "ID", "NULL")
-If $5q = "NULL" Then
-IniWrite($58, "LogFile", "ID", 0)
-$5q = 0
+$5r = IniRead($59, "LogFile", "ID", "NULL")
+If $5r = "NULL" Then
+IniWrite($59, "LogFile", "ID", 0)
+$5r = 0
 EndIf
 EndFunc
 Func _7p()
-Local Const $7h = "|"
-IniWrite($68, "IPAddress1", @ComputerName, @IPAddress1)
-_e($6f, "Compiled" & $7h & @Compiled, 0, $7h)
-_e($6f, "ScriptName" & $7h & @ScriptName, 0, $7h)
-_e($6f, "ScriptDir" & $7h & @ScriptDir, 0, $7h)
-_e($6f, "ScriptFullPath" & $7h & @ScriptFullPath, 0, $7h)
-_e($6f, "WorkingDir" & $7h & @WorkingDir, 0, $7h)
-_e($6f, "AutoItExe" & $7h & @AutoItExe, 0, $7h)
-_e($6f, "AutoItPID" & $7h & @AutoItPID, 0, $7h)
-_e($6f, "AutoItVersion" & $7h & @AutoItVersion, 0, $7h)
-_e($6f, "AutoItX64" & $7h & @AutoItX64, 0, $7h)
-IniWriteSection($6b, "MacroAutoIt", $6f)
-_e($6g, "AppDataCommonDir" & $7h & @AppDataCommonDir, 0, $7h)
-_e($6g, "DesktopCommonDir" & $7h & @DesktopCommonDir, 0, $7h)
-_e($6g, "DocumentsCommonDir" & $7h & @DocumentsCommonDir, 0, $7h)
-_e($6g, "FavoritesCommonDir" & $7h & @FavoritesCommonDir, 0, $7h)
-_e($6g, "ProgramsCommonDir" & $7h & @ProgramsCommonDir, 0, $7h)
-_e($6g, "StartMenuCommonDir" & $7h & @StartMenuCommonDir, 0, $7h)
-_e($6g, "StartupCommonDir" & $7h & @StartupCommonDir, 0, $7h)
-_e($6g, "AppDataDir" & $7h & @AppDataDir, 0, $7h)
-_e($6g, "LocalAppDataDir" & $7h & @LocalAppDataDir, 0, $7h)
-_e($6g, "DesktopDir" & $7h & @DesktopDir, 0, $7h)
-_e($6g, "MyDocumentsDir" & $7h & @MyDocumentsDir, 0, $7h)
-_e($6g, "FavoritesDir" & $7h & @FavoritesDir, 0, $7h)
-_e($6g, "ProgramsDir" & $7h & @ProgramsDir, 0, $7h)
-_e($6g, "StartMenuDir" & $7h & @StartMenuDir, 0, $7h)
-_e($6g, "StartupDir" & $7h & @StartupDir, 0, $7h)
-_e($6g, "UserProfileDir" & $7h & @UserProfileDir, 0, $7h)
-_e($6g, "HomeDrive" & $7h & @HomeDrive, 0, $7h)
-_e($6g, "HomePath" & $7h & @HomePath, 0, $7h)
-_e($6g, "HomeShare" & $7h & @HomeShare, 0, $7h)
-_e($6g, "LogonDNSDomain" & $7h & @LogonDNSDomain, 0, $7h)
-_e($6g, "LogonDomain" & $7h & @LogonDomain, 0, $7h)
-_e($6g, "LogonServer" & $7h & @LogonServer, 0, $7h)
-_e($6g, "ProgramFilesDir" & $7h & @ProgramFilesDir, 0, $7h)
-_e($6g, "CommonFilesDir" & $7h & @CommonFilesDir, 0, $7h)
-_e($6g, "WindowsDir" & $7h & @WindowsDir, 0, $7h)
-_e($6g, "SystemDir" & $7h & @SystemDir, 0, $7h)
-_e($6g, "TempDir" & $7h & @TempDir, 0, $7h)
-_e($6g, "ComSpec" & $7h & @ComSpec, 0, $7h)
-IniWriteSection($6b, "MacroDirectory", $6g)
-_e($6h, "CPUArch" & $7h & @CPUArch, 0, $7h)
-_e($6h, "KBLayout" & $7h & @KBLayout, 0, $7h)
-_e($6h, "MUILang" & $7h & @MUILang, 0, $7h)
-_e($6h, "OSArch" & $7h & @OSArch, 0, $7h)
-_e($6h, "OSLang" & $7h & @OSLang, 0, $7h)
-_e($6h, "OSType" & $7h & @OSType, 0, $7h)
-_e($6h, "OSVersion" & $7h & @OSVersion, 0, $7h)
-_e($6h, "OSBuild" & $7h & @OSBuild, 0, $7h)
-_e($6h, "OSServicePack" & $7h & @OSServicePack, 0, $7h)
-_e($6h, "ComputerName" & $7h & @ComputerName, 0, $7h)
-_e($6h, "UserName" & $7h & @UserName, 0, $7h)
-_e($6h, "IPAddress1" & $7h & @IPAddress1, 0, $7h)
-_e($6h, "IPAddress2" & $7h & @IPAddress2, 0, $7h)
-_e($6h, "IPAddress3" & $7h & @IPAddress3, 0, $7h)
-_e($6h, "IPAddress4" & $7h & @IPAddress4, 0, $7h)
-_e($6h, "DesktopHeight" & $7h & @DesktopHeight, 0, $7h)
-_e($6h, "DesktopWidth" & $7h & @DesktopWidth, 0, $7h)
-_e($6h, "DesktopDepth" & $7h & @DesktopDepth, 0, $7h)
-_e($6h, "DesktopRefresh" & $7h & @DesktopRefresh, 0, $7h)
-IniWriteSection($6b, "MacroSystemInfo", $6h)
+Local Const $7i = "|"
+IniWrite($69, "IPAddress1", @ComputerName, @IPAddress1)
+IniWrite($69, "AkkVersion", @ComputerName, FileGetVersion(@ScriptFullPath))
+_e($6g, "Compiled" & $7i & @Compiled, 0, $7i)
+_e($6g, "ScriptName" & $7i & @ScriptName, 0, $7i)
+_e($6g, "ScriptDir" & $7i & @ScriptDir, 0, $7i)
+_e($6g, "ScriptFullPath" & $7i & @ScriptFullPath, 0, $7i)
+_e($6g, "WorkingDir" & $7i & @WorkingDir, 0, $7i)
+_e($6g, "AutoItExe" & $7i & @AutoItExe, 0, $7i)
+_e($6g, "AutoItPID" & $7i & @AutoItPID, 0, $7i)
+_e($6g, "AutoItVersion" & $7i & @AutoItVersion, 0, $7i)
+_e($6g, "AutoItX64" & $7i & @AutoItX64, 0, $7i)
+IniWriteSection($6c, "MacroAutoIt", $6g)
+_e($6h, "AppDataCommonDir" & $7i & @AppDataCommonDir, 0, $7i)
+_e($6h, "DesktopCommonDir" & $7i & @DesktopCommonDir, 0, $7i)
+_e($6h, "DocumentsCommonDir" & $7i & @DocumentsCommonDir, 0, $7i)
+_e($6h, "FavoritesCommonDir" & $7i & @FavoritesCommonDir, 0, $7i)
+_e($6h, "ProgramsCommonDir" & $7i & @ProgramsCommonDir, 0, $7i)
+_e($6h, "StartMenuCommonDir" & $7i & @StartMenuCommonDir, 0, $7i)
+_e($6h, "StartupCommonDir" & $7i & @StartupCommonDir, 0, $7i)
+_e($6h, "AppDataDir" & $7i & @AppDataDir, 0, $7i)
+_e($6h, "LocalAppDataDir" & $7i & @LocalAppDataDir, 0, $7i)
+_e($6h, "DesktopDir" & $7i & @DesktopDir, 0, $7i)
+_e($6h, "MyDocumentsDir" & $7i & @MyDocumentsDir, 0, $7i)
+_e($6h, "FavoritesDir" & $7i & @FavoritesDir, 0, $7i)
+_e($6h, "ProgramsDir" & $7i & @ProgramsDir, 0, $7i)
+_e($6h, "StartMenuDir" & $7i & @StartMenuDir, 0, $7i)
+_e($6h, "StartupDir" & $7i & @StartupDir, 0, $7i)
+_e($6h, "UserProfileDir" & $7i & @UserProfileDir, 0, $7i)
+_e($6h, "HomeDrive" & $7i & @HomeDrive, 0, $7i)
+_e($6h, "HomePath" & $7i & @HomePath, 0, $7i)
+_e($6h, "HomeShare" & $7i & @HomeShare, 0, $7i)
+_e($6h, "LogonDNSDomain" & $7i & @LogonDNSDomain, 0, $7i)
+_e($6h, "LogonDomain" & $7i & @LogonDomain, 0, $7i)
+_e($6h, "LogonServer" & $7i & @LogonServer, 0, $7i)
+_e($6h, "ProgramFilesDir" & $7i & @ProgramFilesDir, 0, $7i)
+_e($6h, "CommonFilesDir" & $7i & @CommonFilesDir, 0, $7i)
+_e($6h, "WindowsDir" & $7i & @WindowsDir, 0, $7i)
+_e($6h, "SystemDir" & $7i & @SystemDir, 0, $7i)
+_e($6h, "TempDir" & $7i & @TempDir, 0, $7i)
+_e($6h, "ComSpec" & $7i & @ComSpec, 0, $7i)
+IniWriteSection($6c, "MacroDirectory", $6h)
+_e($6i, "CPUArch" & $7i & @CPUArch, 0, $7i)
+_e($6i, "KBLayout" & $7i & @KBLayout, 0, $7i)
+_e($6i, "MUILang" & $7i & @MUILang, 0, $7i)
+_e($6i, "OSArch" & $7i & @OSArch, 0, $7i)
+_e($6i, "OSLang" & $7i & @OSLang, 0, $7i)
+_e($6i, "OSType" & $7i & @OSType, 0, $7i)
+_e($6i, "OSVersion" & $7i & @OSVersion, 0, $7i)
+_e($6i, "OSBuild" & $7i & @OSBuild, 0, $7i)
+_e($6i, "OSServicePack" & $7i & @OSServicePack, 0, $7i)
+_e($6i, "ComputerName" & $7i & @ComputerName, 0, $7i)
+_e($6i, "UserName" & $7i & @UserName, 0, $7i)
+_e($6i, "IPAddress1" & $7i & @IPAddress1, 0, $7i)
+_e($6i, "IPAddress2" & $7i & @IPAddress2, 0, $7i)
+_e($6i, "IPAddress3" & $7i & @IPAddress3, 0, $7i)
+_e($6i, "IPAddress4" & $7i & @IPAddress4, 0, $7i)
+_e($6i, "DesktopHeight" & $7i & @DesktopHeight, 0, $7i)
+_e($6i, "DesktopWidth" & $7i & @DesktopWidth, 0, $7i)
+_e($6i, "DesktopDepth" & $7i & @DesktopDepth, 0, $7i)
+_e($6i, "DesktopRefresh" & $7i & @DesktopRefresh, 0, $7i)
+IniWriteSection($6c, "MacroSystemInfo", $6i)
 EndFunc
 Func _7q()
-_7r($48, $49, $4a, $4b)
-_7r("KPSInfo.exe", $4c, $4d, $4e)
-_7r($6m, $6n, $6o & $76, $6p)
+_7r($49, $4a, $4b, $4c)
+_7r("KPSInfo.exe", $4d, $4e, $4f)
+_7r($6n, $6o, $6p & $77, $6q)
 EndFunc
-Func _7r($7i, $7j, $7k, $7l, $7m = @SW_HIDE)
-If $7l And Not ProcessExists($7i) Then
-_7k($7i & " wird gestartet")
-Return Run($7k, $7j, $7m)
+Func _7r($7j, $7k, $7l, $7m, $7n = @SW_HIDE)
+If $7m And Not ProcessExists($7j) Then
+_7k($7j & " wird gestartet")
+Return Run($7l, $7k, $7n)
 EndIf
 Return 0
 EndFunc
 Func _7t()
 If _7u() Then
-DirRemove($6e, 1)
-_7v($6d, $6e)
-FileDelete($6e & "\Downloads alt.lnk")
-FileCreateShortcut($6e, $6d & "\Downloads alt")
-IniWrite($58, "Downloads", "LastCleaningDate", _5t(@YEAR, @MON, @MDAY))
-Local Const $7n = '' & 'Wenn Sie noch wichtige Dateien im Ordner "Downloads" aufbewahren, die Sie benötigen, kopieren Sie diese bitte an einen anderen Ort.' & @CRLF & 'Alle Dateien aus dem Ordner "Downloads" wurden bereits in den Ordner "Downloads alt" verschoben.' & @CRLF & 'Der Ordner "Downloads alt" ist über eine Verknüpfung in "Downloads" zu erreichen.' & @CRLF & 'Alle Ihre Dateien die im Ordner "Downloads alt" bleiben, werden demnächst unwiderruflich GELÖSCHT!' & @CRLF & 'Bitte sichten und sichern Sie am besten jetzt sofort Ihre weiterhin benötigten Dateien.' & @CRLF & 'Soll der Ordner "Downloads alt" jetzt geöffnet werden?' & @CRLF
-If MsgBox(4 + 48 + 4096, "ACHTUNG WICHTIG! LÖSCHUNG IHRER DOWNLOAD-DATEIEN", $7n) = 6 Then
-ShellExecute($6e)
+DirRemove($6f, 1)
+_7v($6e, $6f)
+FileDelete($6f & "\Downloads alt.lnk")
+FileCreateShortcut($6f, $6e & "\Downloads alt")
+IniWrite($59, "Downloads", "LastCleaningDate", _5t(@YEAR, @MON, @MDAY))
+Local Const $7o = '' & 'Wenn Sie noch wichtige Dateien im Ordner "Downloads" aufbewahren, die Sie benötigen, kopieren Sie diese bitte an einen anderen Ort.' & @CRLF & 'Alle Dateien aus dem Ordner "Downloads" wurden bereits in den Ordner "Downloads alt" verschoben.' & @CRLF & 'Der Ordner "Downloads alt" ist über eine Verknüpfung in "Downloads" zu erreichen.' & @CRLF & 'Alle Ihre Dateien die im Ordner "Downloads alt" bleiben, werden demnächst unwiderruflich GELÖSCHT!' & @CRLF & 'Bitte sichten und sichern Sie am besten jetzt sofort Ihre weiterhin benötigten Dateien.' & @CRLF & 'Soll der Ordner "Downloads alt" jetzt geöffnet werden?' & @CRLF
+If MsgBox(4 + 48 + 4096, "ACHTUNG WICHTIG! LÖSCHUNG IHRER DOWNLOAD-DATEIEN", $7o) = 6 Then
+ShellExecute($6f)
 EndIf
 EndIf
 EndFunc
 Func _7u()
 Return(_5t(@YEAR, @MON, @MDAY) - _7w()) >= 14
 EndFunc
-Func _7v($7o, $7p)
-If FileExists($7o) Then
-If Not FileExists($7p) Then DirCreate($7p)
-FileMove($7o & "\*.*", $7p, 1 + 8)
-Local Const $7q = _1k($7o, Default, 2, True)
+Func _7v($7p, $7q)
+If FileExists($7p) Then
+If Not FileExists($7q) Then DirCreate($7q)
+FileMove($7p & "\*.*", $7q, 1 + 8)
+Local Const $7r = _1k($7p, Default, 2, True)
 If Not @error Then
-For $7r In $7q
-DirMove($7r, $7p, 1)
+For $7s In $7r
+DirMove($7s, $7q, 1)
 Next
 EndIf
 EndIf
 EndFunc
 Func _7w()
-Return IniRead($58, "Downloads", "LastCleaningDate", "NULL")
+Return IniRead($59, "Downloads", "LastCleaningDate", "NULL")
 EndFunc
 Func _7y()
-Local Const $7s = DriveGetLabel(@HomeDrive & "\")
-Local Const $7t = DriveSpaceFree(@HomeDrive & "\")
-Local Const $7u = DriveSpaceTotal(@HomeDrive & "\")
-Local Const $7v =($7t / $7u) * 100
-If $7v < $6k Then
-If(_5t(@YEAR, @MON, @MDAY) - IniRead($58, "FreeSpaceCheck", "LastMailSendDate", "NULL")) >= 1 Then
-IniWrite($58, "FreeSpaceCheck", "LastMailSendDate", _5t(@YEAR, @MON, @MDAY))
+Local Const $7t = DriveGetLabel(@HomeDrive & "\")
+Local Const $7u = DriveSpaceFree(@HomeDrive & "\")
+Local Const $7v = DriveSpaceTotal(@HomeDrive & "\")
+Local Const $7w =($7u / $7v) * 100
+If $7w < $6l Then
+If(_5t(@YEAR, @MON, @MDAY) - IniRead($59, "FreeSpaceCheck", "LastMailSendDate", "NULL")) >= 1 Then
+IniWrite($59, "FreeSpaceCheck", "LastMailSendDate", _5t(@YEAR, @MON, @MDAY))
 For $w = 0 To 9 Step 1
-If $6l[$w][0] <> "" And $6l[$w][1] = 1 Then
-_7k("Sending Mail to " & $6l[$w][0])
-_7z($6l[$w][0], Round($7v, 2), $7s, $7t, $7u)
+If $6m[$w][0] <> "" And $6m[$w][1] = 1 Then
+_7k("Sending Mail to " & $6m[$w][0])
+_7z($6m[$w][0], Round($7w, 2), $7t, $7u, $7v)
 Sleep(3000)
 EndIf
 Next
 EndIf
 EndIf
 EndFunc
-Func _7z($3l, $7v, $7s, $7t, $7u)
+Func _7z($3l, $7w, $7t, $7u, $7v)
 Local $3j = "akk.exe (Gerrit)"
 Local $3k = "akk@kuechen-brauckhoff.de"
-Local $3m = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $7v & "% !"
-Local $7w[0]
-_e($7w, "Akk Warnung wenig Speicherplatz auf:")
-_e($7w, @ComputerName)
-If @IPAddress1 <> "0.0.0.0" Then _e($7w, @IPAddress1)
-If @IPAddress2 <> "0.0.0.0" Then _e($7w, @IPAddress2)
-If @IPAddress3 <> "0.0.0.0" Then _e($7w, @IPAddress3)
-If @IPAddress4 <> "0.0.0.0" Then _e($7w, @IPAddress4)
-_e($7w, $7s & " (" & @HomeDrive & ")")
-_e($7w, Round($7t / 1024, 2) & " GB frei von " & Round($7u / 1024, 2) & " GB")
-_e($7w, $7v & "% frei")
-Local $7x = _7f($6i, $3j, $3k, $3l, $3m, $7w, $6j, -1, 0)
-Local $7y = @error
-If $7x = 0 Then
-Local Const $7n = '' & 'DIE FESTPLATTE IST FAST VOLL!' & @CRLF & @CRLF & 'Bitte Herrn Heger bescheid geben:' & @CRLF & 'heger@easyconnectit.de' & @CRLF & 'oder 0176 23984427' & @CRLF & @CRLF & _15($7w, @CRLF) & @CRLF & @CRLF & 'Mail failed with error code ' & $7y & @CRLF
-MsgBox(48 + 4096, "Warnung!", $7n)
+Local $3m = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $7w & "% !"
+Local $7x[0]
+_e($7x, "Akk Warnung wenig Speicherplatz auf:")
+_e($7x, @ComputerName)
+If @IPAddress1 <> "0.0.0.0" Then _e($7x, @IPAddress1)
+If @IPAddress2 <> "0.0.0.0" Then _e($7x, @IPAddress2)
+If @IPAddress3 <> "0.0.0.0" Then _e($7x, @IPAddress3)
+If @IPAddress4 <> "0.0.0.0" Then _e($7x, @IPAddress4)
+_e($7x, $7t & " (" & @HomeDrive & ")")
+_e($7x, Round($7u / 1024, 2) & " GB frei von " & Round($7v / 1024, 2) & " GB")
+_e($7x, $7w & "% frei")
+Local $7y = _7f($6j, $3j, $3k, $3l, $3m, $7x, $6k, -1, 0)
+Local $7z = @error
+If $7y = 0 Then
+Local Const $7o = '' & 'DIE FESTPLATTE IST FAST VOLL!' & @CRLF & @CRLF & 'Bitte Herrn Heger bescheid geben:' & @CRLF & 'heger@easyconnectit.de' & @CRLF & 'oder 0176 23984427' & @CRLF & @CRLF & _15($7x, @CRLF) & @CRLF & @CRLF & 'Mail failed with error code ' & $7z & @CRLF
+MsgBox(48 + 4096, "Warnung!", $7o)
 EndIf
 EndFunc
 Func _80()
-ProcessClose($6m)
-If Not $6p Then
-Local $7z =(@OSArch = "X64") ? $6w : $6s
-If FileCopy($7z, $6o, 1 + 8) Then
-$6p = FileExists($6o)
+ProcessClose($6n)
+If Not $6q Then
+Local $80 =(@OSArch = "X64") ? $6x : $6t
+If FileCopy($80, $6p, 1 + 8) Then
+$6q = FileExists($6p)
 EndIf
 EndIf
-If Not FileExists($6z) Then DirCreate($6z)
+If Not FileExists($70) Then DirCreate($70)
 _81()
 EndFunc
 Func _81()
-Local $80 = 'metadata{computername="' & @ComputerName & '"' & ',username="' & @UserName & '"'
-If $73 <> "NULL" And StringLen($73) And Not StringIsSpace($73) Then
-$80 &= "," & $73
+Local $81 = 'metadata{computername="' & @ComputerName & '"' & ',username="' & @UserName & '"'
+If $74 <> "NULL" And StringLen($74) And Not StringIsSpace($74) Then
+$81 &= "," & $74
 EndIf
-$80 &= '} 1'
-$74[1] = $80
-$74[0] = UBound($74) - 1
-_1q($71, $75)
-If Not $72 Or Not _82($74, $75, 3) Then
-_1r($71, $74, 1)
-_7k("_FileWriteFromArray" & @CRLF & $71)
-$72 = FileExists($71)
+$81 &= '} 1'
+$75[1] = $81
+$75[0] = UBound($75) - 1
+_1q($72, $76)
+If Not $73 Or Not _82($75, $76, 3) Then
+_1r($72, $75, 1)
+_7k("_FileWriteFromArray" & @CRLF & $72)
+$73 = FileExists($72)
 EndIf
 EndFunc
-Func _82(Const ByRef $81, Const ByRef $82, $83 = 0)
-If Not(IsArray($81)) Or Not(IsArray($82)) Then
+Func _82(Const ByRef $82, Const ByRef $83, $84 = 0)
+If Not(IsArray($82)) Or Not(IsArray($83)) Then
 Return SetError(1, 0, 0)
 EndIf
-Local $1y = UBound($81, 0)
-If $1y <> UBound($82, 0) Then
+Local $1y = UBound($82, 0)
+If $1y <> UBound($83, 0) Then
 Return SetError(2, 0, 0)
 EndIf
-Local $84 = UBound($81, 1)
-Local $85 = UBound($81, 2)
-If $84 <> UBound($82, 1) Or $85 <> UBound($82, 2) Then
+Local $85 = UBound($82, 1)
+Local $86 = UBound($82, 2)
+If $85 <> UBound($83, 1) Or $86 <> UBound($83, 2) Then
 Return SetError(3, 0, 0)
 EndIf
-Local $86, $87
-Switch $83
+Local $87, $88
+Switch $84
 Case 0
-For $w = 0 To $84 - 1
-For $13 = 0 To $85 - 1
-If $81[$w][$13] <> $81[$w][$13] Then
+For $w = 0 To $85 - 1
+For $13 = 0 To $86 - 1
+If $82[$w][$13] <> $82[$w][$13] Then
 Return SetError(4, 0, 0)
 EndIf
 Next
 Next
 Case 1
-For $w = 0 To $84 - 1
-For $13 = 0 To $85 - 1
-$86 &= $81[$w][$13]
+For $w = 0 To $85 - 1
+For $13 = 0 To $86 - 1
 $87 &= $82[$w][$13]
+$88 &= $83[$w][$13]
 Next
-If $86 <> $87 Then
+If $87 <> $88 Then
 Return SetError(4, 0, 0)
 EndIf
 Next
 Case 2
-For $13 = 0 To $85 - 1
-For $w = 0 To $84 - 1
-$86 &= $81[$w][$13]
+For $13 = 0 To $86 - 1
+For $w = 0 To $85 - 1
 $87 &= $82[$w][$13]
+$88 &= $83[$w][$13]
 Next
-If $86 <> $87 Then
+If $87 <> $88 Then
 Return SetError(4, 0, 0)
 EndIf
 Next
 Case 3
-If _15($81) <> _15($82) Then
+If _15($82) <> _15($83) Then
 Return SetError(4, 0, 0)
 EndIf
 EndSwitch
