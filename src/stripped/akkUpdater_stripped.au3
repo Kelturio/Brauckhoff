@@ -158,7 +158,6 @@ EndFunc
 Func _2n($1x)
 $1x = "C" & $v & ": " & $1x
 ConsoleWrite(@CRLF & $1x)
-If @OSArch <> "WIN_10" Then TrayTip("", $1x, 15, 2)
 _1s($1e, $1x)
 _1s($1i, $1x)
 _1s($1m, @UserName & "@" & @ComputerName & " " & $1x)
