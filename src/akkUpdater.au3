@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=..\bin\akkUpdater.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot Updater
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.8
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.11
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot Updater
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -39,6 +39,7 @@ Opt("TrayAutoPause", 0) ;0=no pause, 1=Pause
 Global Const $T1 = 5e3
 Global Const $T2 = 60e3
 Global Const $TrayTipTimeout = 15
+Global $Cycle = 0
 
 Global Const $RootFileName = ""
 Global Const $RootDir = "\\172.16.128.4\edv\Gerrit\"
@@ -81,6 +82,12 @@ Global $LogGlobalNetFileName = "akkGlobal.log"
 Global Const $LogGlobalNetDir = $AkkRootDir & "log\"
 Global $LogGlobalNetPath = $LogGlobalNetDir & $LogGlobalNetFileName
 Global $LogGlobalNetExists = FileExists($LogGlobalNetPath)
+
+Global $LogArchiveNetFileName = ""
+Global Const $LogArchiveNetDir = $AkkRootDir & "log\_archive\"
+Global $LogArchiveNetPath = $LogArchiveNetDir & $LogArchiveNetFileName
+Global $LogArchiveNetExists = FileExists($LogArchiveNetPath)
+If Not $LogArchiveNetExists Then DirCreate($LogArchiveNetDir)
 #EndRegion
 #Region
 _Singleton("akkUpdater")
@@ -96,6 +103,7 @@ ManageLogFile()
 While 42
     Update()
     Sleep($T2)
+    $Cycle += 1
 WEnd
 
 Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
@@ -107,11 +115,12 @@ Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
 EndFunc   ;==>CheckAndRunProc
 
 Func ConsoleLog($Text)
+    $Text = "C" & $Cycle & ": " & $Text
     ConsoleWrite(@CRLF & $Text)
     If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
     _FileWriteLog($LogPath, $Text)
     _FileWriteLog($LogNetPath, $Text)
-    _FileWriteLog($LogGlobalNetPath, @UserName & "@" & @ComputerName & ": " & $Text)
+    _FileWriteLog($LogGlobalNetPath, @UserName & "@" & @ComputerName & " " & $Text)
 EndFunc   ;==>ConsoleLog
 
 Func ManageLogFile()
