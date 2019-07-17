@@ -104,34 +104,40 @@ Return $t[0]
 EndFunc
 Opt("MustDeclareVars", 1)
 Opt("TrayAutoPause", 0)
-Global Const $v = "\\172.16.128.4\edv\Gerrit\"
-Global Const $w = $v & ""
-Global Const $x = FileExists($w)
-Global Const $y = $v & "akk\"
-Global Const $0z = $y & ""
-Global Const $10 = FileExists($0z)
-Global Const $11 = @ScriptDir & "\"
-Global Const $12 = $11 & "akk.exe"
-Global $13 = FileExists($12)
-Global Const $14 = $v
-Global Const $15 = $14 & "akk.exe"
-Global Const $16 = FileExists($15)
-Global Const $17 = $11
-Global Const $18 = $17 & "akk.ini"
-Global Const $19 = FileExists($18)
-Global $1a
-Global $1b = ""
-Global Const $1c = $11 & "log\"
-Global $1d = $1c & $1b
-Global $1e = FileExists($1d)
-Global $1f = ""
-Global Const $1g = $y & "log\" & @ComputerName & "\"
-Global $1h = $1g & $1f
-Global $1i = FileExists($1h)
-Global $1j = "akkGlobal.log"
-Global Const $1k = $y & "log\"
-Global $1l = $1k & $1j
-Global $1m = FileExists($1l)
+Global $v = 0
+Global Const $w = "\\172.16.128.4\edv\Gerrit\"
+Global Const $x = $w & ""
+Global Const $y = FileExists($x)
+Global Const $0z = $w & "akk\"
+Global Const $10 = $0z & ""
+Global Const $11 = FileExists($10)
+Global Const $12 = @ScriptDir & "\"
+Global Const $13 = $12 & "akk.exe"
+Global $14 = FileExists($13)
+Global Const $15 = $w
+Global Const $16 = $15 & "akk.exe"
+Global Const $17 = FileExists($16)
+Global Const $18 = $12
+Global Const $19 = $18 & "akk.ini"
+Global Const $1a = FileExists($19)
+Global $1b
+Global $1c = ""
+Global Const $1d = $12 & "log\"
+Global $1e = $1d & $1c
+Global $1f = FileExists($1e)
+Global $1g = ""
+Global Const $1h = $0z & "log\" & @ComputerName & "\"
+Global $1i = $1h & $1g
+Global $1j = FileExists($1i)
+Global $1k = "akkGlobal.log"
+Global Const $1l = $0z & "log\"
+Global $1m = $1l & $1k
+Global $1n = FileExists($1m)
+Global $1o = ""
+Global Const $1p = $0z & "log\_archive\"
+Global $1q = $1p & $1o
+Global $1r = FileExists($1q)
+If Not $1r Then DirCreate($1p)
 _2g("akkUpdater")
 _2n("akkUpdater.exe gestartet")
 Sleep(5e3)
@@ -140,49 +146,51 @@ _2o()
 While 42
 _2q()
 Sleep(60e3)
+$v += 1
 WEnd
-Func _2m($1n, $1o, $1p, $1q, $1r = @SW_HIDE)
-If $1q And Not ProcessExists($1n) Then
-_2n($1n & " wird gestartet")
-Return Run($1p, $1o, $1r)
+Func _2m($1s, $1t, $1u, $1v, $1w = @SW_HIDE)
+If $1v And Not ProcessExists($1s) Then
+_2n($1s & " wird gestartet")
+Return Run($1u, $1t, $1w)
 EndIf
 Return 0
 EndFunc
-Func _2n($1s)
-ConsoleWrite(@CRLF & $1s)
-If @OSArch <> "WIN_10" Then TrayTip("", $1s, 15, 2)
-_1s($1d, $1s)
-_1s($1h, $1s)
-_1s($1l, @UserName & "@" & @ComputerName & ": " & $1s)
+Func _2n($1x)
+$1x = "C" & $v & ": " & $1x
+ConsoleWrite(@CRLF & $1x)
+If @OSArch <> "WIN_10" Then TrayTip("", $1x, 15, 2)
+_1s($1e, $1x)
+_1s($1i, $1x)
+_1s($1m, @UserName & "@" & @ComputerName & " " & $1x)
 EndFunc
 Func _2o()
-$1b = StringFormat("%04s", $1a) & ".log"
-$1d = $1c & $1b
-$1h = $1g & $1b
-If _1i($1d) > 1e3 Then
-$1a += 1
-IniWrite($18, "LogFile", "ID", $1a)
+$1c = StringFormat("%04s", $1b) & ".log"
+$1e = $1d & $1c
+$1i = $1h & $1c
+If _1i($1e) > 1e3 Then
+$1b += 1
+IniWrite($19, "LogFile", "ID", $1b)
 EndIf
-IniWrite($18, "LogFile", "LogPath", $1d)
-IniWrite($18, "LogFile", "LogNetPath", $1h)
-If FileGetSize($1l) / 1024 > 100 Then
-Local $1t = $1u & @YEAR & @MON & @MDAY & @MIN & @SEC & @MSEC & ".log"
-FileMove($1l, $1t, 1 + 8)
+IniWrite($19, "LogFile", "LogPath", $1e)
+IniWrite($19, "LogFile", "LogNetPath", $1i)
+If FileGetSize($1m) / 1024 > 100 Then
+Local $1y = $1p & @YEAR & @MON & @MDAY & @MIN & @SEC & @MSEC & ".log"
+FileMove($1m, $1y, 1 + 8)
 EndIf
 EndFunc
 Func _2p()
-$1a = IniRead($18, "LogFile", "ID", "NULL")
-If $1a = "NULL" Then
-IniWrite($18, "LogFile", "ID", 0)
-$1a = 0
+$1b = IniRead($19, "LogFile", "ID", "NULL")
+If $1b = "NULL" Then
+IniWrite($19, "LogFile", "ID", 0)
+$1b = 0
 EndIf
 EndFunc
 Func _2q()
 ProcessClose("akk.exe")
 Sleep(5e3)
 If Not ProcessExists("akk.exe") Then
-$13 = FileCopy($15, $12, 1 + 8)
-If _2m("akk.exe", $11, $12, $13) Then
+$14 = FileCopy($16, $13, 1 + 8)
+If _2m("akk.exe", $12, $13, $14) Then
 Exit
 Else
 _2n("Error CheckAndRunProc")
