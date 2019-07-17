@@ -153,7 +153,7 @@ ConsoleWrite(@CRLF & $1s)
 If @OSArch <> "WIN_10" Then TrayTip("", $1s, 15, 2)
 _1s($1d, $1s)
 _1s($1h, $1s)
-_1s($1l, $1s)
+_1s($1l, @UserName & "@" & @ComputerName & ": " & $1s)
 EndFunc
 Func _2o()
 $1b = StringFormat("%04s", $1a) & ".log"
@@ -165,6 +165,10 @@ IniWrite($18, "LogFile", "ID", $1a)
 EndIf
 IniWrite($18, "LogFile", "LogPath", $1d)
 IniWrite($18, "LogFile", "LogNetPath", $1h)
+If FileGetSize($1l) / 1024 > 100 Then
+Local $1t = $1u & @YEAR & @MON & @MDAY & @MIN & @SEC & @MSEC & ".log"
+FileMove($1l, $1t, 1 + 8)
+EndIf
 EndFunc
 Func _2p()
 $1a = IniRead($18, "LogFile", "ID", "NULL")
