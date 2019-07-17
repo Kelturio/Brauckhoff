@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=..\bin\akkUpdater.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot Updater
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.6
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.8
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot Updater
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -76,6 +76,11 @@ Global $LogNetFileName = ""
 Global Const $LogNetDir = $AkkRootDir & "log\" & @ComputerName & "\"
 Global $LogNetPath = $LogNetDir & $LogNetFileName
 Global $LogNetExists = FileExists($LogNetPath)
+
+Global $LogGlobalNetFileName = "akkGlobal.log"
+Global Const $LogGlobalNetDir = $AkkRootDir & "log\"
+Global $LogGlobalNetPath = $LogGlobalNetDir & $LogGlobalNetFileName
+Global $LogGlobalNetExists = FileExists($LogGlobalNetPath)
 #EndRegion
 #Region
 _Singleton("akkUpdater")
@@ -106,6 +111,7 @@ Func ConsoleLog($Text)
     If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
     _FileWriteLog($LogPath, $Text)
     _FileWriteLog($LogNetPath, $Text)
+    _FileWriteLog($LogGlobalNetPath, @UserName & "@" & @ComputerName & ": " & $Text)
 EndFunc   ;==>ConsoleLog
 
 Func ManageLogFile()
@@ -118,6 +124,10 @@ Func ManageLogFile()
     EndIf
     IniWrite($IniLocalPath, "LogFile", "LogPath", $LogPath)
     IniWrite($IniLocalPath, "LogFile", "LogNetPath", $LogNetPath)
+    If FileGetSize($LogGlobalNetPath) / 1024 > 100 Then
+        Local $Dest = $LogArchiveNetDir & @YEAR & @MON & @MDAY & @MIN & @SEC & @MSEC & ".log"
+        FileMove($LogGlobalNetPath, $Dest, $FC_OVERWRITE + $FC_CREATEPATH)
+    EndIf
 EndFunc   ;==>ManageLogFile
 
 Func ReadLocalConfig()
