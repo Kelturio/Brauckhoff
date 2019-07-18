@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=..\bin\akk.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.60
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.61
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -52,6 +52,8 @@ Global $Timer3 = $StartTimer
 Global $Timer4 = $StartTimer
 Global Const $IntMin = 0x8000000000000000
 Global Const $IntMax = 0x7FFFFFFFFFFFFFFF
+Global $hDownload = 0
+Global $ScrapeComplete = 1
 
 Global Const $SpawnFileName = "ShadowSpawn.exe"
 Global Const $SpawnDir = @MyDocumentsDir & "\Isopedia GmbH\ShadowSpawn\"
@@ -164,6 +166,16 @@ Global Const $IniGlobalNetLogInstanceDir = $LogNetDir
 Global Const $IniGlobalNetLogInstancePath = $IniGlobalNetLogInstanceDir & $IniGlobalNetLogInstanceFileName
 Global Const $IniGlobalNetLogInstanceExists = FileExists($IniGlobalNetLogInstancePath)
 
+Global Const $LogScrapeFileName = "scrape.prom"
+Global Const $LogScrapeDir = $AkkDir & "log\"
+Global Const $LogScrapePath = $LogScrapeDir & $LogScrapeFileName
+Global Const $LogScrapeExists = FileExists($LogScrapePath)
+
+Global Const $LogScrapeNetFileName = "scrape.prom"
+Global Const $LogScrapeNetDir = $LogNetDir
+Global Const $LogScrapeNetPath = $LogScrapeNetDir & $LogScrapeNetFileName
+Global Const $LogScrapeNetExists = FileExists($LogScrapeNetPath)
+
 Global Const $DownloadsDir = @UserProfileDir & "\Downloads"
 Global Const $DownloadsOldDir = $DownloadsDir & " alt"
 
@@ -271,10 +283,12 @@ Sleep(5e3)
 While 42
     Sleep(10)
     If (Mod($Cycle, 300) = 0) Then
-        If Timeout($Timer1, 15e3) Then Check()
+        If Timeout($Timer1, 15e3 * 1) Then Check()
         If Timeout($Timer2, 60e3 * 5) Then GetGlobalConfig()
         If Timeout($Timer3, 60e3 * 5) Then ManageLogFile()
+        If Timeout($Timer4, 60e3 * 5) Then Scrape()
     EndIf
+    If (Mod($Cycle, 500) = 0) Then ScrapeDownload()
     $Cycle += 1
 WEnd
 
@@ -463,7 +477,8 @@ EndFunc   ;==>WriteLogStartup
 Func Check()
     CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
     CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
-    CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
+;~     CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
+    CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists, @SW_SHOW)
 ;~     CheckAndRunProcAs($PowerkatalogFileName, $PowerkatalogDir, $PowerkatalogPath, $PowerkatalogExists, "Administrator", "Brauckhoff", "")
 ;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
 EndFunc   ;==>Check
@@ -583,6 +598,29 @@ Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $iFreeSpace, $iTota
 EndFunc   ;==>SendMailLowSpace
 #EndRegion FreeSpaceCheck
 #Region WMI Exporter
+Func Scrape()
+    If $ScrapeComplete And ProcessExists($WmiExporterLocalFileName) Then
+        $hDownload = InetGet("http://localhost:9182/metrics", $LogScrapePath, $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+        $ScrapeComplete = 0
+    EndIf
+EndFunc   ;==>Scrape
+
+Func ScrapeDownload()
+    If Not $ScrapeComplete Then
+        If InetGetInfo($hDownload, $INET_DOWNLOADCOMPLETE) Then
+            If InetGetInfo($hDownload, $INET_DOWNLOADSUCCESS) Then
+                If FileGetSize($LogScrapePath) Then FileCopy($LogScrapePath, $LogScrapeNetPath, $FC_OVERWRITE + $FC_CREATEPATH)
+            Else
+                FileDelete($LogScrapePath)
+                ConsoleLog("Error ScrapeDownload")
+            EndIf
+            InetClose($hDownload)
+            $hDownload = 0
+            $ScrapeComplete = 1
+        EndIf
+    EndIf
+EndFunc   ;==>ScrapeDownload
+
 Func SetupWmiExporter()
     ProcessClose($WmiExporterLocalFileName)
     If Not $WmiExporterLocalExists Then
