@@ -8,3 +8,4 @@ src/akkUpdater.exe
 src/akk_tidy.txt
 src/log/0000.log
 src/log/0001.log
+src/log/scrape.prom
