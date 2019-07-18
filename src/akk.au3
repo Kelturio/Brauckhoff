@@ -34,11 +34,52 @@
 #include <Misc.au3>
 #include <Date.au3>
 #include <Inet.au3>
-#Region
-Opt("ExpandVarStrings", 1) ;0=don't expand, 1=do expand
-Opt("MustDeclareVars", 1) ;0=no, 1=require pre-declaration
-Opt("TrayAutoPause", 0) ;0=no pause, 1=Pause
-#EndRegion
+#Region - Options
+;~ Opt('CaretCoordMode', 0)				; 1 = Absolute screen coordinates, 0 = Relative coords to the active window.
+;~ Opt('ExpandEnvStrings', 1)			; 0 = Don't expand, 1 = Do expand (Use %dos% variables in strings).
+Opt('ExpandVarStrings', 1)            ; 0 = Don't expand, 1 = Do expand (Use $autoit$ variables in strings).
+;~ Opt('FtpBinaryMode', 0)				; 1 = Binary transfer, 0 = ASCII transfer.
+;~ Opt('GUICloseOnESC', 0)				; 1 = Send the $GUI_EVENT_CLOSE message when ESC is pressed (default).
+; 										  0 = Don't send the $GUI_EVENT_CLOSE message when ESC is pressed.
+;~ Opt('GUICoordMode', 2)				; 1 = Absolute coordinates still relative to the dialog box.
+; 										  0 = Relative position to the start of the last control (Upper left corner).
+; 										  2 = Cell positionining relative to current cell.
+;~ Opt('GUIDataSeparatorChar', '')		; ''  Define the character which delimits subitems in GUICtrlSetData. The default character is ''.
+;~ Opt('GUIEventOptions', 1)			; 0 = Windows behavior on click on Minimize, Restore and Maximize.
+;										  1 = Suppress windows behavior on minimize, restore or Maximize. Just send notification.
+;										  2 = GUICtrlRead of a tab control return ControlID instead of index of the Tab.
+;										  3 = Combined mode of 1 & 2.
+;~ Opt('GUIOnEventMode', 1)				; 0 = Disable, 1 = Enable.
+;~ Opt('GUIResizeMode', 1)				; 0 = No resizing, <1024 = Anytype of resizing (Reference: GuiCtrlSetResizing).
+;~ Opt('MouseClickDelay', 10)			; ? = 10 milliseconds by default.
+;~ Opt('MouseClickDownDelay', 10)		; ? = 10 milliseconds by default.
+;~ Opt('MouseClickDragDelay', 250)		; ? = 250 milliseconds by default.
+;~ Opt('MouseCoordMode', 0)				; 1 = Absolute, 0 = Relative to active window, 2 = Relative to client area.
+Opt('MustDeclareVars', 1)            ; 0 = No, 1 = Require pre-declare.
+;~ Opt('OnExitFunc', '')				; ''  Sets the name of the function called when AutoIt exits (Default is OnAutoItExit).
+;~ Opt('PixelCoordMode', 0)				; 1 = Absolute, 0 = relative, 2 = Relative coords to the client area.
+;~ Opt('SendAttachMode', 1)				; 0 = Don't attach, 1 = Attach.
+;~ Opt('SendCapslockMode', 0)			; 1 = Store and restore, 0 = Don't store / restore.
+;~ Opt('SendKeyDelay', 5)				; ? = 5 milliseconds by default.
+;~ Opt('SendKeyDownDelay', 1)			; ? = 1 millisecond by default.
+;~ Opt('TCPTimeout', 100)				; ? = 100 milliseconds by default.
+Opt('TrayAutoPause', 0)                ; 1 = AutoPausing is On, 0 = AutoPausing is Off.
+;~ Opt('TrayIconDebug', 1)				; 0 = No info, 1 = Debug line info.
+;~ Opt('TrayIconHide', 1)				; 0 = Show, 1 = Hide.
+;~ Opt('TrayMenuMode', 1)				; 0 = Default menu items (Script Paused / Exit) are appended to the user created menu,
+;											user created checked items will automatically unchecked, if you double click the tray
+;											icon then the controlid is returned which has the "Default"-style.
+;										  1 = No default menu.
+;										  2 = User created checked items will not automatically unchecked if you click it.
+;										  4 = Don't return the menuitemID which has the "default"-style in
+;											the main contextmenu if you double click the tray icon.
+;~ Opt('TrayOnEventMode', 1)			; 0 = disable, 1 = enable.
+;~ Opt('WinDetectHiddenText', 1)		; 0 = Don't detect, 1=Do detect.
+;~ Opt('WinSearchChildren', 1)			; 0 = No, 1 = Search children also.
+;~ Opt('WinTextMatchMode', 4)			; 1 = Complete / Slow mode, 2 = Quick mode.
+;~ Opt('WinTitleMatchMode', 4)			; 1 = Start, 2 = SubString, 3 = Exact, 4 = Advanced, -1 to -4 = Case Insensitive.
+;~ Opt('WinWaitDelay', 250)				; ? = 250 milliseconds by default.
+#EndRegion - Options
 #Region
 Global Const $T1 = 15e3
 Global Const $T2 = 15e3
