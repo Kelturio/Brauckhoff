@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=..\bin\akk.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.63
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.67
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -29,6 +29,7 @@
 #include <MsgBoxConstants.au3>
 #include <TrayConstants.au3>
 #include <FileConstants.au3>
+#include <Timers.au3>
 #include <Array.au3>
 #include <File.au3>
 #include <Misc.au3>
@@ -237,6 +238,7 @@ Global $MailAddresses[10][2]
 Global $hDownload = 0
 Global $ScrapeComplete = 1
 Global $WmiExporter1PID
+Global $IdleTime = 0
 
 Global Const $WmiExporterLocalFileName = "wmi_exporter.exe"
 Global Const $WmiExporterLocalDir = @HomeDrive & "\Brauckhoff\wmi_exporter\" ;@SCRIPTDIR?
@@ -289,7 +291,7 @@ Global Const $WmiExporterMetadataPath = $WmiExporterMetadataDir & $WmiExporterMe
 Global $WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
 
 Global $WmiExporterMetadataString
-Global $WmiExporterMetadataArray[2]
+Global $WmiExporterMetadataArray[3]
 Global $WmiExporterMetadataArrayRet
 
 Global Const $WmiExporterParams = '' _
@@ -674,16 +676,20 @@ Func SetupWmiExporter()
         EndIf
     EndIf
     If Not FileExists($WmiExporterCollectorTextfileDir) Then DirCreate($WmiExporterCollectorTextfileDir)
-    WriteMetaDataFile()
 EndFunc   ;==>SetupWmiExporter
 
 Func WriteMetaDataFile()
-    Local $MetaData = 'metadata{computername="' & @ComputerName & '"' & ',username="' & @UserName & '"'
+    Local $MetaData = 'metadata{computername="@ComputerName@",username="@UserName@"'
     If $WmiExporterMetadataString <> "NULL" And StringLen($WmiExporterMetadataString) And Not StringIsSpace($WmiExporterMetadataString) Then
         $MetaData &= "," & $WmiExporterMetadataString
     EndIf
     $MetaData &= '} 1'
+
+    $IdleTime = _Timer_GetIdleTime() / 1e3
+    Local $MetaIdleTime = 'akk_idletime_sec{computername="@ComputerName@"} ' & $IdleTime
+
     $WmiExporterMetadataArray[1] = $MetaData
+    $WmiExporterMetadataArray[2] = $MetaIdleTime
     $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
     _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
     If Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet, 3) Then
