@@ -1,9 +1,9 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
-#AutoIt3Wrapper_Icon=icons\MyAutoIt3_Red.ico
+#AutoIt3Wrapper_Icon=icons\MyAutoIt3_Blue.ico
 #AutoIt3Wrapper_Outfile=..\bin\akk.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.61
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.63
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -80,7 +80,7 @@ Opt('TrayAutoPause', 0)                ; 1 = AutoPausing is On, 0 = AutoPausing 
 ;~ Opt('WinTitleMatchMode', 4)			; 1 = Start, 2 = SubString, 3 = Exact, 4 = Advanced, -1 to -4 = Case Insensitive.
 ;~ Opt('WinWaitDelay', 250)				; ? = 250 milliseconds by default.
 #EndRegion - Options
-#Region
+#Region Globals 1
 Global Const $T1 = 15e3
 Global Const $T2 = 15e3
 Global Const $MsgBoxTimeout = 60 * 5
@@ -91,10 +91,9 @@ Global $Timer1 = $StartTimer
 Global $Timer2 = $StartTimer
 Global $Timer3 = $StartTimer
 Global $Timer4 = $StartTimer
+Global $Timer5 = $StartTimer
 Global Const $IntMin = 0x8000000000000000
 Global Const $IntMax = 0x7FFFFFFFFFFFFFFF
-Global $hDownload = 0
-Global $ScrapeComplete = 1
 
 Global Const $SpawnFileName = "ShadowSpawn.exe"
 Global Const $SpawnDir = @MyDocumentsDir & "\Isopedia GmbH\ShadowSpawn\"
@@ -115,8 +114,8 @@ Global Const $SHDUpdaterFileName = "SHDUpdater_min.exe"
 Global Const $SHDUpdaterDir = @ProgramFilesDir & "\SHDUpdater\"
 Global Const $SHDUpdaterPath = $SHDUpdaterDir & $SHDUpdaterFileName
 Global Const $SHDUpdaterExists = FileExists($SHDUpdaterPath)
-#EndRegion
-#Region
+#EndRegion Globals 1
+#Region Globals 2
 Global Const $RootFileName = ""
 Global Const $RootDir = "\\172.16.128.4\edv\Gerrit\"
 Global Const $RootPath = $RootDir & $RootFileName
@@ -224,18 +223,21 @@ Global Const $ArrayDelimItem = "|"
 Global $MacroAutoIt[1][2]
 Global $MacroDirectory[1][2]
 Global $MacroSystemInfo[1][2]
-#EndRegion
-#Region SMTP
+#EndRegion Globals 2
+#Region Globals SMTP
 Global $SmtpMailSmtpServer = ""
 Global Const $SmtpMailEHLO = @ComputerName
 Global Const $SmtpMailFirst = -1
 Global Const $SmtpMailTrace = 0
-;~ Global Const $SmtpMailTrace = 1
 
 Global $LowSpaceThresholdPerc
 Global $MailAddresses[10][2]
-#EndRegion SMTP
+#EndRegion Globals SMTP
 #Region Globals Prometheus WMI Exporter
+Global $hDownload = 0
+Global $ScrapeComplete = 1
+Global $WmiExporter1PID
+
 Global Const $WmiExporterLocalFileName = "wmi_exporter.exe"
 Global Const $WmiExporterLocalDir = @HomeDrive & "\Brauckhoff\wmi_exporter\" ;@SCRIPTDIR?
 Global Const $WmiExporterLocalPath = $WmiExporterLocalDir & $WmiExporterLocalFileName
@@ -328,6 +330,7 @@ While 42
         If Timeout($Timer2, 60e3 * 5) Then GetGlobalConfig()
         If Timeout($Timer3, 60e3 * 5) Then ManageLogFile()
         If Timeout($Timer4, 60e3 * 5) Then Scrape()
+        If Timeout($Timer5, 10e3 * 1) Then WriteMetaDataFile()
     EndIf
     If (Mod($Cycle, 500) = 0) Then ScrapeDownload()
     $Cycle += 1
@@ -442,6 +445,7 @@ EndFunc   ;==>Timeout
 
 Func WriteLogStartup()
     Local Const $DelimItem = $ArrayDelimItem
+    IniWrite($IniGlobalNetLogPath, "Computername", @IPAddress1, @ComputerName)
     IniWrite($IniGlobalNetLogPath, "IPAddress1", @ComputerName, @IPAddress1)
     IniWrite($IniGlobalNetLogPath, "AkkVersion", @ComputerName, FileGetVersion(@ScriptFullPath))
 
@@ -518,8 +522,7 @@ EndFunc   ;==>WriteLogStartup
 Func Check()
     CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
     CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
-;~     CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
-    CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists, @SW_SHOW)
+    $WmiExporter1PID = CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
 ;~     CheckAndRunProcAs($PowerkatalogFileName, $PowerkatalogDir, $PowerkatalogPath, $PowerkatalogExists, "Administrator", "Brauckhoff", "")
 ;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
 EndFunc   ;==>Check
@@ -683,10 +686,8 @@ Func WriteMetaDataFile()
     $WmiExporterMetadataArray[1] = $MetaData
     $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
     _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
-    If Not $WmiExporterMetadataExists Or Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet, 3) Then
+    If Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet, 3) Then
         _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
-        ConsoleLog("_FileWriteFromArray" & $WmiExporterMetadataPath)
-        $WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
     EndIf
 EndFunc   ;==>WriteMetaDataFile
 #EndRegion WMI Exporter
