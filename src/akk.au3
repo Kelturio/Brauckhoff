@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=..\bin\akk.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.67
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.73
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -23,12 +23,14 @@
 #Au3Stripper_Parameters=/tl /debug /pe /mi=99 /rm /rsln
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #cs ----------------------------------------------------------------------------
-   
+
 #ce ----------------------------------------------------------------------------
 #include <AutoItConstants.au3>
 #include <MsgBoxConstants.au3>
 #include <TrayConstants.au3>
 #include <FileConstants.au3>
+#include <ScreenCapture.au3>
+#include <EventLog.au3>
 #include <Timers.au3>
 #include <Array.au3>
 #include <File.au3>
@@ -93,8 +95,13 @@ Global $Timer2 = $StartTimer
 Global $Timer3 = $StartTimer
 Global $Timer4 = $StartTimer
 Global $Timer5 = $StartTimer
+Global $Timer6 = $StartTimer
+Global $Timer7 = $StartTimer
+Global $Timer8 = $StartTimer
 Global Const $IntMin = 0x8000000000000000
 Global Const $IntMax = 0x7FFFFFFFFFFFFFFF
+Global Const $ComputerName = StringReplace(StringFormat("%-16s", @ComputerName), " ", ".")
+Global Const $AkkVersion = FileGetVersion(@ScriptFullPath)
 
 Global Const $SpawnFileName = "ShadowSpawn.exe"
 Global Const $SpawnDir = @MyDocumentsDir & "\Isopedia GmbH\ShadowSpawn\"
@@ -202,6 +209,11 @@ Global Const $IniGlobalNetLogDir = $AkkRootDir & "log\"
 Global Const $IniGlobalNetLogPath = $IniGlobalNetLogDir & $IniGlobalNetLogFileName
 Global Const $IniGlobalNetLogExists = FileExists($IniGlobalNetLogPath)
 
+Global Const $LogSpawnStatsNetFileName = "akkGlobalSpawnStats.ini"
+Global Const $LogSpawnStatsNetDir = $AkkRootDir & "log\"
+Global Const $LogSpawnStatsNetPath = $LogSpawnStatsNetDir & $LogSpawnStatsNetFileName
+Global Const $LogSpawnStatsNetExists = FileExists($LogSpawnStatsNetPath)
+
 Global Const $IniGlobalNetLogInstanceFileName = "akkMacro.ini"
 Global Const $IniGlobalNetLogInstanceDir = $LogNetDir
 Global Const $IniGlobalNetLogInstancePath = $IniGlobalNetLogInstanceDir & $IniGlobalNetLogInstanceFileName
@@ -239,6 +251,20 @@ Global $hDownload = 0
 Global $ScrapeComplete = 1
 Global $WmiExporter1PID
 Global $IdleTime = 0
+
+Global $EventLogFull
+Global $EventLogCount
+Global $EventLogOldest
+
+Global Const $ExactFileFileName = "exf.exe"
+Global Const $ExactFileDir = @HomeDrive & "\Brauckhoff\akk\" ;@SCRIPTDIR?
+Global Const $ExactFilePath = $ExactFileDir & $ExactFileFileName
+Global $ExactFileExists = FileExists($ExactFilePath)
+
+Global Const $ExactFileNetFileName = $ExactFileFileName
+Global Const $ExactFileNetDir = $AkkRootDir
+Global Const $ExactFileNetPath = $ExactFileNetDir & $ExactFileNetFileName
+Global Const $ExactFileNetExists = FileExists($ExactFileNetPath)
 
 Global Const $WmiExporterLocalFileName = "wmi_exporter.exe"
 Global Const $WmiExporterLocalDir = @HomeDrive & "\Brauckhoff\wmi_exporter\" ;@SCRIPTDIR?
@@ -291,7 +317,7 @@ Global Const $WmiExporterMetadataPath = $WmiExporterMetadataDir & $WmiExporterMe
 Global $WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
 
 Global $WmiExporterMetadataString
-Global $WmiExporterMetadataArray[3]
+Global $WmiExporterMetadataArray[13]
 Global $WmiExporterMetadataArrayRet
 
 Global Const $WmiExporterParams = '' _
@@ -303,27 +329,29 @@ Global Const $WmiExporterParams = '' _
 #Region
 _Singleton("akk")
 
-Sleep(5e3)
+If @Compiled Then Sleep(5e3)
 
 ReadLocalConfig()
 
 ManageLogFile()
 
-ConsoleLog("akk.exe läuft")
-ConsoleLog($SpawnPath)
-ConsoleLog($KPSInfoPath)
-ConsoleLog($WmiExporterLocalPath)
-ConsoleLog("werden überwacht")
-;~ ConsoleLog($WmiExporterParams)
+ConsoleLog("akk.exe läuft Spawn, KPSInfo & WMI Exporter werden überwacht")
+;~ ConsoleLog($SpawnPath)
+;~ ConsoleLog($KPSInfoPath)
+;~ ConsoleLog($WmiExporterLocalPath)
+;~ ConsoleLog("werden überwacht")
+If @Compiled Then ConsoleLog("$WmiExporterParams: " & $WmiExporterParams)
 
 GetGlobalConfig()
 ReadGlobalConfig()
+EventLog()
 WriteLogStartup()
 SetupWmiExporter()
+SetupExactFile()
 CleaningDownloads()
 CheckHomeDriveSpaceFree()
 
-Sleep(5e3)
+If @Compiled Then Sleep(5e3)
 
 While 42
     Sleep(10)
@@ -332,7 +360,8 @@ While 42
         If Timeout($Timer2, 60e3 * 5) Then GetGlobalConfig()
         If Timeout($Timer3, 60e3 * 5) Then ManageLogFile()
         If Timeout($Timer4, 60e3 * 5) Then Scrape()
-        If Timeout($Timer5, 10e3 * 1) Then WriteMetaDataFile()
+        If Timeout($Timer5, 30e3 * 1) Then EventLog()
+        If Timeout($Timer6, 30e3 * 1) Then WriteMetaDataFile()
     EndIf
     If (Mod($Cycle, 500) = 0) Then ScrapeDownload()
     $Cycle += 1
@@ -346,6 +375,14 @@ Func ConsoleLog($Text)
     _FileWriteLog($LogNetPath, $Text)
     _FileWriteLog($LogGlobalNetPath, StringFormat("%-16s", @ComputerName) & " " & StringFormat("%-16s", @UserName) & " " & $Text)
 EndFunc   ;==>ConsoleLog
+
+Func EventLog()
+    Local $hEventLog = _EventLog__Open("", "Application")
+    $EventLogFull = _EventLog__Full($hEventLog)
+    $EventLogCount = _EventLog__Count($hEventLog)
+    $EventLogOldest = _EventLog__Oldest($hEventLog)
+    _EventLog__Close($hEventLog)
+EndFunc   ;==>EventLog
 
 Func GetGlobalConfig()
     If $IniGlobalNetExists And Not $IniGlobalExists Then
@@ -447,78 +484,166 @@ EndFunc   ;==>Timeout
 
 Func WriteLogStartup()
     Local Const $DelimItem = $ArrayDelimItem
-    IniWrite($IniGlobalNetLogPath, "Computername", @IPAddress1, @ComputerName)
-    IniWrite($IniGlobalNetLogPath, "IPAddress1", @ComputerName, @IPAddress1)
-    IniWrite($IniGlobalNetLogPath, "AkkVersion", @ComputerName, FileGetVersion(@ScriptFullPath))
 
-    _ArrayAdd($MacroAutoIt, "Compiled" & $DelimItem & @Compiled, 0, $DelimItem)
-    _ArrayAdd($MacroAutoIt, "ScriptName" & $DelimItem & @ScriptName, 0, $DelimItem)
-    _ArrayAdd($MacroAutoIt, "ScriptDir" & $DelimItem & @ScriptDir, 0, $DelimItem)
-    _ArrayAdd($MacroAutoIt, "ScriptFullPath" & $DelimItem & @ScriptFullPath, 0, $DelimItem)
-    _ArrayAdd($MacroAutoIt, "WorkingDir" & $DelimItem & @WorkingDir, 0, $DelimItem)
-    _ArrayAdd($MacroAutoIt, "AutoItExe" & $DelimItem & @AutoItExe, 0, $DelimItem)
-    _ArrayAdd($MacroAutoIt, "AutoItPID" & $DelimItem & @AutoItPID, 0, $DelimItem)
-    _ArrayAdd($MacroAutoIt, "AutoItVersion" & $DelimItem & @AutoItVersion, 0, $DelimItem)
-    _ArrayAdd($MacroAutoIt, "AutoItX64" & $DelimItem & @AutoItX64, 0, $DelimItem)
+    IniWrite($IniGlobalNetLogDir & "Global" & ".ini", "@ComputerName", StringReplace(StringFormat("%-16s", @IPAddress1), " ", "."), @ComputerName)
+    WriteLogStartupIni("", "Global", "@IPAddress1", 0, @IPAddress1)
+    WriteLogStartupIni("", "Global", "$AkkVersion", 0, $AkkVersion)
+    WriteLogStartupIni("", "Global", "$SpawnExists", 0, $SpawnExists)
+
+    WriteLogStartupIni("", "EventLog", "$EventLogFull", 0, $EventLogFull)
+    WriteLogStartupIni("", "EventLog", "$EventLogCount", 0, $EventLogCount)
+    WriteLogStartupIni("", "EventLog", "$EventLogOldest", 0, $EventLogOldest)
+
+    WriteLogStartupIni("", "SpawnStats", $SpawnFileName & "TimeModified", 0, $EventLogOldest)
+
+    WriteLogStartupIni("", "AutoIt", "@Compiled", 0, @Compiled)
+    WriteLogStartupIni("", "AutoIt", "@ScriptName", 0, @ScriptName)
+    WriteLogStartupIni("", "AutoIt", "@ScriptDir", 0, @ScriptDir)
+    WriteLogStartupIni("", "AutoIt", "@ScriptFullPath", 0, @ScriptFullPath)
+    WriteLogStartupIni("", "AutoIt", "@WorkingDir", 0, @WorkingDir)
+    WriteLogStartupIni("", "AutoIt", "@AutoItExe", 0, @AutoItExe)
+    WriteLogStartupIni("", "AutoIt", "@AutoItPID", 0, @AutoItPID)
+    WriteLogStartupIni("", "AutoIt", "@AutoItVersion", 0, @AutoItVersion)
+    WriteLogStartupIni("", "AutoIt", "@AutoItX64", 0, @AutoItX64)
+
+    WriteLogStartupIni("", "Directory", "@AppDataCommonDir", 0, @AppDataCommonDir)
+    WriteLogStartupIni("", "Directory", "@DesktopCommonDir", 0, @DesktopCommonDir)
+    WriteLogStartupIni("", "Directory", "@DocumentsCommonDir", 0, @DocumentsCommonDir)
+    WriteLogStartupIni("", "Directory", "@FavoritesCommonDir", 0, @FavoritesCommonDir)
+    WriteLogStartupIni("", "Directory", "@ProgramsCommonDir", 0, @ProgramsCommonDir)
+    WriteLogStartupIni("", "Directory", "@StartMenuCommonDir", 0, @StartMenuCommonDir)
+    WriteLogStartupIni("", "Directory", "@StartupCommonDir", 0, @StartupCommonDir)
+
+    WriteLogStartupIni("", "Directory", "@AppDataDir", 0, @AppDataDir)
+    WriteLogStartupIni("", "Directory", "@LocalAppDataDir", 0, @LocalAppDataDir)
+    WriteLogStartupIni("", "Directory", "@DesktopDir", 0, @DesktopDir)
+    WriteLogStartupIni("", "Directory", "@MyDocumentsDir", 0, @MyDocumentsDir)
+    WriteLogStartupIni("", "Directory", "@FavoritesDir", 0, @FavoritesDir)
+    WriteLogStartupIni("", "Directory", "@ProgramsDir", 0, @ProgramsDir)
+    WriteLogStartupIni("", "Directory", "@StartMenuDir", 0, @StartMenuDir)
+    WriteLogStartupIni("", "Directory", "@UserProfileDir", 0, @UserProfileDir)
+
+    WriteLogStartupIni("", "Directory", "@HomeDrive", 0, @HomeDrive)
+    WriteLogStartupIni("", "Directory", "@HomePath", 0, @HomePath)
+    WriteLogStartupIni("", "Directory", "@HomeShare", 0, @HomeShare)
+    WriteLogStartupIni("", "Directory", "@LogonDNSDomain", 0, @LogonDNSDomain)
+    WriteLogStartupIni("", "Directory", "@LogonDomain", 0, @LogonDomain)
+    WriteLogStartupIni("", "Directory", "@LogonServer", 0, @LogonServer)
+    WriteLogStartupIni("", "Directory", "@ProgramFilesDir", 0, @ProgramFilesDir)
+    WriteLogStartupIni("", "Directory", "@CommonFilesDir", 0, @CommonFilesDir)
+    WriteLogStartupIni("", "Directory", "@WindowsDir", 0, @WindowsDir)
+    WriteLogStartupIni("", "Directory", "@SystemDir", 0, @SystemDir)
+    WriteLogStartupIni("", "Directory", "@TempDir", 0, @TempDir)
+    WriteLogStartupIni("", "Directory", "@ComSpec", 0, @ComSpec)
+
+    WriteLogStartupIni("", "SystemInfo", "@CPUArch", 0, @CPUArch)
+    WriteLogStartupIni("", "SystemInfo", "@KBLayout", 0, @KBLayout)
+    WriteLogStartupIni("", "SystemInfo", "@MUILang", 0, @MUILang)
+    WriteLogStartupIni("", "SystemInfo", "@OSArch", 0, @OSArch)
+    WriteLogStartupIni("", "SystemInfo", "@OSLang", 0, @OSLang)
+    WriteLogStartupIni("", "SystemInfo", "@OSType", 0, @OSType)
+    WriteLogStartupIni("", "SystemInfo", "@OSVersion", 0, @OSVersion)
+    WriteLogStartupIni("", "SystemInfo", "@OSBuild", 0, @OSBuild)
+    WriteLogStartupIni("", "SystemInfo", "@OSServicePack", 0, @OSServicePack)
+    WriteLogStartupIni("", "SystemInfo", "@ComputerName", 0, @ComputerName)
+    WriteLogStartupIni("", "SystemInfo", "@UserName", 0, @UserName)
+    WriteLogStartupIni("", "SystemInfo", "@IPAddress1", 0, @IPAddress1)
+    WriteLogStartupIni("", "SystemInfo", "@IPAddress2", 0, @IPAddress2)
+    WriteLogStartupIni("", "SystemInfo", "@IPAddress3", 0, @IPAddress3)
+    WriteLogStartupIni("", "SystemInfo", "@IPAddress4", 0, @IPAddress4)
+
+    WriteLogStartupIni("", "SystemInfo", "@DesktopHeight", 0, @DesktopHeight)
+    WriteLogStartupIni("", "SystemInfo", "@DesktopWidth", 0, @DesktopWidth)
+    WriteLogStartupIni("", "SystemInfo", "@DesktopDepth", 0, @DesktopDepth)
+    WriteLogStartupIni("", "SystemInfo", "@DesktopRefresh", 0, @DesktopRefresh)
+
+;~     IniWrite($IniGlobalNetLogPath, "Computername", @IPAddress1, @ComputerName)
+;~     IniWrite($IniGlobalNetLogPath, "IPAddress1", $ComputerName, @IPAddress1)
+;~     IniWrite($IniGlobalNetLogPath, "AkkVersion", $ComputerName, FileGetVersion(@ScriptFullPath))
+;~     IniWrite($IniGlobalNetLogPath, "SpawnExists", $ComputerName, $SpawnExists)
+;~     IniWrite($IniGlobalNetLogPath, "$EventLogFull", $ComputerName, $EventLogFull)
+;~     IniWrite($IniGlobalNetLogPath, "$EventLogCount", $ComputerName, $EventLogCount)
+;~     IniWrite($IniGlobalNetLogPath, "$EventLogOldest", $ComputerName, $EventLogOldest)
+
+;~     IniWrite($LogSpawnStatsNetPath, "SpawnTimeModified", $ComputerName, FileGetTime($SpawnPath, $FT_MODIFIED, $FT_STRING))
+
+;~     _ArrayAdd($MacroAutoIt, "Compiled" & $DelimItem & @Compiled, 0, $DelimItem)
+;~     _ArrayAdd($MacroAutoIt, "ScriptName" & $DelimItem & @ScriptName, 0, $DelimItem)
+;~     _ArrayAdd($MacroAutoIt, "ScriptDir" & $DelimItem & @ScriptDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroAutoIt, "ScriptFullPath" & $DelimItem & @ScriptFullPath, 0, $DelimItem)
+;~     _ArrayAdd($MacroAutoIt, "WorkingDir" & $DelimItem & @WorkingDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroAutoIt, "AutoItExe" & $DelimItem & @AutoItExe, 0, $DelimItem)
+;~     _ArrayAdd($MacroAutoIt, "AutoItPID" & $DelimItem & @AutoItPID, 0, $DelimItem)
+;~     _ArrayAdd($MacroAutoIt, "AutoItVersion" & $DelimItem & @AutoItVersion, 0, $DelimItem)
+;~     _ArrayAdd($MacroAutoIt, "AutoItX64" & $DelimItem & @AutoItX64, 0, $DelimItem)
 ;~     _ArrayDisplay($MacroAutoIt)
-    IniWriteSection($IniGlobalNetLogInstancePath, "MacroAutoIt", $MacroAutoIt)
+;~     IniWriteSection($IniGlobalNetLogInstancePath, "MacroAutoIt", $MacroAutoIt)
 
-    _ArrayAdd($MacroDirectory, "AppDataCommonDir" & $DelimItem & @AppDataCommonDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "DesktopCommonDir" & $DelimItem & @DesktopCommonDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "DocumentsCommonDir" & $DelimItem & @DocumentsCommonDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "FavoritesCommonDir" & $DelimItem & @FavoritesCommonDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "ProgramsCommonDir" & $DelimItem & @ProgramsCommonDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "StartMenuCommonDir" & $DelimItem & @StartMenuCommonDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "StartupCommonDir" & $DelimItem & @StartupCommonDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "AppDataCommonDir" & $DelimItem & @AppDataCommonDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "DesktopCommonDir" & $DelimItem & @DesktopCommonDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "DocumentsCommonDir" & $DelimItem & @DocumentsCommonDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "FavoritesCommonDir" & $DelimItem & @FavoritesCommonDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "ProgramsCommonDir" & $DelimItem & @ProgramsCommonDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "StartMenuCommonDir" & $DelimItem & @StartMenuCommonDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "StartupCommonDir" & $DelimItem & @StartupCommonDir, 0, $DelimItem)
 
-    _ArrayAdd($MacroDirectory, "AppDataDir" & $DelimItem & @AppDataDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "LocalAppDataDir" & $DelimItem & @LocalAppDataDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "DesktopDir" & $DelimItem & @DesktopDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "MyDocumentsDir" & $DelimItem & @MyDocumentsDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "FavoritesDir" & $DelimItem & @FavoritesDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "ProgramsDir" & $DelimItem & @ProgramsDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "StartMenuDir" & $DelimItem & @StartMenuDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "StartupDir" & $DelimItem & @StartupDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "UserProfileDir" & $DelimItem & @UserProfileDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "AppDataDir" & $DelimItem & @AppDataDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "LocalAppDataDir" & $DelimItem & @LocalAppDataDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "DesktopDir" & $DelimItem & @DesktopDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "MyDocumentsDir" & $DelimItem & @MyDocumentsDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "FavoritesDir" & $DelimItem & @FavoritesDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "ProgramsDir" & $DelimItem & @ProgramsDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "StartMenuDir" & $DelimItem & @StartMenuDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "StartupDir" & $DelimItem & @StartupDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "UserProfileDir" & $DelimItem & @UserProfileDir, 0, $DelimItem)
 
-    _ArrayAdd($MacroDirectory, "HomeDrive" & $DelimItem & @HomeDrive, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "HomePath" & $DelimItem & @HomePath, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "HomeShare" & $DelimItem & @HomeShare, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "LogonDNSDomain" & $DelimItem & @LogonDNSDomain, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "LogonDomain" & $DelimItem & @LogonDomain, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "LogonServer" & $DelimItem & @LogonServer, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "ProgramFilesDir" & $DelimItem & @ProgramFilesDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "CommonFilesDir" & $DelimItem & @CommonFilesDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "WindowsDir" & $DelimItem & @WindowsDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "SystemDir" & $DelimItem & @SystemDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "TempDir" & $DelimItem & @TempDir, 0, $DelimItem)
-    _ArrayAdd($MacroDirectory, "ComSpec" & $DelimItem & @ComSpec, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "HomeDrive" & $DelimItem & @HomeDrive, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "HomePath" & $DelimItem & @HomePath, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "HomeShare" & $DelimItem & @HomeShare, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "LogonDNSDomain" & $DelimItem & @LogonDNSDomain, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "LogonDomain" & $DelimItem & @LogonDomain, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "LogonServer" & $DelimItem & @LogonServer, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "ProgramFilesDir" & $DelimItem & @ProgramFilesDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "CommonFilesDir" & $DelimItem & @CommonFilesDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "WindowsDir" & $DelimItem & @WindowsDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "SystemDir" & $DelimItem & @SystemDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "TempDir" & $DelimItem & @TempDir, 0, $DelimItem)
+;~     _ArrayAdd($MacroDirectory, "ComSpec" & $DelimItem & @ComSpec, 0, $DelimItem)
 ;~     _ArrayDisplay($MacroDirectory)
-    IniWriteSection($IniGlobalNetLogInstancePath, "MacroDirectory", $MacroDirectory)
+;~     IniWriteSection($IniGlobalNetLogInstancePath, "MacroDirectory", $MacroDirectory)
 
-    _ArrayAdd($MacroSystemInfo, "CPUArch" & $DelimItem & @CPUArch, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "KBLayout" & $DelimItem & @KBLayout, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "MUILang" & $DelimItem & @MUILang, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "OSArch" & $DelimItem & @OSArch, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "OSLang" & $DelimItem & @OSLang, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "OSType" & $DelimItem & @OSType, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "OSVersion" & $DelimItem & @OSVersion, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "OSBuild" & $DelimItem & @OSBuild, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "OSServicePack" & $DelimItem & @OSServicePack, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "ComputerName" & $DelimItem & @ComputerName, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "UserName" & $DelimItem & @UserName, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "IPAddress1" & $DelimItem & @IPAddress1, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "IPAddress2" & $DelimItem & @IPAddress2, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "IPAddress3" & $DelimItem & @IPAddress3, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "IPAddress4" & $DelimItem & @IPAddress4, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "CPUArch" & $DelimItem & @CPUArch, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "KBLayout" & $DelimItem & @KBLayout, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "MUILang" & $DelimItem & @MUILang, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "OSArch" & $DelimItem & @OSArch, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "OSLang" & $DelimItem & @OSLang, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "OSType" & $DelimItem & @OSType, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "OSVersion" & $DelimItem & @OSVersion, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "OSBuild" & $DelimItem & @OSBuild, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "OSServicePack" & $DelimItem & @OSServicePack, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "ComputerName" & $DelimItem & @ComputerName, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "UserName" & $DelimItem & @UserName, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "IPAddress1" & $DelimItem & @IPAddress1, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "IPAddress2" & $DelimItem & @IPAddress2, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "IPAddress3" & $DelimItem & @IPAddress3, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "IPAddress4" & $DelimItem & @IPAddress4, 0, $DelimItem)
 
-    _ArrayAdd($MacroSystemInfo, "DesktopHeight" & $DelimItem & @DesktopHeight, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "DesktopWidth" & $DelimItem & @DesktopWidth, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "DesktopDepth" & $DelimItem & @DesktopDepth, 0, $DelimItem)
-    _ArrayAdd($MacroSystemInfo, "DesktopRefresh" & $DelimItem & @DesktopRefresh, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "DesktopHeight" & $DelimItem & @DesktopHeight, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "DesktopWidth" & $DelimItem & @DesktopWidth, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "DesktopDepth" & $DelimItem & @DesktopDepth, 0, $DelimItem)
+;~     _ArrayAdd($MacroSystemInfo, "DesktopRefresh" & $DelimItem & @DesktopRefresh, 0, $DelimItem)
 ;~     _ArrayDisplay($MacroSystemInfo)
-    IniWriteSection($IniGlobalNetLogInstancePath, "MacroSystemInfo", $MacroSystemInfo)
+;~     IniWriteSection($IniGlobalNetLogInstancePath, "MacroSystemInfo", $MacroSystemInfo)
 EndFunc   ;==>WriteLogStartup
+
+Func WriteLogStartupIni($FileName, $Section, $Key, $IsSectionAddedToKey, $Value)
+    If $FileName = "" Then
+        $FileName = $IniGlobalNetLogDir & $Section & ".ini"
+    EndIf
+    IniWrite($FileName, ($IsSectionAddedToKey ? $Section & $Key : $Key), $ComputerName, $Value)
+    IniWrite($IniGlobalNetLogInstancePath, $Section, $Key, $Value)
+;~ 	IniWrite ( "filename", "section", "key", "value" )
+EndFunc   ;==>WriteLogStartupIni
 #EndRegion
 #Region CheckAndRunProc
 Func Check()
@@ -667,6 +792,14 @@ Func ScrapeDownload()
     EndIf
 EndFunc   ;==>ScrapeDownload
 
+Func SetupExactFile()
+    If Not $ExactFileExists Then
+        If FileCopy($ExactFileNetPath, $ExactFilePath, $FC_OVERWRITE + $FC_CREATEPATH) Then
+            $ExactFileExists = FileExists($ExactFilePath)
+        EndIf
+    EndIf
+EndFunc   ;==>SetupExactFile
+
 Func SetupWmiExporter()
     ProcessClose($WmiExporterLocalFileName)
     If Not $WmiExporterLocalExists Then
@@ -685,11 +818,34 @@ Func WriteMetaDataFile()
     EndIf
     $MetaData &= '} 1'
 
-    $IdleTime = _Timer_GetIdleTime() / 1e3
-    Local $MetaIdleTime = 'akk_idletime_sec{computername="@ComputerName@"} ' & $IdleTime
+    $IdleTime = _Timer_GetIdleTime()
+    Local $MetaIdleTime = 'akk_idletime_sec{computername="@ComputerName@"} ' & $IdleTime / 1e3
+
+    Local $aMemStats = MemGetStats()
+    Local $MetaMemLoad = 'akk_memstats_load{computername="@ComputerName@"} ' & $aMemStats[$MEM_LOAD] ; Memory Load (Percentage of memory in use)
+    Local $MetaMemTotalPhysRam = 'akk_memstats_total_physram_gb{computername="@ComputerName@"} ' & Round($aMemStats[$MEM_TOTALPHYSRAM] / 1024 / 1024, 2) ; Total physical RAM
+    Local $MetaMemAvailPhysRam = 'akk_memstats_avail_physram_gb{computername="@ComputerName@"} ' & Round($aMemStats[$MEM_AVAILPHYSRAM] / 1024 / 1024, 2) ; Available physical RAM
+    Local $MetaMemTotalPageFile = 'akk_memstats_total_pagefile_gb{computername="@ComputerName@"} ' & Round($aMemStats[$MEM_TOTALPAGEFILE] / 1024 / 1024, 2) ; Total Pagefile
+    Local $MetaMemAvailPageFile = 'akk_memstats_avail_pagefile_gb{computername="@ComputerName@"} ' & Round($aMemStats[$MEM_AVAILPAGEFILE] / 1024 / 1024, 2) ; Available Pagefile
+    Local $MetaMemTotalVirtual = 'akk_memstats_total_virtual_gb{computername="@ComputerName@"} ' & Round($aMemStats[$MEM_TOTALVIRTUAL] / 1024 / 1024, 2) ; Total virtual
+    Local $MetaMemAvailVirtual = 'akk_memstats_avail_virtual_gb{computername="@ComputerName@"} ' & Round($aMemStats[$MEM_AVAILVIRTUAL] / 1024 / 1024, 2) ; Available virtual
+
+    Local $MetaEventLogFull = 'akk_eventlog_full{computername="@ComputerName@"} ' & ($EventLogFull ? 1 : 0)
+    Local $MetaEventLogCount = 'akk_eventlog_count{computername="@ComputerName@"} ' & $EventLogCount
+    Local $MetaEventLogOldest = 'akk_eventlog_oldest{computername="@ComputerName@"} ' & $EventLogOldest
 
     $WmiExporterMetadataArray[1] = $MetaData
     $WmiExporterMetadataArray[2] = $MetaIdleTime
+    $WmiExporterMetadataArray[3] = $MetaMemLoad
+    $WmiExporterMetadataArray[4] = $MetaMemTotalPhysRam
+    $WmiExporterMetadataArray[5] = $MetaMemAvailPhysRam
+    $WmiExporterMetadataArray[6] = $MetaMemTotalPageFile
+    $WmiExporterMetadataArray[7] = $MetaMemAvailPageFile
+    $WmiExporterMetadataArray[8] = $MetaMemTotalVirtual
+    $WmiExporterMetadataArray[9] = $MetaMemAvailVirtual
+    $WmiExporterMetadataArray[10] = $MetaEventLogFull
+    $WmiExporterMetadataArray[11] = $MetaEventLogCount
+    $WmiExporterMetadataArray[12] = $MetaEventLogOldest
     $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
     _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
     If Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet, 3) Then
