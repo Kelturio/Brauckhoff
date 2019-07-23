@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=..\bin\akk.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.73
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.93
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -23,7 +23,7 @@
 #Au3Stripper_Parameters=/tl /debug /pe /mi=99 /rm /rsln
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #cs ----------------------------------------------------------------------------
-
+   
 #ce ----------------------------------------------------------------------------
 #include <AutoItConstants.au3>
 #include <MsgBoxConstants.au3>
@@ -32,6 +32,7 @@
 #include <ScreenCapture.au3>
 #include <EventLog.au3>
 #include <Timers.au3>
+#include <Debug.au3>
 #include <Array.au3>
 #include <File.au3>
 #include <Misc.au3>
@@ -60,7 +61,7 @@ Opt('ExpandVarStrings', 1)            ; 0 = Don't expand, 1 = Do expand (Use $au
 ;~ Opt('MouseCoordMode', 0)				; 1 = Absolute, 0 = Relative to active window, 2 = Relative to client area.
 Opt('MustDeclareVars', 1)            ; 0 = No, 1 = Require pre-declare.
 ;~ Opt('OnExitFunc', '')				; ''  Sets the name of the function called when AutoIt exits (Default is OnAutoItExit).
-;~ Opt('PixelCoordMode', 0)				; 1 = Absolute, 0 = relative, 2 = Relative coords to the client area.
+;~ Opt('PixelCoordMode', 2)                ; 1 = Absolute, 0 = relative, 2 = Relative coords to the client area.
 ;~ Opt('SendAttachMode', 1)				; 0 = Don't attach, 1 = Attach.
 ;~ Opt('SendCapslockMode', 0)			; 1 = Store and restore, 0 = Don't store / restore.
 ;~ Opt('SendKeyDelay', 5)				; ? = 5 milliseconds by default.
@@ -83,6 +84,7 @@ Opt('TrayAutoPause', 0)                ; 1 = AutoPausing is On, 0 = AutoPausing 
 ;~ Opt('WinTitleMatchMode', 4)			; 1 = Start, 2 = SubString, 3 = Exact, 4 = Advanced, -1 to -4 = Case Insensitive.
 ;~ Opt('WinWaitDelay', 250)				; ? = 250 milliseconds by default.
 #EndRegion - Options
+ConsoleWrite(@CRLF)
 #Region Globals 1
 Global Const $T1 = 15e3
 Global Const $T2 = 15e3
@@ -102,6 +104,8 @@ Global Const $IntMin = 0x8000000000000000
 Global Const $IntMax = 0x7FFFFFFFFFFFFFFF
 Global Const $ComputerName = StringReplace(StringFormat("%-16s", @ComputerName), " ", ".")
 Global Const $AkkVersion = FileGetVersion(@ScriptFullPath)
+Global Const $ScreenCaptureWnd = False
+Global $NetPhoneUserChecksum = ""
 
 Global Const $SpawnFileName = "ShadowSpawn.exe"
 Global Const $SpawnDir = @MyDocumentsDir & "\Isopedia GmbH\ShadowSpawn\"
@@ -122,6 +126,11 @@ Global Const $SHDUpdaterFileName = "SHDUpdater_min.exe"
 Global Const $SHDUpdaterDir = @ProgramFilesDir & "\SHDUpdater\"
 Global Const $SHDUpdaterPath = $SHDUpdaterDir & $SHDUpdaterFileName
 Global Const $SHDUpdaterExists = FileExists($SHDUpdaterPath)
+
+Global Const $NetPhoneClientFileName = "NetPhone Client.exe"
+Global Const $NetPhoneClientDir = @ProgramFilesDir & "\NetPhone Client\"
+Global Const $NetPhoneClientPath = $NetPhoneClientDir & $NetPhoneClientFileName
+Global Const $NetPhoneClientExists = FileExists($NetPhoneClientPath)
 #EndRegion Globals 1
 #Region Globals 2
 Global Const $RootFileName = ""
@@ -228,6 +237,18 @@ Global Const $LogScrapeNetFileName = "scrape.prom"
 Global Const $LogScrapeNetDir = $LogNetDir
 Global Const $LogScrapeNetPath = $LogScrapeNetDir & $LogScrapeNetFileName
 Global Const $LogScrapeNetExists = FileExists($LogScrapeNetPath)
+
+Global Const $LogScreenCapFileName = ""
+Global Const $LogScreenCapDir = $AkkDir & "log\sc\"
+Global Const $LogScreenCapPath = $LogScreenCapDir & $LogScreenCapFileName
+Global Const $LogScreenCapExists = FileExists($LogScreenCapPath)
+If Not $LogScreenCapExists Then DirCreate($LogScreenCapDir)
+
+Global Const $LogScreenCapNetFileName = ""
+Global Const $LogScreenCapNetDir = $AkkRootDir & "log\_sc\NetPhoneUser\"
+Global Const $LogScreenCapNetPath = $LogScreenCapNetDir & $LogScreenCapNetFileName
+Global Const $LogScreenCapNetExists = FileExists($LogScreenCapNetPath)
+If Not $LogScreenCapNetExists Then DirCreate($LogScreenCapNetDir)
 
 Global Const $DownloadsDir = @UserProfileDir & "\Downloads"
 Global Const $DownloadsOldDir = $DownloadsDir & " alt"
@@ -340,16 +361,19 @@ ConsoleLog("akk.exe läuft Spawn, KPSInfo & WMI Exporter werden überwacht")
 ;~ ConsoleLog($KPSInfoPath)
 ;~ ConsoleLog($WmiExporterLocalPath)
 ;~ ConsoleLog("werden überwacht")
-If @Compiled Then ConsoleLog("$WmiExporterParams: " & $WmiExporterParams)
+If Not @Compiled Then ConsoleLog("$WmiExporterParams: " & $WmiExporterParams)
 
 GetGlobalConfig()
 ReadGlobalConfig()
 EventLog()
-WriteLogStartup()
 SetupWmiExporter()
 SetupExactFile()
 CleaningDownloads()
 CheckHomeDriveSpaceFree()
+;~ GetWinList()
+;~ ScreenCaptureWnd()
+ScreenCaptureNetPhoneClient()
+WriteLogStartup()
 
 If @Compiled Then Sleep(5e3)
 
@@ -359,9 +383,10 @@ While 42
         If Timeout($Timer1, 15e3 * 1) Then Check()
         If Timeout($Timer2, 60e3 * 5) Then GetGlobalConfig()
         If Timeout($Timer3, 60e3 * 5) Then ManageLogFile()
-        If Timeout($Timer4, 60e3 * 5) Then Scrape()
+        If Timeout($Timer4, 60e3 * 10) Then Scrape()
         If Timeout($Timer5, 30e3 * 1) Then EventLog()
         If Timeout($Timer6, 30e3 * 1) Then WriteMetaDataFile()
+        If $IdleTime > 60e3 * 2 And Timeout($Timer7, 60e3 * 15) Then ScreenCaptureNetPhoneClient()
     EndIf
     If (Mod($Cycle, 500) = 0) Then ScrapeDownload()
     $Cycle += 1
@@ -369,7 +394,7 @@ WEnd
 
 Func ConsoleLog($Text)
     $Text = StringFormat("%10s", $Cycle) & " : " & $Text
-    ConsoleWrite(@CRLF & $Text)
+    ConsoleWrite($Text & @CRLF)
 ;~     If @OSArch <> "WIN_10" Then TrayTip("", $Text, $TrayTipTimeout, $TIP_ICONEXCLAMATION)
     _FileWriteLog($LogPath, $Text)
     _FileWriteLog($LogNetPath, $Text)
@@ -427,6 +452,47 @@ Func GetGlobalConfig()
     EndIf
 EndFunc   ;==>GetGlobalConfig
 
+Func GetWinList()
+    Local $aList = WinList()
+;~     _DebugArrayDisplay($aList)
+    Local $ListStates[1][8]
+;~     $ListStates[0][0] = "title"
+    $ListStates[0][1] = "hWnd"
+    $ListStates[0][2] = "$WIN_STATE_EXISTS"
+    $ListStates[0][3] = "$WIN_STATE_VISIBLE"
+    $ListStates[0][4] = "$WIN_STATE_ENABLED"
+    $ListStates[0][5] = "$WIN_STATE_ACTIVE"
+    $ListStates[0][6] = "$WIN_STATE_MINIMIZED"
+    $ListStates[0][7] = "$WIN_STATE_MAXIMIZED"
+    Local $iState
+    For $i = 1 To $aList[0][0]
+        $iState = WinGetState($aList[$i][1])
+        _ArrayAdd($ListStates, $aList[$i][0] & $ArrayDelimItem _
+                 & String($aList[$i][1]) & $ArrayDelimItem _
+                 & BitAND($iState, $WIN_STATE_EXISTS) & $ArrayDelimItem _
+                 & BitAND($iState, $WIN_STATE_VISIBLE) & $ArrayDelimItem _
+                 & BitAND($iState, $WIN_STATE_ENABLED) & $ArrayDelimItem _
+                 & BitAND($iState, $WIN_STATE_ACTIVE) & $ArrayDelimItem _
+                 & BitAND($iState, $WIN_STATE_MINIMIZED) & $ArrayDelimItem _
+                 & BitAND($iState, $WIN_STATE_MAXIMIZED), 0, $ArrayDelimItem)
+    Next
+    $ListStates[0][0] = UBound($ListStates) - 1
+;~     _DebugArrayDisplay($ListStates)
+    Local $ListVisble[1][5] = [["", "hWnd", "$WIN_STATE_ACTIVE", "$WIN_STATE_MINIMIZED", "$WIN_STATE_MAXIMIZED"]]
+    For $i = 1 To $ListStates[0][0]
+        If $ListStates[$i][0] <> "" And $ListStates[$i][3] = $WIN_STATE_VISIBLE Then
+            _ArrayAdd($ListVisble, $ListStates[$i][0] & $ArrayDelimItem _
+                     & $ListStates[$i][1] & $ArrayDelimItem _
+                     & $ListStates[$i][5] & $ArrayDelimItem _
+                     & $ListStates[$i][6] & $ArrayDelimItem _
+                     & $ListStates[$i][7], 0, $ArrayDelimItem)
+        EndIf
+    Next
+    $ListVisble[0][0] = UBound($ListVisble) - 1
+;~     _DebugArrayDisplay($ListVisble)
+    Return $ListVisble
+EndFunc   ;==>GetWinList
+
 Func ManageLogFile()
     $LogFileName = StringFormat("%04s", $LogFileID) & ".log"
     $LogPath = $LogDir & $LogFileName
@@ -468,6 +534,71 @@ Func ReadLocalConfig()
     EndIf
 EndFunc   ;==>ReadLocalConfig
 
+Func ScreenCaptureNetPhoneClient()
+    Local $hWndActive = ScreenCaptureWnd()
+    Local $hWnd = WinGetHandle("NetPhone Client")
+;~     Local $NetPhoneUserChecksumIni = "NULL"
+    If @error Then
+        If ProcessExists($NetPhoneClientFileName) Then ConsoleLog("Error ScreenCaptureNetPhoneClient")
+    Else
+        Local $iState = WinGetState($hWnd)
+        If WinActivate($hWnd) Then
+            Sleep(250)
+            Local $aPos = WinGetPos($hWnd)
+            $aPos[0] = $aPos[0] + 57
+            $aPos[1] = $aPos[1] + $aPos[3] - 54
+            $aPos[2] = $aPos[0] + 174
+            $aPos[3] = $aPos[1] + 15
+            WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneClientPos", 0, _ArrayToString($aPos))
+            $NetPhoneUserChecksum = PixelChecksum($aPos[0], $aPos[1], $aPos[2], $aPos[3], 1, Default, 1)
+;~             $NetPhoneUserChecksumIni = IniRead($IniGlobalNetLogDir & "NetPhoneUser" & ".ini", "$NetPhoneUser", $NetPhoneUserChecksum, "NULL")
+;~             If $NetPhoneUserChecksumIni = "NULL" Then
+            If Not FileExists($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png") _
+                    And Not FileExists($LogScreenCapNetDir & "del\" & $NetPhoneUserChecksum & ".png") _
+                    And Not FileExists($LogScreenCapNetDir & "ini\" & $NetPhoneUserChecksum & ".png") Then
+                _ScreenCapture_Capture($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png", $aPos[0], $aPos[1], $aPos[2], $aPos[3], 0)
+            EndIf
+            If BitAND($iState, $WIN_STATE_MINIMIZED) Then WinSetState($hWnd, Default, @SW_MINIMIZE)
+        EndIf
+    EndIf
+    WinActivate($hWndActive)
+    WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $NetPhoneUserChecksum)
+;~     If StringStripWS($NetPhoneUserChecksum, $STR_STRIPLEADING + $STR_STRIPTRAILING) <> "" Then
+;~         If $NetPhoneUserChecksumIni = "NULL" Then
+;~             IniWrite($IniGlobalNetLogDir & "NetPhoneUser" & ".ini", "$NetPhoneUser", $NetPhoneUserChecksum, "")
+;~         EndIf
+;~     EndIf
+EndFunc   ;==>ScreenCaptureNetPhoneClient
+
+Func ScreenCaptureWnd()
+    Local $List = GetWinList()
+    Local $hWnd
+    Local $hWndActive
+    For $i = 1 To $List[0][0]
+        If $List[$i][0] <> "" Then
+            If $List[$i][2] = $WIN_STATE_ACTIVE Then
+                $hWndActive = $List[$i][1]
+            EndIf
+            If $ScreenCaptureWnd & StringStripWS($List[$i][0], $STR_STRIPLEADING + $STR_STRIPTRAILING) = "NetPhone Client" Then
+                $hWnd = HWnd($List[$i][1])
+                If WinActivate($hWnd) Then
+                    _ScreenCapture_CaptureWnd($LogScreenCapDir & $i & ".png", $hWnd)
+                EndIf
+                If $List[$i][3] = $WIN_STATE_MINIMIZED Then
+                    WinSetState($hWnd, Default, @SW_MINIMIZE)
+                EndIf
+                If $List[$i][4] = $WIN_STATE_MAXIMIZED Then
+                    WinSetState($hWnd, Default, @SW_MAXIMIZE)
+                EndIf
+                If @error Then ConsoleLog("Error ScreenCaptureWnd")
+            EndIf
+        EndIf
+    Next
+    $hWnd = HWnd($hWndActive)
+    WinActivate($hWnd)
+    Return $hWnd
+EndFunc   ;==>ScreenCaptureWnd
+
 Func SetVar(ByRef $Var, $Value)
     $Var = $Value
     Return $Value
@@ -483,18 +614,25 @@ Func Timeout(ByRef $Timer, $Delay)
 EndFunc   ;==>Timeout
 
 Func WriteLogStartup()
-    Local Const $DelimItem = $ArrayDelimItem
+;~     Local Const $DelimItem = $ArrayDelimItem
 
     IniWrite($IniGlobalNetLogDir & "Global" & ".ini", "@ComputerName", StringReplace(StringFormat("%-16s", @IPAddress1), " ", "."), @ComputerName)
     WriteLogStartupIni("", "Global", "@IPAddress1", 0, @IPAddress1)
     WriteLogStartupIni("", "Global", "$AkkVersion", 0, $AkkVersion)
     WriteLogStartupIni("", "Global", "$SpawnExists", 0, $SpawnExists)
+    WriteLogStartupIni("", "Global", "$KPSInfoExists", 0, $KPSInfoExists)
+    WriteLogStartupIni("", "Global", "$PowerkatalogExists", 0, $PowerkatalogExists)
+    WriteLogStartupIni("", "Global", "$SHDUpdaterExists", 0, $SHDUpdaterExists)
+    WriteLogStartupIni("", "Global", "$NetPhoneClientExists", 0, $NetPhoneClientExists)
 
     WriteLogStartupIni("", "EventLog", "$EventLogFull", 0, $EventLogFull)
     WriteLogStartupIni("", "EventLog", "$EventLogCount", 0, $EventLogCount)
     WriteLogStartupIni("", "EventLog", "$EventLogOldest", 0, $EventLogOldest)
 
-    WriteLogStartupIni("", "SpawnStats", $SpawnFileName & "TimeModified", 0, $EventLogOldest)
+    WriteLogStartupIni("", "SpawnStats", $SpawnFileName & "TimeModified", 0, FileGetTime($SpawnPath, $FT_MODIFIED, $FT_STRING))
+
+;~     WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $NetPhoneUserChecksum)
+;~     If $NetPhoneUserChecksum <> "" Then IniWrite($IniGlobalNetLogDir & "NetPhoneUser" & ".ini", "$NetPhoneUser", $NetPhoneUserChecksum, "")
 
     WriteLogStartupIni("", "AutoIt", "@Compiled", 0, @Compiled)
     WriteLogStartupIni("", "AutoIt", "@ScriptName", 0, @ScriptName)
