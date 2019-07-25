@@ -955,141 +955,158 @@ If IsString($6a) Then $65 = FileClose($61)
 If $65 <= 0 Then Return SetError(2, $65, 0)
 Return $65
 EndFunc
-Func _105($6e, $5o = 0)
-Local Const $6f = 183
-Local Const $6g = 1
-Local $6h = 0
+Func _zy($5m, ByRef $6e, ByRef $6f, ByRef $1x, ByRef $6g)
+Local $4y = StringRegExp($5m, "^\h*((?:\\\\\?\\)*(\\\\[^\?\/\\]+|[A-Za-z]:)?(.*[\/\\]\h*)?((?:[^\.\/\\]|(?(?=\.[^\/\\]*\.)\.))*)?([^\/\\]*))$", 1)
+If @error Then
+ReDim $4y[5]
+$4y[0] = $5m
+EndIf
+$6e = $4y[1]
+If StringLeft($4y[2], 1) == "/" Then
+$6f = StringRegExpReplace($4y[2], "\h*[\/\\]+\h*", "\/")
+Else
+$6f = StringRegExpReplace($4y[2], "\h*[\/\\]+\h*", "\\")
+EndIf
+$4y[2] = $6f
+$1x = $4y[3]
+$6g = $4y[4]
+Return $4y
+EndFunc
+Func _105($6h, $5o = 0)
+Local Const $6i = 183
+Local Const $6j = 1
+Local $6k = 0
 If BitAND($5o, 2) Then
-Local $6i = DllStructCreate("byte;byte;word;ptr[4]")
-Local $h = DllCall("advapi32.dll", "bool", "InitializeSecurityDescriptor", "struct*", $6i, "dword", $6g)
+Local $6l = DllStructCreate("byte;byte;word;ptr[4]")
+Local $h = DllCall("advapi32.dll", "bool", "InitializeSecurityDescriptor", "struct*", $6l, "dword", $6j)
 If @error Then Return SetError(@error, @extended, 0)
 If $h[0] Then
-$h = DllCall("advapi32.dll", "bool", "SetSecurityDescriptorDacl", "struct*", $6i, "bool", 1, "ptr", 0, "bool", 0)
+$h = DllCall("advapi32.dll", "bool", "SetSecurityDescriptorDacl", "struct*", $6l, "bool", 1, "ptr", 0, "bool", 0)
 If @error Then Return SetError(@error, @extended, 0)
 If $h[0] Then
-$6h = DllStructCreate($b)
-DllStructSetData($6h, 1, DllStructGetSize($6h))
-DllStructSetData($6h, 2, DllStructGetPtr($6i))
-DllStructSetData($6h, 3, 0)
+$6k = DllStructCreate($b)
+DllStructSetData($6k, 1, DllStructGetSize($6k))
+DllStructSetData($6k, 2, DllStructGetPtr($6l))
+DllStructSetData($6k, 3, 0)
 EndIf
 EndIf
 EndIf
-Local $6j = DllCall("kernel32.dll", "handle", "CreateMutexW", "struct*", $6h, "bool", 1, "wstr", $6e)
+Local $6m = DllCall("kernel32.dll", "handle", "CreateMutexW", "struct*", $6k, "bool", 1, "wstr", $6h)
 If @error Then Return SetError(@error, @extended, 0)
-Local $6k = DllCall("kernel32.dll", "dword", "GetLastError")
+Local $6n = DllCall("kernel32.dll", "dword", "GetLastError")
 If @error Then Return SetError(@error, @extended, 0)
-If $6k[0] = $6f Then
+If $6n[0] = $6i Then
 If BitAND($5o, 1) Then
-DllCall("kernel32.dll", "bool", "CloseHandle", "handle", $6j[0])
+DllCall("kernel32.dll", "bool", "CloseHandle", "handle", $6m[0])
 If @error Then Return SetError(@error, @extended, 0)
-Return SetError($6k[0], $6k[0], 0)
+Return SetError($6n[0], $6n[0], 0)
 Else
 Exit -1
 EndIf
 EndIf
-Return $6j[0]
+Return $6m[0]
 EndFunc
-Func _10f($6l, $6m, $6n, $6o, $6p = "", $6q = "", $6r = "", $6s = "", $6t = 0)
-If $6l = "" Or $6n = "" Or $6o = "" Or $6m = "" Or StringLen($6m) > 256 Then Return SetError(1, 0, 0)
-If $6r = "" Then $6r = @ComputerName
+Func _10f($6o, $6p, $6q, $6r, $6s = "", $6t = "", $6u = "", $6v = "", $6w = 0)
+If $6o = "" Or $6q = "" Or $6r = "" Or $6p = "" Or StringLen($6p) > 256 Then Return SetError(1, 0, 0)
+If $6u = "" Then $6u = @ComputerName
 If TCPStartup() = 0 Then Return SetError(2, 0, 0)
-Local $6u, $6v
-If StringRegExp($6l, "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$") Then
-$6u = $6l
+Local $6x, $6y
+If StringRegExp($6o, "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$") Then
+$6x = $6o
 Else
-$6u = TCPNameToIP($6l)
+$6x = TCPNameToIP($6o)
 EndIf
-If $6u = "" Then
+If $6x = "" Then
 TCPShutdown()
 Return SetError(3, 0, 0)
 EndIf
-Local $6w = TCPConnect($6u, 25)
-If $6w = -1 Then
+Local $6z = TCPConnect($6x, 25)
+If $6z = -1 Then
 TCPShutdown()
 Return SetError(4, 0, 0)
 EndIf
-Local $6x[6], $6y[6]
-$6x[0] = "HELO " & $6r & @CRLF
-If StringLeft($6r, 5) = "EHLO " Then $6x[0] = $6r & @CRLF
-$6y[0] = "250"
-$6x[1] = "MAIL FROM: <" & $6n & ">" & @CRLF
-$6y[1] = "250"
-$6x[2] = "RCPT TO: <" & $6o & ">" & @CRLF
-$6y[2] = "250"
-$6x[3] = "DATA" & @CRLF
-$6y[3] = "354"
+Local $70[6], $71[6]
+$70[0] = "HELO " & $6u & @CRLF
+If StringLeft($6u, 5) = "EHLO " Then $70[0] = $6u & @CRLF
+$71[0] = "250"
+$70[1] = "MAIL FROM: <" & $6q & ">" & @CRLF
+$71[1] = "250"
+$70[2] = "RCPT TO: <" & $6r & ">" & @CRLF
+$71[2] = "250"
+$70[3] = "DATA" & @CRLF
+$71[3] = "354"
 Local $m = _q9()
-Local $6z = -$m[1] / 60
-Local $70 = Int($6z)
-Local $71 = 0
-If $70 <> $6z Then $71 = Abs($6z - $70) * 60
-$6z = StringFormat(" (%+.2d%.2d)", $70, $71)
-$6x[4] = "From:" & $6m & "<" & $6n & ">" & @CRLF & "To:" & "<" & $6o & ">" & @CRLF & "Subject:" & $6p & @CRLF & "Mime-Version: 1.0" & @CRLF & "Date: " & _oo(@WDAY, 1) & ", " & @MDAY & " " & _p6(@MON, 1) & " " & @YEAR & " " & @HOUR & ":" & @MIN & ":" & @SEC & $6z & @CRLF & "Content-Type: text/plain; charset=US-ASCII" & @CRLF & @CRLF
-$6y[4] = ""
-$6x[5] = @CRLF & "." & @CRLF
-$6y[5] = "250"
-If _10h($6w, $6x[0], $6y[0], $6t, "220", $6s) Then Return SetError(50, 0, 0)
-For $6v = 1 To UBound($6x) - 2
-If _10h($6w, $6x[$6v], $6y[$6v], $6t) Then Return SetError(50 + $6v, 0, 0)
+Local $72 = -$m[1] / 60
+Local $73 = Int($72)
+Local $74 = 0
+If $73 <> $72 Then $74 = Abs($72 - $73) * 60
+$72 = StringFormat(" (%+.2d%.2d)", $73, $74)
+$70[4] = "From:" & $6p & "<" & $6q & ">" & @CRLF & "To:" & "<" & $6r & ">" & @CRLF & "Subject:" & $6s & @CRLF & "Mime-Version: 1.0" & @CRLF & "Date: " & _oo(@WDAY, 1) & ", " & @MDAY & " " & _p6(@MON, 1) & " " & @YEAR & " " & @HOUR & ":" & @MIN & ":" & @SEC & $72 & @CRLF & "Content-Type: text/plain; charset=US-ASCII" & @CRLF & @CRLF
+$71[4] = ""
+$70[5] = @CRLF & "." & @CRLF
+$71[5] = "250"
+If _10h($6z, $70[0], $71[0], $6w, "220", $6v) Then Return SetError(50, 0, 0)
+For $6y = 1 To UBound($70) - 2
+If _10h($6z, $70[$6y], $71[$6y], $6w) Then Return SetError(50 + $6y, 0, 0)
 Next
-For $6v = 0 To UBound($6q) - 1
-If StringLeft($6q[$6v], 1) = "." Then $6q[$6v] = "." & $6q[$6v]
-If _10h($6w, $6q[$6v] & @CRLF, "", $6t) Then Return SetError(500 + $6v, 0, 0)
+For $6y = 0 To UBound($6t) - 1
+If StringLeft($6t[$6y], 1) = "." Then $6t[$6y] = "." & $6t[$6y]
+If _10h($6z, $6t[$6y] & @CRLF, "", $6w) Then Return SetError(500 + $6y, 0, 0)
 Next
-$6v = UBound($6x) - 1
-If _10h($6w, $6x[$6v], $6y[$6v], $6t) Then Return SetError(5000, 0, 0)
-TCPCloseSocket($6w)
+$6y = UBound($70) - 1
+If _10h($6z, $70[$6y], $71[$6y], $6w) Then Return SetError(5000, 0, 0)
+TCPCloseSocket($6z)
 TCPShutdown()
 Return 1
 EndFunc
-Func _10g($72, $73 = 0)
-Local $74 = "SMTP trace"
-Local $75 = ControlGetText($74, "", "Static1")
-$72 = StringLeft(StringReplace($72, @CRLF, ""), 70)
-$75 &= @HOUR & ":" & @MIN & ":" & @SEC & " " & $72 & @LF
-If WinExists($74) Then
-ControlSetText($74, "", "Static1", $75)
+Func _10g($75, $76 = 0)
+Local $77 = "SMTP trace"
+Local $78 = ControlGetText($77, "", "Static1")
+$75 = StringLeft(StringReplace($75, @CRLF, ""), 70)
+$78 &= @HOUR & ":" & @MIN & ":" & @SEC & " " & $75 & @LF
+If WinExists($77) Then
+ControlSetText($77, "", "Static1", $78)
 Else
-SplashTextOn($74, $75, 400, 500, 500, 100, 4 + 16, "", 8)
+SplashTextOn($77, $78, 400, 500, 500, 100, 4 + 16, "", 8)
 EndIf
-If $73 Then Sleep($73 * 1000)
+If $76 Then Sleep($76 * 1000)
 EndFunc
-Func _10h($6w, $76, $77, $6t, $78 = "", $6s = "")
-Local $79, $26, $7a
-If $6t Then _10g($76)
-If $78 <> "" Then
-If $6s <> -1 Then
-If TCPSend($6w, $6s) = 0 Then
-TCPCloseSocket($6w)
+Func _10h($6z, $79, $7a, $6w, $7b = "", $6v = "")
+Local $7c, $26, $7d
+If $6w Then _10g($79)
+If $7b <> "" Then
+If $6v <> -1 Then
+If TCPSend($6z, $6v) = 0 Then
+TCPCloseSocket($6z)
 TCPShutdown()
 Return 1
 EndIf
 EndIf
-$79 = ""
-$7a = TimerInit()
-While StringLeft($79, StringLen($78)) <> $78 And TimerDiff($7a) < 45000
-$79 = TCPRecv($6w, 1000)
-If $6t And $79 <> "" Then _10g("intermediate->" & $79)
+$7c = ""
+$7d = TimerInit()
+While StringLeft($7c, StringLen($7b)) <> $7b And TimerDiff($7d) < 45000
+$7c = TCPRecv($6z, 1000)
+If $6w And $7c <> "" Then _10g("intermediate->" & $7c)
 WEnd
 EndIf
-If TCPSend($6w, $76) = 0 Then
-TCPCloseSocket($6w)
+If TCPSend($6z, $79) = 0 Then
+TCPCloseSocket($6z)
 TCPShutdown()
 Return 1
 EndIf
-$7a = TimerInit()
-$79 = ""
-While $79 = "" And TimerDiff($7a) < 45000
+$7d = TimerInit()
+$7c = ""
+While $7c = "" And TimerDiff($7d) < 45000
 $26 += 1
-$79 = TCPRecv($6w, 1000)
-If $77 = "" Then ExitLoop
+$7c = TCPRecv($6z, 1000)
+If $7a = "" Then ExitLoop
 WEnd
-If $77 <> "" Then
-If $6t Then _10g($26 & " <- " & $79)
-If StringLeft($79, StringLen($77)) <> $77 Then
-TCPCloseSocket($6w)
+If $7a <> "" Then
+If $6w Then _10g($26 & " <- " & $7c)
+If StringLeft($7c, StringLen($7a)) <> $7a Then
+TCPCloseSocket($6z)
 TCPShutdown()
-If $6t Then _10g("<-> " & $77, 5)
+If $6w Then _10g("<-> " & $7a, 5)
 Return 2
 EndIf
 EndIf
@@ -1099,380 +1116,393 @@ Opt('ExpandVarStrings', 1)
 Opt('MustDeclareVars', 1)
 Opt('TrayAutoPause', 0)
 ConsoleWrite(@CRLF)
-Global Const $7b = 60 * 5
-Global $7c = 0
-Global $7d = TimerInit()
-Global $7e = $7d
-Global $7f = $7d
-Global $7g = $7d
-Global $7h = $7d
-Global $7i = $7d
-Global $7j = $7d
-Global $7k = $7d
-Global Const $7l = StringReplace(StringFormat("%-16s", @ComputerName), " ", ".")
-Global Const $7m = FileGetVersion(@ScriptFullPath)
-Global $7n = ""
-Global Const $7o = "ShadowSpawn.exe"
-Global Const $7p = @MyDocumentsDir & "\Isopedia GmbH\ShadowSpawn\"
-Global Const $7q = $7p & $7o
-Global Const $7r = FileExists($7q)
-Global Const $7s = @ProgramFilesDir & "\KPS designstudio\KPSInfo\"
-Global Const $7t = $7s & "KPSInfo.exe"
-Global Const $7u = FileExists($7t)
-Global Const $7v = "Powerkatalog-Schnittstelle.exe"
-Global Const $7w = @ProgramFilesDir & "\KPS designstudio\Powerkatalog-Schnittstelle\"
-Global Const $7x = $7w & $7v
-Global Const $7y = FileExists($7x)
-Global Const $7z = "SHDUpdater_min.exe"
-Global Const $80 = @ProgramFilesDir & "\SHDUpdater\"
-Global Const $81 = $80 & $7z
-Global Const $82 = FileExists($81)
-Global Const $83 = "NetPhone Client.exe"
-Global Const $84 = @ProgramFilesDir & "\NetPhone Client\"
-Global Const $85 = $84 & $83
-Global Const $86 = FileExists($85)
-Global Const $87 = "\\172.16.128.4\edv\Gerrit\"
-Global Const $88 = $87 & ""
-Global Const $89 = FileExists($88)
-Global Const $8a = $87 & "akk\"
-Global Const $8b = $8a & ""
+Global Const $7e = 60 * 5
+Global $7f = 0
+Global $7g = TimerInit()
+Global $7h = $7g
+Global $7i = $7g
+Global $7j = $7g
+Global $7k = $7g
+Global $7l = $7g
+Global $7m = $7g
+Global $7n = $7g
+Global Const $7o = StringReplace(StringFormat("%-16s", @ComputerName), " ", ".")
+Global Const $7p = FileGetVersion(@ScriptFullPath)
+Global $7q = ""
+Global $7r
+Global $7s
+Global $7t
+Global Const $7u = "ShadowSpawn.exe"
+Global Const $7v = @MyDocumentsDir & "\Isopedia GmbH\ShadowSpawn\"
+Global Const $7w = $7v & $7u
+Global Const $7x = FileExists($7w)
+Global Const $7y = @ProgramFilesDir & "\KPS designstudio\KPSInfo\"
+Global Const $7z = $7y & "KPSInfo.exe"
+Global Const $80 = FileExists($7z)
+Global Const $81 = "Powerkatalog-Schnittstelle.exe"
+Global Const $82 = @ProgramFilesDir & "\KPS designstudio\Powerkatalog-Schnittstelle\"
+Global Const $83 = $82 & $81
+Global Const $84 = FileExists($83)
+Global Const $85 = "SHDUpdater_min.exe"
+Global Const $86 = @ProgramFilesDir & "\SHDUpdater\"
+Global Const $87 = $86 & $85
+Global Const $88 = FileExists($87)
+Global Const $89 = "NetPhone Client.exe"
+Global Const $8a = @ProgramFilesDir & "\NetPhone Client\"
+Global Const $8b = $8a & $89
 Global Const $8c = FileExists($8b)
-Global Const $8d = @ScriptDir & "\"
-Global Const $8e = $8d & "akk.exe"
+Global Const $8d = "\\172.16.128.4\edv\Gerrit\"
+Global Const $8e = $8d & ""
 Global Const $8f = FileExists($8e)
-Global Const $8g = $87
-Global Const $8h = $8g & "akk.exe"
+Global Const $8g = $8d & "akk\"
+Global Const $8h = $8g & ""
 Global Const $8i = FileExists($8h)
-Global Const $8j = "akkUpdater.exe"
-Global Const $8k = $8d
-Global Const $8l = $8k & $8j
-Global $8m = FileExists($8l)
-Global Const $8n = $8j
-Global Const $8o = $87
-Global Const $8p = $8o & $8n
-Global Const $8q = FileExists($8p)
-Global Const $8r = $8d
-Global Const $8s = $8r & "akk.ini"
-Global Const $8t = FileExists($8s)
-Global Const $8u = "akkGlobalConfig.ini"
-Global Const $8v = $8d
-Global Const $8w = $8v & $8u
-Global $8x = FileExists($8w)
-Global Const $8y = $8u
-Global Const $8z = $8a
-Global Const $90 = $8z & $8y
-Global Const $91 = FileExists($90)
-Global Const $92 = "akkGlobalConfigExtended.ini"
-Global Const $93 = $8v
-Global Const $94 = $93 & $92
-Global $95 = FileExists($94)
-Global Const $96 = $92
-Global Const $97 = $8a
-Global Const $98 = $97 & $96
-Global Const $99 = FileExists($98)
-Global $9a
-Global $9b = ""
-Global Const $9c = $8d & "log\"
-Global $9d = $9c & $9b
-Global $9e = FileExists($9d)
-If Not $9e Then DirCreate($9c)
-Global $9f = ""
-Global Const $9g = $8a & "log\" & @ComputerName & "\"
-Global $9h = $9g & $9f
-Global $9i = FileExists($9h)
-If Not $9i Then DirCreate($9g)
-Global $9j = "akkGlobal.log"
-Global Const $9k = $8a & "log\"
-Global $9l = $9k & $9j
-Global $9m = FileExists($9l)
-Global $9n = ""
-Global Const $9o = $8a & "log\_archive\"
-Global $9p = $9o & $9n
-Global $9q = FileExists($9p)
-If Not $9q Then DirCreate($9o)
-Global Const $9r = $8a & "log\"
-Global Const $9s = $9r & "akkGlobal.ini"
-Global Const $9t = FileExists($9s)
-Global Const $9u = "akkGlobalSpawnStats.ini"
-Global Const $9v = $8a & "log\"
-Global Const $9w = $9v & $9u
-Global Const $9x = FileExists($9w)
-Global Const $9y = $9g
-Global Const $9z = $9y & "akkMacro.ini"
-Global Const $a0 = FileExists($9z)
-Global Const $a1 = $8d & "log\"
-Global Const $a2 = $a1 & "scrape.prom"
+Global Const $8j = @ScriptDir & "\"
+Global Const $8k = $8j & "akk.exe"
+Global Const $8l = FileExists($8k)
+Global Const $8m = $8d
+Global Const $8n = $8m & "akk.exe"
+Global Const $8o = FileExists($8n)
+Global Const $8p = "akkUpdater.exe"
+Global Const $8q = $8j
+Global Const $8r = $8q & $8p
+Global $8s = FileExists($8r)
+Global Const $8t = $8p
+Global Const $8u = $8d
+Global Const $8v = $8u & $8t
+Global Const $8w = FileExists($8v)
+Global Const $8x = $8j
+Global Const $8y = $8x & "akk.ini"
+Global Const $8z = FileExists($8y)
+Global Const $90 = "akkGlobalConfig.ini"
+Global Const $91 = $8j
+Global Const $92 = $91 & $90
+Global $93 = FileExists($92)
+Global Const $94 = $90
+Global Const $95 = $8g
+Global Const $96 = $95 & $94
+Global Const $97 = FileExists($96)
+Global Const $98 = "akkGlobalConfigExtended.ini"
+Global Const $99 = $91
+Global Const $9a = $99 & $98
+Global $9b = FileExists($9a)
+Global Const $9c = $98
+Global Const $9d = $8g
+Global Const $9e = $9d & $9c
+Global Const $9f = FileExists($9e)
+Global $9g
+Global $9h = ""
+Global Const $9i = $8j & "log\"
+Global $9j = $9i & $9h
+Global $9k = FileExists($9j)
+If Not $9k Then DirCreate($9i)
+Global $9l = ""
+Global Const $9m = $8g & "log\" & @ComputerName & "\"
+Global $9n = $9m & $9l
+Global $9o = FileExists($9n)
+If Not $9o Then DirCreate($9m)
+Global $9p = "akkGlobal.log"
+Global Const $9q = $8g & "log\"
+Global $9r = $9q & $9p
+Global $9s = FileExists($9r)
+Global $9t = ""
+Global Const $9u = $8g & "log\_archive\"
+Global $9v = $9u & $9t
+Global $9w = FileExists($9v)
+If Not $9w Then DirCreate($9u)
+Global Const $9x = $8g & "log\"
+Global Const $9y = $9x & "akkGlobal.ini"
+Global Const $9z = FileExists($9y)
+Global Const $a0 = "akkGlobalSpawnStats.ini"
+Global Const $a1 = $8g & "log\"
+Global Const $a2 = $a1 & $a0
 Global Const $a3 = FileExists($a2)
-Global Const $a4 = $9g
-Global Const $a5 = $a4 & "scrape.prom"
+Global Const $a4 = $9m
+Global Const $a5 = $a4 & "akkMacro.ini"
 Global Const $a6 = FileExists($a5)
-Global Const $a7 = $8d & "log\sc\"
-Global Const $a8 = $a7 & ""
+Global Const $a7 = $8j & "log\"
+Global Const $a8 = $a7 & "scrape.prom"
 Global Const $a9 = FileExists($a8)
-If Not $a9 Then DirCreate($a7)
-Global Const $aa = $8a & "log\_sc\NetPhoneUser\"
-Global Const $ab = $aa & ""
+Global Const $aa = $9m
+Global Const $ab = $aa & "scrape.prom"
 Global Const $ac = FileExists($ab)
-If Not $ac Then DirCreate($aa)
-Global Const $ad = @UserProfileDir & "\Downloads"
-Global Const $ae = $ad & " alt"
-Global $af = ""
-Global Const $ag = @ComputerName
-Global $ah
-Global $ai[10][2]
-Global $aj = 0
-Global $ak = 1
-Global $al
-Global $am = 0
+Global Const $ad = $8j & "log\sc\"
+Global Const $ae = $ad & ""
+Global Const $af = FileExists($ae)
+If Not $af Then DirCreate($ad)
+Global Const $ag = $8g & "log\_sc\NetPhoneUser\"
+Global Const $ah = $ag & ""
+Global Const $ai = FileExists($ah)
+If Not $ai Then DirCreate($ag)
+Global Const $aj = @UserProfileDir & "\Downloads"
+Global Const $ak = $aj & " alt"
+Global $al = ""
+Global Const $am = @ComputerName
 Global $an
-Global $ao
-Global $ap
-Global Const $aq = @HomeDrive & "\Brauckhoff\akk\"
-Global Const $ar = $aq & "exf.exe"
-Global $as = FileExists($ar)
-Global Const $at = $8a
-Global Const $au = $at & "exf.exe"
-Global Const $av = FileExists($au)
-Global Const $aw = "wmi_exporter.exe"
-Global Const $ax = @HomeDrive & "\Brauckhoff\wmi_exporter\"
-Global Const $ay = $ax & $aw
-Global $az = FileExists($ay)
-Global Const $b0 = "wmi_exporter-0.7.999-preview.2-386.exe"
-Global Const $b1 = $8a & "wmi_exporter\"
-Global Const $b2 = $b1 & $b0
-Global Const $b3 = FileExists($b2)
-Global Const $b4 = "wmi_exporter-0.7.999-preview.2-amd64.exe"
-Global Const $b5 = $8a & "wmi_exporter\"
-Global Const $b6 = $b5 & $b4
-Global Const $b7 = FileExists($b6)
-Global Const $b8 = "cs,logical_disk,memory,net,os,process,service,system,textfile"
-Global Const $b9 = $ax & "textfile_inputs\"
-Global Const $ba = $b9
-Global Const $bb = $ba & "metadata.prom"
-Global $bc = FileExists($bb)
-Global $bd
-Global $be[13]
-Global $bf
-Global Const $bg = '' & ' --log.format logger:eventlog?name=wmi_exporter' & ' --collectors.enabled ' & $b8 & ' --telemetry.addr :9182 ' & ' --collector.textfile.directory ' & $b9
+Global $ao[10][2]
+Global $ap = 0
+Global $aq = 1
+Global $ar
+Global $as = 0
+Global $at
+Global $au
+Global $av
+Global Const $aw = @HomeDrive & "\Brauckhoff\akk\"
+Global Const $ax = $aw & "exf.exe"
+Global $ay = FileExists($ax)
+Global Const $az = $8g
+Global Const $b0 = $az & "exf.exe"
+Global Const $b1 = FileExists($b0)
+Global Const $b2 = "wmi_exporter.exe"
+Global Const $b3 = @HomeDrive & "\Brauckhoff\wmi_exporter\"
+Global Const $b4 = $b3 & $b2
+Global $b5 = FileExists($b4)
+Global Const $b6 = "wmi_exporter-0.7.999-preview.2-386.exe"
+Global Const $b7 = $8g & "wmi_exporter\"
+Global Const $b8 = $b7 & $b6
+Global Const $b9 = FileExists($b8)
+Global Const $ba = "wmi_exporter-0.7.999-preview.2-amd64.exe"
+Global Const $bb = $8g & "wmi_exporter\"
+Global Const $bc = $bb & $ba
+Global Const $bd = FileExists($bc)
+Global Const $be = "cs,logical_disk,memory,net,os,process,service,system,textfile"
+Global Const $bf = $b3 & "textfile_inputs\"
+Global Const $bg = $bf
+Global Const $bh = $bg & "metadata.prom"
+Global $bi = FileExists($bh)
+Global $bj
+Global $bk[16]
+Global $bl
+Global Const $bm = '' & ' --log.format logger:eventlog?name=wmi_exporter' & ' --collectors.enabled ' & $be & ' --telemetry.addr :9182 ' & ' --collector.textfile.directory ' & $bf
 _105("akk")
 If @Compiled Then Sleep(5e3)
 _10q()
 _10o()
 _10k("akk.exe läuft Spawn, KPSInfo & WMI Exporter werden überwacht")
-If Not @Compiled Then _10k("$WmiExporterParams: " & $bg)
+If Not @Compiled Then _10k("$WmiExporterParams: " & $bm)
 _10m()
 _10p()
 _10l()
+_11b()
 _11a()
-_119()
 _110()
 _115()
 _10r()
+_11c()
 _10v()
 If @Compiled Then Sleep(5e3)
 While 42
 Sleep(10)
-If(Mod($7c, 300) = 0) Then
-If _10u($7e, 15e3 * 1) Then _10x()
-If _10u($7f, 60e3 * 5) Then _10m()
-If _10u($7g, 60e3 * 5) Then _10o()
-If _10u($7h, 60e3 * 10) Then _117()
-If _10u($7i, 30e3 * 1) Then _10l()
-If _10u($7j, 30e3 * 1) Then _11b()
-If $am > 60e3 * 2 And _10u($7k, 60e3 * 15) Then _10r()
+If(Mod($7f, 300) = 0) Then
+If _10u($7h, 15e3 * 1) Then _10x()
+If _10u($7i, 60e3 * 5) Then _10m()
+If _10u($7j, 60e3 * 5) Then _10o()
+If _10u($7k, 60e3 * 10) Then _118()
+If _10u($7l, 30e3 * 1) Then _10l()
+If _10u($7m, 30e3 * 1) Then _11c()
+If $as > 60e3 * 2 And _10u($7n, 60e3 * 15) Then _10r()
 EndIf
-If(Mod($7c, 500) = 0) Then _118()
-$7c += 1
+If(Mod($7f, 500) = 0) Then _119()
+$7f += 1
 WEnd
-Func _10k($bh)
-$bh = StringFormat("%10s", $7c) & " : " & $bh
-ConsoleWrite($bh & @CRLF)
-_zt($9d, $bh)
-_zt($9h, $bh)
-_zt($9l, StringFormat("%-16s", @ComputerName) & " " & StringFormat("%-16s", @UserName) & " " & $bh)
+Func _10k($bn)
+$bn = StringFormat("%10s", $7f) & " : " & $bn
+ConsoleWrite($bn & @CRLF)
+_zt($9j, $bn)
+_zt($9n, $bn)
+_zt($9r, StringFormat("%-16s", @ComputerName) & " " & StringFormat("%-16s", @UserName) & " " & $bn)
 EndFunc
 Func _10l()
 Local $4a = _x4("", "Application")
-$an = _x1($4a)
-$ao = _wo($4a)
-$ap = _x3($4a)
+$at = _x1($4a)
+$au = _wo($4a)
+$av = _x3($4a)
 _wn($4a)
 EndFunc
 Func _10m()
-If $91 And Not $8x Then
-$8x = FileCopy($90, $8w, 1 + 8)
+If $97 And Not $93 Then
+$93 = FileCopy($96, $92, 1 + 8)
 EndIf
-If $99 And Not $95 Then
-$95 = FileCopy($98, $94, 1 + 8)
+If $9f And Not $9b Then
+$9b = FileCopy($9e, $9a, 1 + 8)
 EndIf
-If $8q And Not $8m Then
-$8m = FileCopy($8p, $8l, 1 + 8)
+If $8w And Not $8s Then
+$8s = FileCopy($8v, $8r, 1 + 8)
 EndIf
-Local $bi = FileGetTime($8w, 0, 1)
-Local $bj = FileGetTime($90, 0, 1)
-If $bi <> $bj Then
-$8x = FileCopy($90, $8w, 1 + 8)
-_10k("Reload Config " & $90)
+Local $bo = FileGetTime($92, 0, 1)
+Local $bp = FileGetTime($96, 0, 1)
+If $bo <> $bp Then
+$93 = FileCopy($96, $92, 1 + 8)
+_10k("Reload Config " & $96)
 _10p()
 EndIf
-Local $bk = FileGetTime($94, 0, 1)
-Local $bl = FileGetTime($98, 0, 1)
-If $bk <> $bl Then
-$95 = FileCopy($98, $94, 1 + 8)
-_10k("Reload Config Ex" & $98)
+Local $bq = FileGetTime($9a, 0, 1)
+Local $br = FileGetTime($9e, 0, 1)
+If $bq <> $br Then
+$9b = FileCopy($9e, $9a, 1 + 8)
+_10k("Reload Config Ex" & $9e)
 _10p()
-_11b()
+_11c()
 EndIf
-Local $bm = FileGetTime($8l, 0, 1)
-Local $bn = FileGetTime($8p, 0, 1)
-If $bm <> $bn And @Compiled Then
-$8m = FileCopy($8p, $8l, 1 + 8)
-_10k("Reload Akk Updater " & $8p)
+Local $bs = FileGetTime($8r, 0, 1)
+Local $bt = FileGetTime($8v, 0, 1)
+If $bs <> $bt And @Compiled Then
+$8s = FileCopy($8v, $8r, 1 + 8)
+_10k("Reload Akk Updater " & $8v)
 EndIf
-Local $bo = FileGetTime($8e, 0, 1)
-Local $bp = FileGetTime($8h, 0, 1)
-If $bo <> $bp And @Compiled Then
-_10y($8j, $8k, $8l, $8m)
-_10k("Reload Akk " & $8h)
+Local $bu = FileGetTime($8k, 0, 1)
+Local $bv = FileGetTime($8n, 0, 1)
+If $bu <> $bv And @Compiled Then
+_10y($8p, $8q, $8r, $8s)
+_10k("Reload Akk " & $8n)
 EndIf
 EndFunc
 Func _10n()
-Local $bq = WinList()
-Local $br[1][8]
-$br[0][1] = "hWnd"
-$br[0][2] = "$WIN_STATE_EXISTS"
-$br[0][3] = "$WIN_STATE_VISIBLE"
-$br[0][4] = "$WIN_STATE_ENABLED"
-$br[0][5] = "$WIN_STATE_ACTIVE"
-$br[0][6] = "$WIN_STATE_MINIMIZED"
-$br[0][7] = "$WIN_STATE_MAXIMIZED"
-Local $bs
-For $26 = 1 To $bq[0][0]
-$bs = WinGetState($bq[$26][1])
-_yf($br, $bq[$26][0] & "|" & String($bq[$26][1]) & "|" & BitAND($bs, 1) & "|" & BitAND($bs, 2) & "|" & BitAND($bs, 4) & "|" & BitAND($bs, 8) & "|" & BitAND($bs, 16) & "|" & BitAND($bs, 32), 0, "|")
+Local $bw = WinList()
+Local $bx[1][8]
+$bx[0][1] = "hWnd"
+$bx[0][2] = "$WIN_STATE_EXISTS"
+$bx[0][3] = "$WIN_STATE_VISIBLE"
+$bx[0][4] = "$WIN_STATE_ENABLED"
+$bx[0][5] = "$WIN_STATE_ACTIVE"
+$bx[0][6] = "$WIN_STATE_MINIMIZED"
+$bx[0][7] = "$WIN_STATE_MAXIMIZED"
+Local $by
+For $26 = 1 To $bw[0][0]
+$by = WinGetState($bw[$26][1])
+_yf($bx, $bw[$26][0] & "|" & String($bw[$26][1]) & "|" & BitAND($by, 1) & "|" & BitAND($by, 2) & "|" & BitAND($by, 4) & "|" & BitAND($by, 8) & "|" & BitAND($by, 16) & "|" & BitAND($by, 32), 0, "|")
 Next
-$br[0][0] = UBound($br) - 1
-Local $bt[1][5] = [["", "hWnd", "$WIN_STATE_ACTIVE", "$WIN_STATE_MINIMIZED", "$WIN_STATE_MAXIMIZED"]]
-For $26 = 1 To $br[0][0]
-If $br[$26][0] <> "" And $br[$26][3] = 2 Then
-_yf($bt, $br[$26][0] & "|" & $br[$26][1] & "|" & $br[$26][5] & "|" & $br[$26][6] & "|" & $br[$26][7], 0, "|")
+$bx[0][0] = UBound($bx) - 1
+Local $bz[1][5] = [["", "hWnd", "$WIN_STATE_ACTIVE", "$WIN_STATE_MINIMIZED", "$WIN_STATE_MAXIMIZED"]]
+For $26 = 1 To $bx[0][0]
+If $bx[$26][0] <> "" And $bx[$26][3] = 2 Then
+_yf($bz, $bx[$26][0] & "|" & $bx[$26][1] & "|" & $bx[$26][5] & "|" & $bx[$26][6] & "|" & $bx[$26][7], 0, "|")
 EndIf
 Next
-$bt[0][0] = UBound($bt) - 1
-Return $bt
+$bz[0][0] = UBound($bz) - 1
+Return $bz
 EndFunc
 Func _10o()
-$9b = StringFormat("%04s", $9a) & ".log"
-$9d = $9c & $9b
-$9h = $9g & $9b
-If _zj($9d) > 1e3 Then
-$9a += 1
-IniWrite($8s, "LogFile", "ID", $9a)
+$9h = StringFormat("%04s", $9g) & ".log"
+$9j = $9i & $9h
+$9n = $9m & $9h
+If _zj($9j) > 1e3 Then
+$9g += 1
+IniWrite($8y, "LogFile", "ID", $9g)
 EndIf
-IniWrite($8s, "LogFile", "LogPath", $9d)
-IniWrite($8s, "LogFile", "LogNetPath", $9h)
-If FileGetSize($9l) / 1024 > 100 Then
-Local $bu = $9o & @YEAR & @MON & @MDAY & @MIN & @SEC & @MSEC & ".log"
-FileMove($9l, $bu, 1 + 8)
+IniWrite($8y, "LogFile", "LogPath", $9j)
+IniWrite($8y, "LogFile", "LogNetPath", $9n)
+If FileGetSize($9r) / 1024 > 100 Then
+Local $c0 = $9u & @YEAR & @MON & @MDAY & @MIN & @SEC & @MSEC & ".log"
+FileMove($9r, $c0, 1 + 8)
 EndIf
 EndFunc
 Func _10p()
-If FileExists($8w) Then
-$ah = IniRead($8w, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
+If FileExists($92) Then
+$an = IniRead($92, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
 For $26 = 0 To 9 Step 1
-$ai[$26][0] = IniRead($8w, "FreeSpaceCheck", "Mail" & $26 & "Address", "")
-$ai[$26][1] = IniRead($8w, "FreeSpaceCheck", "Mail" & $26 & "Active", 0)
+$ao[$26][0] = IniRead($92, "FreeSpaceCheck", "Mail" & $26 & "Address", "")
+$ao[$26][1] = IniRead($92, "FreeSpaceCheck", "Mail" & $26 & "Active", 0)
 Next
-$af = IniRead($8w, "SmtpMail", "SmtpServer", "")
+$al = IniRead($92, "SmtpMail", "SmtpServer", "")
 EndIf
-If FileExists($94) Then
-$bd = IniRead($94, "MetaData", @ComputerName, "NULL")
-If $bd = "NULL" Then
-IniWrite($98, "MetaData", @ComputerName, "")
+If FileExists($9a) Then
+$bj = IniRead($9a, "MetaData", @ComputerName, "NULL")
+If $bj = "NULL" Then
+IniWrite($9e, "MetaData", @ComputerName, "")
 EndIf
 EndIf
 EndFunc
 Func _10q()
-$9a = IniRead($8s, "LogFile", "ID", "NULL")
-If $9a = "NULL" Then
-IniWrite($8s, "LogFile", "ID", 0)
-$9a = 0
+$9g = IniRead($8y, "LogFile", "ID", "NULL")
+If $9g = "NULL" Then
+IniWrite($8y, "LogFile", "ID", 0)
+$9g = 0
 EndIf
 EndFunc
 Func _10r()
-Local $bv = _10s()
+Local $c1 = _10s()
 Local $18 = WinGetHandle("NetPhone Client")
 If @error Then
-If ProcessExists($83) Then _10k("Error ScreenCaptureNetPhoneClient")
+If ProcessExists($89) Then _10k("Error ScreenCaptureNetPhoneClient")
 Else
-Local $bs = WinGetState($18)
+Local $by = WinGetState($18)
 If WinActivate($18) Then
 Sleep(250)
-Local $bw = WinGetPos($18)
-$bw[0] = $bw[0] + 57
-$bw[1] = $bw[1] + $bw[3] - 54
-$bw[2] = $bw[0] + 174
-$bw[3] = $bw[1] + 15
-_10w("", "NetPhoneUser", "$NetPhoneClientPos", 0, _z6($bw))
-$7n = PixelChecksum($bw[0], $bw[1], $bw[2], $bw[3], 1, Default, 1)
-If Not FileExists($aa & $7n & ".png") And Not FileExists($aa & "del\" & $7n & ".png") And Not FileExists($aa & "ini\" & $7n & ".png") Then
-_mq($aa & $7n & ".png", $bw[0], $bw[1], $bw[2], $bw[3], 0)
+Local $c2 = WinGetPos($18)
+$c2[0] = $c2[0] + 57
+$c2[1] = $c2[1] + $c2[3] - 54
+$c2[2] = $c2[0] + 174
+$c2[3] = $c2[1] + 15
+_10w("", "NetPhoneUser", "$NetPhoneClientPos", 0, _z6($c2))
+$7q = PixelChecksum($c2[0], $c2[1], $c2[2], $c2[3], 1, Default, 1)
+If Not FileExists($ag & $7q & ".png") And Not FileExists($ag & "del\" & $7q & ".png") And Not FileExists($ag & "ini\" & $7q & ".png") Then
+_mq($ag & $7q & ".png", $c2[0], $c2[1], $c2[2], $c2[3], 0)
 EndIf
-If BitAND($bs, 16) Then WinSetState($18, Default, @SW_MINIMIZE)
+If BitAND($by, 16) Then WinSetState($18, Default, @SW_MINIMIZE)
 EndIf
 EndIf
-WinActivate($bv)
-_10w("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $7n)
+WinActivate($c1)
+$7r = IniRead($9a, "$NetPhoneUser", $7q, "NULL")
+_10w("", "NetPhoneUser", "$NetPhoneUser", 0, $7r)
+_10w("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $7q)
 EndFunc
 Func _10s()
-Local $bx = _10n()
+Local $c3 = _10n()
 Local $18
-Local $bv
-For $26 = 1 To $bx[0][0]
-If $bx[$26][0] <> "" Then
-If $bx[$26][2] = 8 Then
-$bv = $bx[$26][1]
+Local $c1
+For $26 = 1 To $c3[0][0]
+If $c3[$26][0] <> "" Then
+If $c3[$26][2] = 8 Then
+$7s = $c3[$26][0]
+$c1 = $c3[$26][1]
 EndIf
-If False & StringStripWS($bx[$26][0], 1 + 2) = "NetPhone Client" Then
-$18 = HWnd($bx[$26][1])
+If False & StringStripWS($c3[$26][0], 1 + 2) = "NetPhone Client" Then
+$18 = HWnd($c3[$26][1])
 If WinActivate($18) Then
-_mr($a7 & $26 & ".png", $18)
+_mr($ad & $26 & ".png", $18)
 EndIf
-If $bx[$26][3] = 16 Then
+If $c3[$26][3] = 16 Then
 WinSetState($18, Default, @SW_MINIMIZE)
 EndIf
-If $bx[$26][4] = 32 Then
+If $c3[$26][4] = 32 Then
 WinSetState($18, Default, @SW_MAXIMIZE)
 EndIf
 If @error Then _10k("Error ScreenCaptureWnd")
 EndIf
 EndIf
 Next
-$18 = HWnd($bv)
+$18 = HWnd($c1)
+$7t = WinGetProcess($18)
 WinActivate($18)
 Return $18
 EndFunc
-Func _10u(ByRef $by, $bz)
-Local $c0 = TimerDiff($by)
-If $c0 > $bz Then
-$by = TimerInit()
-Return $c0
+Func _10u(ByRef $c4, $c5)
+Local $c6 = TimerDiff($c4)
+If $c6 > $c5 Then
+$c4 = TimerInit()
+Return $c6
 EndIf
 Return 0
 EndFunc
 Func _10v()
-IniWrite($9r & "Global" & ".ini", "@ComputerName", StringReplace(StringFormat("%-16s", @IPAddress1), " ", "."), @ComputerName)
+IniWrite($9x & "Global" & ".ini", "@ComputerName", StringReplace(StringFormat("%-16s", @IPAddress1), " ", "."), @ComputerName)
 _10w("", "Global", "@IPAddress1", 0, @IPAddress1)
-_10w("", "Global", "$AkkVersion", 0, $7m)
-_10w("", "Global", "$SpawnExists", 0, $7r)
-_10w("", "Global", "$KPSInfoExists", 0, $7u)
-_10w("", "Global", "$PowerkatalogExists", 0, $7y)
-_10w("", "Global", "$SHDUpdaterExists", 0, $82)
-_10w("", "Global", "$NetPhoneClientExists", 0, $86)
-_10w("", "EventLog", "$EventLogFull", 0, $an)
-_10w("", "EventLog", "$EventLogCount", 0, $ao)
-_10w("", "EventLog", "$EventLogOldest", 0, $ap)
-_10w("", "SpawnStats", $7o & "TimeModified", 0, FileGetTime($7q, 0, 1))
+_10w("", "Global", "$AkkVersion", 0, $7p)
+_10w("", "Global", "$SpawnExists", 0, $7x)
+_10w("", "Global", "$KPSInfoExists", 0, $80)
+_10w("", "Global", "$PowerkatalogExists", 0, $84)
+_10w("", "Global", "$SHDUpdaterExists", 0, $88)
+_10w("", "Global", "$NetPhoneClientExists", 0, $8c)
+_10w("", "Global", "$ActiveWinTitle", 0, $7s)
+_10w("", "Global", "$hWndActivePid", 0, $7t)
+_10w("", "EventLog", "$EventLogFull", 0, $at)
+_10w("", "EventLog", "$EventLogCount", 0, $au)
+_10w("", "EventLog", "$EventLogOldest", 0, $av)
+_10w("", "SpawnStats", $7u & "TimeModified", 0, FileGetTime($7w, 0, 1))
+Local $c7 = _11e()
+_10w("", "Wmi", "$ComputerSystemProductName", 0, $c7[0])
+_10w("", "Wmi", "$ComputerSystemProductIdentifyingNumber", 0, $c7[1])
 _10w("", "AutoIt", "@Compiled", 0, @Compiled)
 _10w("", "AutoIt", "@ScriptName", 0, @ScriptName)
 _10w("", "AutoIt", "@ScriptDir", 0, @ScriptDir)
@@ -1529,217 +1559,243 @@ _10w("", "SystemInfo", "@DesktopWidth", 0, @DesktopWidth)
 _10w("", "SystemInfo", "@DesktopDepth", 0, @DesktopDepth)
 _10w("", "SystemInfo", "@DesktopRefresh", 0, @DesktopRefresh)
 EndFunc
-Func _10w($c1, $c2, $c3, $c4, $c5)
-If $c1 = "" Then
-$c1 = $9r & $c2 & ".ini"
+Func _10w($c8, $c9, $ca, $cb, $cc)
+If $c8 = "" Then
+$c8 = $9x & $c9 & ".ini"
 EndIf
-IniWrite($c1,($c4 ? $c2 & $c3 : $c3), $7l, $c5)
-IniWrite($9z, $c2, $c3, $c5)
+IniWrite($c8,($cb ? $c9 & $ca : $ca), $7o, $cc)
+IniWrite($a5, $c9, $ca, $cc)
 EndFunc
 Func _10x()
-_10y($7o, $7p, $7q, $7r)
-_10y("KPSInfo.exe", $7s, $7t, $7u)
-$al = _10y($aw, $ax, $ay & $bg, $az)
+_10y($7u, $7v, $7w, $7x)
+_10y("KPSInfo.exe", $7y, $7z, $80)
+$ar = _10y($b2, $b3, $b4 & $bm, $b5)
 EndFunc
-Func _10y($c6, $c7, $c8, $c9, $ca = @SW_HIDE)
-If $c9 And Not ProcessExists($c6) Then
-_10k($c6 & " wird gestartet")
-Return Run($c8, $c7, $ca)
+Func _10y($cd, $ce, $cf, $cg, $ch = @SW_HIDE)
+If $cg And Not ProcessExists($cd) Then
+_10k($cd & " wird gestartet")
+Return Run($cf, $ce, $ch)
 EndIf
 Return 0
 EndFunc
 Func _110()
 If _111() Then
-DirRemove($ae, 1)
-_112($ad, $ae)
-FileDelete($ae & "\Downloads alt.lnk")
-FileCreateShortcut($ae, $ad & "\Downloads alt")
-IniWrite($8s, "Downloads", "LastCleaningDate", _p5(@YEAR, @MON, @MDAY))
-Local Const $cb = '' & 'Wenn Sie noch wichtige Dateien im Ordner "Downloads" aufbewahren, die Sie benötigen, kopieren Sie diese bitte an einen anderen Ort.' & @CRLF & 'Alle Dateien aus dem Ordner "Downloads" wurden bereits in den Ordner "Downloads alt" verschoben.' & @CRLF & 'Der Ordner "Downloads alt" ist über eine Verknüpfung in "Downloads" zu erreichen.' & @CRLF & 'Alle Ihre Dateien die im Ordner "Downloads alt" bleiben, werden demnächst unwiderruflich GELÖSCHT!' & @CRLF & 'Bitte sichten und sichern Sie am besten jetzt sofort Ihre weiterhin benötigten Dateien.' & @CRLF & 'Soll der Ordner "Downloads alt" jetzt geöffnet werden?' & @CRLF
-If MsgBox(4 + 48 + 4096, "ACHTUNG WICHTIG! LÖSCHUNG IHRER DOWNLOAD-DATEIEN", $cb, $7b) = 6 Then
-ShellExecute($ae)
+DirRemove($ak, 1)
+_112($aj, $ak)
+FileDelete($ak & "\Downloads alt.lnk")
+FileCreateShortcut($ak, $aj & "\Downloads alt")
+IniWrite($8y, "Downloads", "LastCleaningDate", _p5(@YEAR, @MON, @MDAY))
+Local Const $ci = '' & 'Wenn Sie noch wichtige Dateien im Ordner "Downloads" aufbewahren, die Sie benötigen, kopieren Sie diese bitte an einen anderen Ort.' & @CRLF & 'Alle Dateien aus dem Ordner "Downloads" wurden bereits in den Ordner "Downloads alt" verschoben.' & @CRLF & 'Der Ordner "Downloads alt" ist über eine Verknüpfung in "Downloads" zu erreichen.' & @CRLF & 'Alle Ihre Dateien die im Ordner "Downloads alt" bleiben, werden demnächst unwiderruflich GELÖSCHT!' & @CRLF & 'Bitte sichten und sichern Sie am besten jetzt sofort Ihre weiterhin benötigten Dateien.' & @CRLF & 'Soll der Ordner "Downloads alt" jetzt geöffnet werden?' & @CRLF
+If MsgBox(4 + 48 + 4096, "ACHTUNG WICHTIG! LÖSCHUNG IHRER DOWNLOAD-DATEIEN", $ci, $7e) = 6 Then
+ShellExecute($ak)
 EndIf
 EndIf
 EndFunc
 Func _111()
 Return(_p5(@YEAR, @MON, @MDAY) - _113()) >= 14
 EndFunc
-Func _112($cc, $cd)
-If FileExists($cc) Then
-If Not FileExists($cd) Then DirCreate($cd)
-FileMove($cc & "\*.*", $cd, 1 + 8)
-Local Const $ce = _zl($cc, Default, 2, True)
+Func _112($cj, $ck)
+If FileExists($cj) Then
+If Not FileExists($ck) Then DirCreate($ck)
+FileMove($cj & "\*.*", $ck, 1 + 8)
+Local Const $cl = _zl($cj, Default, 2, True)
 If Not @error Then
-For $cf In $ce
-DirMove($cf, $cd, 1)
+For $cm In $cl
+DirMove($cm, $ck, 1)
 Next
 EndIf
 EndIf
 EndFunc
 Func _113()
-Return IniRead($8s, "Downloads", "LastCleaningDate", "NULL")
+Return IniRead($8y, "Downloads", "LastCleaningDate", "NULL")
 EndFunc
 Func _115()
-Local Const $cg = DriveGetLabel(@HomeDrive & "\")
-Local Const $ch = DriveSpaceFree(@HomeDrive & "\")
-Local Const $ci = DriveSpaceTotal(@HomeDrive & "\")
-Local Const $cj =($ch / $ci) * 100
-If $cj < $ah Then
-If(_p5(@YEAR, @MON, @MDAY) - IniRead($8s, "FreeSpaceCheck", "LastMailSendDate", "NULL")) >= 1 Then
-IniWrite($8s, "FreeSpaceCheck", "LastMailSendDate", _p5(@YEAR, @MON, @MDAY))
+Local Const $cn = DriveGetLabel(@HomeDrive & "\")
+Local Const $co = DriveSpaceFree(@HomeDrive & "\")
+Local Const $cp = DriveSpaceTotal(@HomeDrive & "\")
+Local Const $cq =($co / $cp) * 100
+If $cq < $an Then
+If(_p5(@YEAR, @MON, @MDAY) - IniRead($8y, "FreeSpaceCheck", "LastMailSendDate", "NULL")) >= 1 Then
+IniWrite($8y, "FreeSpaceCheck", "LastMailSendDate", _p5(@YEAR, @MON, @MDAY))
 For $26 = 0 To 9 Step 1
-If $ai[$26][0] <> "" And $ai[$26][1] = 1 Then
-_10k("Sending Mail to " & $ai[$26][0])
-_116($ai[$26][0], Round($cj, 2), $cg, $ch, $ci)
+If $ao[$26][0] <> "" And $ao[$26][1] = 1 Then
+_10k("Sending Mail to " & $ao[$26][0])
+_116($ao[$26][0], Round($cq, 2), $cn, $co, $cp)
 Sleep(3000)
 EndIf
 Next
 EndIf
 EndIf
 EndFunc
-Func _116($6o, $cj, $cg, $ch, $ci)
-Local $6m = "akk.exe (Gerrit)"
-Local $6n = "akk@kuechen-brauckhoff.de"
-Local $6p = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $cj & "% !"
-Local $ck[0]
-_yf($ck, "Akk Warnung wenig Speicherplatz auf:")
-_yf($ck, @ComputerName)
-If @IPAddress1 <> "0.0.0.0" Then _yf($ck, @IPAddress1)
-If @IPAddress2 <> "0.0.0.0" Then _yf($ck, @IPAddress2)
-If @IPAddress3 <> "0.0.0.0" Then _yf($ck, @IPAddress3)
-If @IPAddress4 <> "0.0.0.0" Then _yf($ck, @IPAddress4)
-_yf($ck, $cg & " (" & @HomeDrive & ")")
-_yf($ck, Round($ch / 1024, 2) & " GB frei von " & Round($ci / 1024, 2) & " GB")
-_yf($ck, $cj & "% frei")
-Local $cl = _10f($af, $6m, $6n, $6o, $6p, $ck, $ag, -1, 0)
-Local $cm = @error
-If $cl = 0 Then
-Local Const $cb = '' & 'DIE FESTPLATTE IST FAST VOLL!' & @CRLF & @CRLF & 'Bitte Herrn Heger bescheid geben:' & @CRLF & 'heger@easyconnectit.de' & @CRLF & 'oder 0176 23984427' & @CRLF & @CRLF & _z6($ck, @CRLF) & @CRLF & @CRLF & 'Mail failed with error code ' & $cm & @CRLF
-MsgBox(48 + 4096, "Warnung!", $cb)
+Func _116($6r, $cq, $cn, $co, $cp)
+Local $6p = "akk.exe (Gerrit)"
+Local $6q = "akk@kuechen-brauckhoff.de"
+Local $6s = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $cq & "% !"
+Local $cr[0]
+_yf($cr, "Akk Warnung wenig Speicherplatz auf:")
+_yf($cr, @ComputerName)
+If @IPAddress1 <> "0.0.0.0" Then _yf($cr, @IPAddress1)
+If @IPAddress2 <> "0.0.0.0" Then _yf($cr, @IPAddress2)
+If @IPAddress3 <> "0.0.0.0" Then _yf($cr, @IPAddress3)
+If @IPAddress4 <> "0.0.0.0" Then _yf($cr, @IPAddress4)
+_yf($cr, $cn & " (" & @HomeDrive & ")")
+_yf($cr, Round($co / 1024, 2) & " GB frei von " & Round($cp / 1024, 2) & " GB")
+_yf($cr, $cq & "% frei")
+Local $cs = _10f($al, $6p, $6q, $6r, $6s, $cr, $am, -1, 0)
+Local $ct = @error
+If $cs = 0 Then
+Local Const $ci = '' & 'DIE FESTPLATTE IST FAST VOLL!' & @CRLF & @CRLF & 'Bitte Herrn Heger bescheid geben:' & @CRLF & 'heger@easyconnectit.de' & @CRLF & 'oder 0176 23984427' & @CRLF & @CRLF & _z6($cr, @CRLF) & @CRLF & @CRLF & 'Mail failed with error code ' & $ct & @CRLF
+MsgBox(48 + 4096, "Warnung!", $ci)
 EndIf
 EndFunc
-Func _117()
-If $ak And ProcessExists($aw) Then
-$aj = InetGet("http://localhost:9182/metrics", $a2, 1, 1)
-$ak = 0
-EndIf
+Func _117($cu)
+Local $cv = ProcessList($cu)
+Local $6e = "", $6f = "", $1x = "", $6g = ""
+_zy($cu, $6e, $6f, $1x, $6g)
+Local $cw = 'akk_process_count{computername="@ComputerName@",process="' & $1x & '"} ' & $cv[0][0]
+Return $cw
 EndFunc
 Func _118()
-If Not $ak Then
-If InetGetInfo($aj, 2) Then
-If InetGetInfo($aj, 3) Then
-If FileGetSize($a2) Then FileCopy($a2, $a5, 1 + 8)
-Else
-FileDelete($a2)
-_10k("Error ScrapeDownload")
-EndIf
-InetClose($aj)
-$aj = 0
-$ak = 1
-EndIf
+If $aq And ProcessExists($b2) Then
+$ap = InetGet("http://localhost:9182/metrics", $a8, 1, 1)
+$aq = 0
 EndIf
 EndFunc
 Func _119()
-If Not $as Then
-If FileCopy($au, $ar, 1 + 8) Then
-$as = FileExists($ar)
+If Not $aq Then
+If InetGetInfo($ap, 2) Then
+If InetGetInfo($ap, 3) Then
+If FileGetSize($a8) Then FileCopy($a8, $ab, 1 + 8)
+Else
+FileDelete($a8)
+_10k("Error ScrapeDownload")
+EndIf
+InetClose($ap)
+$ap = 0
+$aq = 1
 EndIf
 EndIf
 EndFunc
 Func _11a()
-ProcessClose($aw)
-If Not $az Then
-Local $cn =(@OSArch = "X64") ? $b6 : $b2
-If FileCopy($cn, $ay, 1 + 8) Then
-$az = FileExists($ay)
+If Not $ay Then
+If FileCopy($b0, $ax, 1 + 8) Then
+$ay = FileExists($ax)
 EndIf
 EndIf
-If Not FileExists($b9) Then DirCreate($b9)
 EndFunc
 Func _11b()
-Local $co = 'metadata{computername="@ComputerName@",username="@UserName@"'
-If $bd <> "NULL" And StringLen($bd) And Not StringIsSpace($bd) Then
-$co &= "," & $bd
+ProcessClose($b2)
+If Not $b5 Then
+Local $cx =(@OSArch = "X64") ? $bc : $b8
+If FileCopy($cx, $b4, 1 + 8) Then
+$b5 = FileExists($b4)
 EndIf
-$co &= '} 1'
-$am = _xa()
-Local $cp = 'akk_idletime_sec{computername="@ComputerName@"} ' & $am / 1e3
-Local $cq = MemGetStats()
-Local $cr = 'akk_memstats_load{computername="@ComputerName@"} ' & $cq[$36]
-Local $cs = 'akk_memstats_total_physram_gb{computername="@ComputerName@"} ' & Round($cq[$37] / 1024 / 1024, 2)
-Local $ct = 'akk_memstats_avail_physram_gb{computername="@ComputerName@"} ' & Round($cq[$38] / 1024 / 1024, 2)
-Local $cu = 'akk_memstats_total_pagefile_gb{computername="@ComputerName@"} ' & Round($cq[$39] / 1024 / 1024, 2)
-Local $cv = 'akk_memstats_avail_pagefile_gb{computername="@ComputerName@"} ' & Round($cq[$3a] / 1024 / 1024, 2)
-Local $cw = 'akk_memstats_total_virtual_gb{computername="@ComputerName@"} ' & Round($cq[$3b] / 1024 / 1024, 2)
-Local $cx = 'akk_memstats_avail_virtual_gb{computername="@ComputerName@"} ' & Round($cq[$3c] / 1024 / 1024, 2)
-Local $cy = 'akk_eventlog_full{computername="@ComputerName@"} ' &($an ? 1 : 0)
-Local $cz = 'akk_eventlog_count{computername="@ComputerName@"} ' & $ao
-Local $d0 = 'akk_eventlog_oldest{computername="@ComputerName@"} ' & $ap
-$be[1] = $co
-$be[2] = $cp
-$be[3] = $cr
-$be[4] = $cs
-$be[5] = $ct
-$be[6] = $cu
-$be[7] = $cv
-$be[8] = $cw
-$be[9] = $cx
-$be[10] = $cy
-$be[11] = $cz
-$be[12] = $d0
-$be[0] = UBound($be) - 1
-_zr($bb, $bf)
-If Not _11c($be, $bf, 3) Then
-_zs($bb, $be, 1)
+EndIf
+If Not FileExists($bf) Then DirCreate($bf)
+EndFunc
+Func _11c()
+Local $cy = 'akk_metadata{computername="@ComputerName@",username="@UserName@"' & ',netphone_user="' &($7s = "LockScreen" ? "LockScreen" : $7r) & '"'
+If $bj <> "NULL" And StringLen($bj) And Not StringIsSpace($bj) Then
+$cy &= "," & $bj
+EndIf
+$cy &= '} 1'
+$as = _xa()
+Local $cz = 'akk_idletime_sec{computername="@ComputerName@"} ' & $as / 1e3
+Local $d0 = MemGetStats()
+Local $d1 = 'akk_memstats_load{computername="@ComputerName@"} ' & $d0[$36]
+Local $d2 = 'akk_memstats_total_physram_gb{computername="@ComputerName@"} ' & Round($d0[$37] / 1024 / 1024, 2)
+Local $d3 = 'akk_memstats_avail_physram_gb{computername="@ComputerName@"} ' & Round($d0[$38] / 1024 / 1024, 2)
+Local $d4 = 'akk_memstats_total_pagefile_gb{computername="@ComputerName@"} ' & Round($d0[$39] / 1024 / 1024, 2)
+Local $d5 = 'akk_memstats_avail_pagefile_gb{computername="@ComputerName@"} ' & Round($d0[$3a] / 1024 / 1024, 2)
+Local $d6 = 'akk_memstats_total_virtual_gb{computername="@ComputerName@"} ' & Round($d0[$3b] / 1024 / 1024, 2)
+Local $d7 = 'akk_memstats_avail_virtual_gb{computername="@ComputerName@"} ' & Round($d0[$3c] / 1024 / 1024, 2)
+Local $d8 = 'akk_eventlog_full{computername="@ComputerName@"} ' &($at ? 1 : 0)
+Local $d9 = 'akk_eventlog_count{computername="@ComputerName@"} ' & $au
+Local $da = 'akk_eventlog_oldest{computername="@ComputerName@"} ' & $av
+Local $db = _117("chrome.exe")
+Local $dc = _117("javaw.exe")
+Local $dd = _117("FusionFX.exe")
+$bk[1] = $cy
+$bk[2] = $cz
+$bk[3] = $d1
+$bk[4] = $d2
+$bk[5] = $d3
+$bk[6] = $d4
+$bk[7] = $d5
+$bk[8] = $d6
+$bk[9] = $d7
+$bk[10] = $d8
+$bk[11] = $d9
+$bk[12] = $da
+$bk[13] = $db
+$bk[14] = $dc
+$bk[15] = $dd
+$bk[0] = UBound($bk) - 1
+_zr($bh, $bl)
+If Not _11d($bk, $bl, 3) Then
+_zs($bh, $bk, 1)
 EndIf
 EndFunc
-Func _11c(Const ByRef $d1, Const ByRef $d2, $d3 = 0)
-If Not(IsArray($d1)) Or Not(IsArray($d2)) Then
+Func _11d(Const ByRef $de, Const ByRef $df, $dg = 0)
+If Not(IsArray($de)) Or Not(IsArray($df)) Then
 Return SetError(1, 0, 0)
 EndIf
-Local $66 = UBound($d1, 0)
-If $66 <> UBound($d2, 0) Then
+Local $66 = UBound($de, 0)
+If $66 <> UBound($df, 0) Then
 Return SetError(2, 0, 0)
 EndIf
-Local $d4 = UBound($d1, 1)
-Local $d5 = UBound($d1, 2)
-If $d4 <> UBound($d2, 1) Or $d5 <> UBound($d2, 2) Then
+Local $dh = UBound($de, 1)
+Local $di = UBound($de, 2)
+If $dh <> UBound($df, 1) Or $di <> UBound($df, 2) Then
 Return SetError(3, 0, 0)
 EndIf
-Local $d6, $d7
-Switch $d3
+Local $dj, $dk
+Switch $dg
 Case 0
-For $26 = 0 To $d4 - 1
-For $5e = 0 To $d5 - 1
-If $d1[$26][$5e] <> $d1[$26][$5e] Then
+For $26 = 0 To $dh - 1
+For $5e = 0 To $di - 1
+If $de[$26][$5e] <> $de[$26][$5e] Then
 Return SetError(4, 0, 0)
 EndIf
 Next
 Next
 Case 1
-For $26 = 0 To $d4 - 1
-For $5e = 0 To $d5 - 1
-$d6 &= $d1[$26][$5e]
-$d7 &= $d2[$26][$5e]
+For $26 = 0 To $dh - 1
+For $5e = 0 To $di - 1
+$dj &= $de[$26][$5e]
+$dk &= $df[$26][$5e]
 Next
-If $d6 <> $d7 Then
+If $dj <> $dk Then
 Return SetError(4, 0, 0)
 EndIf
 Next
 Case 2
-For $5e = 0 To $d5 - 1
-For $26 = 0 To $d4 - 1
-$d6 &= $d1[$26][$5e]
-$d7 &= $d2[$26][$5e]
+For $5e = 0 To $di - 1
+For $26 = 0 To $dh - 1
+$dj &= $de[$26][$5e]
+$dk &= $df[$26][$5e]
 Next
-If $d6 <> $d7 Then
+If $dj <> $dk Then
 Return SetError(4, 0, 0)
 EndIf
 Next
 Case 3
-If _z6($d1) <> _z6($d2) Then
+If _z6($de) <> _z6($df) Then
 Return SetError(4, 0, 0)
 EndIf
 EndSwitch
 Return 1
+EndFunc
+Func _11e()
+Local $dl[2] = ["(Unknown)", "(Unknown)"], $dm, $dn
+$dn = ObjGet("winmgmts:\\.\root\cimv2")
+$dm = $dn.ExecQuery("Select * From Win32_ComputerSystemProduct", "WQL", 0x30)
+If IsObj($dm) Then
+For $do In $dm
+$dl[0] = $do.Name
+$dl[1] = $do.IdentifyingNumber
+Next
+Return $dl
+EndIf
+Return SetError(1, 0, $dl)
 EndFunc
