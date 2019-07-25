@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=..\bin\akk.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.93
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.102
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -106,6 +106,9 @@ Global Const $ComputerName = StringReplace(StringFormat("%-16s", @ComputerName),
 Global Const $AkkVersion = FileGetVersion(@ScriptFullPath)
 Global Const $ScreenCaptureWnd = False
 Global $NetPhoneUserChecksum = ""
+Global $NetPhoneUser
+Global $ActiveWinTitle
+Global $hWndActivePid
 
 Global Const $SpawnFileName = "ShadowSpawn.exe"
 Global Const $SpawnDir = @MyDocumentsDir & "\Isopedia GmbH\ShadowSpawn\"
@@ -194,13 +197,13 @@ Global $LogFileName = ""
 Global Const $LogDir = $AkkDir & "log\"
 Global $LogPath = $LogDir & $LogFileName
 Global $LogExists = FileExists($LogPath)
-If Not $LogExists Then DirCreate($LogDir)
+If Not FileExists($LogDir) Then DirCreate($LogDir)
 
 Global $LogNetFileName = ""
 Global Const $LogNetDir = $AkkRootDir & "log\" & @ComputerName & "\"
 Global $LogNetPath = $LogNetDir & $LogNetFileName
 Global $LogNetExists = FileExists($LogNetPath)
-If Not $LogNetExists Then DirCreate($LogNetDir)
+If Not FileExists($LogNetDir) Then DirCreate($LogNetDir)
 
 Global $LogGlobalNetFileName = "akkGlobal.log"
 Global Const $LogGlobalNetDir = $AkkRootDir & "log\"
@@ -211,7 +214,7 @@ Global $LogArchiveNetFileName = ""
 Global Const $LogArchiveNetDir = $AkkRootDir & "log\_archive\"
 Global $LogArchiveNetPath = $LogArchiveNetDir & $LogArchiveNetFileName
 Global $LogArchiveNetExists = FileExists($LogArchiveNetPath)
-If Not $LogArchiveNetExists Then DirCreate($LogArchiveNetDir)
+If Not FileExists($LogArchiveNetDir) Then DirCreate($LogArchiveNetDir)
 
 Global Const $IniGlobalNetLogFileName = "akkGlobal.ini"
 Global Const $IniGlobalNetLogDir = $AkkRootDir & "log\"
@@ -242,13 +245,13 @@ Global Const $LogScreenCapFileName = ""
 Global Const $LogScreenCapDir = $AkkDir & "log\sc\"
 Global Const $LogScreenCapPath = $LogScreenCapDir & $LogScreenCapFileName
 Global Const $LogScreenCapExists = FileExists($LogScreenCapPath)
-If Not $LogScreenCapExists Then DirCreate($LogScreenCapDir)
+If Not FileExists($LogScreenCapDir) Then DirCreate($LogScreenCapDir)
 
 Global Const $LogScreenCapNetFileName = ""
 Global Const $LogScreenCapNetDir = $AkkRootDir & "log\_sc\NetPhoneUser\"
 Global Const $LogScreenCapNetPath = $LogScreenCapNetDir & $LogScreenCapNetFileName
 Global Const $LogScreenCapNetExists = FileExists($LogScreenCapNetPath)
-If Not $LogScreenCapNetExists Then DirCreate($LogScreenCapNetDir)
+If Not FileExists($LogScreenCapNetDir) Then DirCreate($LogScreenCapNetDir)
 
 Global Const $DownloadsDir = @UserProfileDir & "\Downloads"
 Global Const $DownloadsOldDir = $DownloadsDir & " alt"
@@ -337,8 +340,14 @@ Global Const $WmiExporterMetadataDir = $WmiExporterCollectorTextfileDir
 Global Const $WmiExporterMetadataPath = $WmiExporterMetadataDir & $WmiExporterMetadataFileName
 Global $WmiExporterMetadataExists = FileExists($WmiExporterMetadataPath)
 
+Global Const $PromScrapeTargetsFileName = ""
+Global Const $PromScrapeTargetsDir = $AkkRootDir & "prometheus\targets\"
+Global Const $PromScrapeTargetsPath = $PromScrapeTargetsDir & $PromScrapeTargetsFileName
+Global Const $PromScrapeTargetsExists = FileExists($PromScrapeTargetsPath)
+If Not FileExists($PromScrapeTargetsDir) Then DirCreate($PromScrapeTargetsDir)
+
 Global $WmiExporterMetadataString
-Global $WmiExporterMetadataArray[13]
+Global $WmiExporterMetadataArray[16]
 Global $WmiExporterMetadataArrayRet
 
 Global Const $WmiExporterParams = '' _
@@ -373,6 +382,8 @@ CheckHomeDriveSpaceFree()
 ;~ GetWinList()
 ;~ ScreenCaptureWnd()
 ScreenCaptureNetPhoneClient()
+WriteMetaDataFile()
+WriteScrapeTargetFile()
 WriteLogStartup()
 
 If @Compiled Then Sleep(5e3)
@@ -537,7 +548,6 @@ EndFunc   ;==>ReadLocalConfig
 Func ScreenCaptureNetPhoneClient()
     Local $hWndActive = ScreenCaptureWnd()
     Local $hWnd = WinGetHandle("NetPhone Client")
-;~     Local $NetPhoneUserChecksumIni = "NULL"
     If @error Then
         If ProcessExists($NetPhoneClientFileName) Then ConsoleLog("Error ScreenCaptureNetPhoneClient")
     Else
@@ -551,8 +561,6 @@ Func ScreenCaptureNetPhoneClient()
             $aPos[3] = $aPos[1] + 15
             WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneClientPos", 0, _ArrayToString($aPos))
             $NetPhoneUserChecksum = PixelChecksum($aPos[0], $aPos[1], $aPos[2], $aPos[3], 1, Default, 1)
-;~             $NetPhoneUserChecksumIni = IniRead($IniGlobalNetLogDir & "NetPhoneUser" & ".ini", "$NetPhoneUser", $NetPhoneUserChecksum, "NULL")
-;~             If $NetPhoneUserChecksumIni = "NULL" Then
             If Not FileExists($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png") _
                     And Not FileExists($LogScreenCapNetDir & "del\" & $NetPhoneUserChecksum & ".png") _
                     And Not FileExists($LogScreenCapNetDir & "ini\" & $NetPhoneUserChecksum & ".png") Then
@@ -562,12 +570,9 @@ Func ScreenCaptureNetPhoneClient()
         EndIf
     EndIf
     WinActivate($hWndActive)
+    $NetPhoneUser = IniRead($IniGlobalExPath, "$NetPhoneUser", $NetPhoneUserChecksum, "NULL")
+    WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUser", 0, $NetPhoneUser)
     WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $NetPhoneUserChecksum)
-;~     If StringStripWS($NetPhoneUserChecksum, $STR_STRIPLEADING + $STR_STRIPTRAILING) <> "" Then
-;~         If $NetPhoneUserChecksumIni = "NULL" Then
-;~             IniWrite($IniGlobalNetLogDir & "NetPhoneUser" & ".ini", "$NetPhoneUser", $NetPhoneUserChecksum, "")
-;~         EndIf
-;~     EndIf
 EndFunc   ;==>ScreenCaptureNetPhoneClient
 
 Func ScreenCaptureWnd()
@@ -577,6 +582,7 @@ Func ScreenCaptureWnd()
     For $i = 1 To $List[0][0]
         If $List[$i][0] <> "" Then
             If $List[$i][2] = $WIN_STATE_ACTIVE Then
+                $ActiveWinTitle = $List[$i][0]
                 $hWndActive = $List[$i][1]
             EndIf
             If $ScreenCaptureWnd & StringStripWS($List[$i][0], $STR_STRIPLEADING + $STR_STRIPTRAILING) = "NetPhone Client" Then
@@ -595,6 +601,7 @@ Func ScreenCaptureWnd()
         EndIf
     Next
     $hWnd = HWnd($hWndActive)
+    $hWndActivePid = WinGetProcess($hWnd)
     WinActivate($hWnd)
     Return $hWnd
 EndFunc   ;==>ScreenCaptureWnd
@@ -624,6 +631,8 @@ Func WriteLogStartup()
     WriteLogStartupIni("", "Global", "$PowerkatalogExists", 0, $PowerkatalogExists)
     WriteLogStartupIni("", "Global", "$SHDUpdaterExists", 0, $SHDUpdaterExists)
     WriteLogStartupIni("", "Global", "$NetPhoneClientExists", 0, $NetPhoneClientExists)
+    WriteLogStartupIni("", "Global", "$ActiveWinTitle", 0, $ActiveWinTitle)
+    WriteLogStartupIni("", "Global", "$hWndActivePid", 0, $hWndActivePid)
 
     WriteLogStartupIni("", "EventLog", "$EventLogFull", 0, $EventLogFull)
     WriteLogStartupIni("", "EventLog", "$EventLogCount", 0, $EventLogCount)
@@ -633,6 +642,10 @@ Func WriteLogStartup()
 
 ;~     WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $NetPhoneUserChecksum)
 ;~     If $NetPhoneUserChecksum <> "" Then IniWrite($IniGlobalNetLogDir & "NetPhoneUser" & ".ini", "$NetPhoneUser", $NetPhoneUserChecksum, "")
+
+    Local $aComputerSystemProduct = _ComputerNameAndModel()
+    WriteLogStartupIni("", "Wmi", "$ComputerSystemProductName", 0, $aComputerSystemProduct[0])
+    WriteLogStartupIni("", "Wmi", "$ComputerSystemProductIdentifyingNumber", 0, $aComputerSystemProduct[1])
 
     WriteLogStartupIni("", "AutoIt", "@Compiled", 0, @Compiled)
     WriteLogStartupIni("", "AutoIt", "@ScriptName", 0, @ScriptName)
@@ -907,6 +920,15 @@ Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $iFreeSpace, $iTota
 EndFunc   ;==>SendMailLowSpace
 #EndRegion FreeSpaceCheck
 #Region WMI Exporter
+
+Func MetaProcessCount($ProcessName)
+    Local $aProcessList = ProcessList($ProcessName)
+    Local $sDrive = "", $sDir = "", $sFileName = "", $sExtension = ""
+    _PathSplit($ProcessName, $sDrive, $sDir, $sFileName, $sExtension)
+    Local $MetaProcessCount = 'akk_process_count{computername="@ComputerName@",process="' & $sFileName & '"} ' & $aProcessList[0][0]
+    Return $MetaProcessCount
+EndFunc   ;==>MetaProcessCount
+
 Func Scrape()
     If $ScrapeComplete And ProcessExists($WmiExporterLocalFileName) Then
         $hDownload = InetGet("http://localhost:9182/metrics", $LogScrapePath, $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
@@ -950,7 +972,8 @@ Func SetupWmiExporter()
 EndFunc   ;==>SetupWmiExporter
 
 Func WriteMetaDataFile()
-    Local $MetaData = 'metadata{computername="@ComputerName@",username="@UserName@"'
+    Local $MetaData = 'akk_metadata{computername="@ComputerName@",username="@UserName@"' _
+             & ',netphone_user="' & ($ActiveWinTitle = "LockScreen" ? "LockScreen" : $NetPhoneUser) & '"'
     If $WmiExporterMetadataString <> "NULL" And StringLen($WmiExporterMetadataString) And Not StringIsSpace($WmiExporterMetadataString) Then
         $MetaData &= "," & $WmiExporterMetadataString
     EndIf
@@ -972,6 +995,10 @@ Func WriteMetaDataFile()
     Local $MetaEventLogCount = 'akk_eventlog_count{computername="@ComputerName@"} ' & $EventLogCount
     Local $MetaEventLogOldest = 'akk_eventlog_oldest{computername="@ComputerName@"} ' & $EventLogOldest
 
+    Local $MetaProcessCountChrome = MetaProcessCount("chrome.exe")
+    Local $MetaProcessCountJavaw = MetaProcessCount("javaw.exe")
+    Local $MetaProcessCountFusionFX = MetaProcessCount("FusionFX.exe")
+
     $WmiExporterMetadataArray[1] = $MetaData
     $WmiExporterMetadataArray[2] = $MetaIdleTime
     $WmiExporterMetadataArray[3] = $MetaMemLoad
@@ -984,12 +1011,37 @@ Func WriteMetaDataFile()
     $WmiExporterMetadataArray[10] = $MetaEventLogFull
     $WmiExporterMetadataArray[11] = $MetaEventLogCount
     $WmiExporterMetadataArray[12] = $MetaEventLogOldest
+    $WmiExporterMetadataArray[13] = $MetaProcessCountChrome
+    $WmiExporterMetadataArray[14] = $MetaProcessCountJavaw
+    $WmiExporterMetadataArray[15] = $MetaProcessCountFusionFX
     $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
     _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
     If Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet, 3) Then
         _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
     EndIf
 EndFunc   ;==>WriteMetaDataFile
+
+Func WriteScrapeTargetFile()
+    Local $Lines[1]
+    _ArrayAdd($Lines, '[')
+    _ArrayAdd($Lines, '  {')
+    _ArrayAdd($Lines, '    "labels": {')
+    _ArrayAdd($Lines, '      "job": "node",')
+    _ArrayAdd($Lines, '      "instance": "@ComputerName@"')
+    _ArrayAdd($Lines, '    },')
+    _ArrayAdd($Lines, '    "targets": [')
+    _ArrayAdd($Lines, '      "@IPAddress1@:9182"')
+    _ArrayAdd($Lines, '    ]')
+    _ArrayAdd($Lines, '  }')
+    _ArrayAdd($Lines, ']')
+    Local $CurrentFile
+    $Lines[0] = UBound($Lines) - 1
+    Local $FilePath = $PromScrapeTargetsDir & "@ComputerName@.json"
+    _FileReadToArray($FilePath, $CurrentFile)
+    If Not _ArrayCompare($Lines, $CurrentFile, 3) Then
+        _FileWriteFromArray($FilePath, $Lines, 1)
+    EndIf
+EndFunc   ;==>WriteScrapeTargetFile
 #EndRegion WMI Exporter
 #Region UDF
 ;~ https://www.autoitscript.com/forum/topic/182506-array-comparison/
@@ -1060,5 +1112,20 @@ Func _ArrayCompare(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
     Return 1
 
 EndFunc   ;==>_ArrayCompare
+
+Func _ComputerNameAndModel()
+    Local $aReturn[2] = ["(Unknown)", "(Unknown)"], $oColItems, $oWMIService
+
+    $oWMIService = ObjGet("winmgmts:\\.\root\cimv2")
+    $oColItems = $oWMIService.ExecQuery("Select * From Win32_ComputerSystemProduct", "WQL", 0x30)
+    If IsObj($oColItems) Then
+        For $oObjectItem In $oColItems
+            $aReturn[0] = $oObjectItem.Name
+            $aReturn[1] = $oObjectItem.IdentifyingNumber
+        Next
+        Return $aReturn
+    EndIf
+    Return SetError(1, 0, $aReturn)
+EndFunc   ;==>_ComputerNameAndModel
 #EndRegion UDF
 
