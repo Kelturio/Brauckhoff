@@ -1,0 +1,11 @@
+[
+  {
+    "labels": {
+      "job": "node",
+      "instance": "DATTELN_BUCH41"
+    },
+    "targets": [
+      "172.16.128.45:9182"
+    ]
+  }
+]
