@@ -31,5 +31,5 @@ scrape_configs:
   file_sd_configs:
   - files:
     - /media/srv-dc01/edv/Gerrit/akk/prometheus/targets/*.json
-    refresh_interval: 2m
+    refresh_interval: 10m
     
