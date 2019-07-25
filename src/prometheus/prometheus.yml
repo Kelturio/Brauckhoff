@@ -1,0 +1,90 @@
+# my global config
+global:
+  scrape_interval:     60s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  scrape_timeout:      40s
+  evaluation_interval: 60s # Evaluate rules every 15 seconds. The default is every 1 minute.
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'node'
+  
+    file_sd_configs:
+    - files:
+      - /media/srv-dc01/edv/Gerrit/akk/prometheus/targets/*.json
+      refresh_interval: 10m
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: [
+        'localhost:9100'
+        #'172.16.128.12:9182',
+        #'172.16.128.14:9182',
+        #'172.16.128.15:9182',
+        #'172.16.128.28:9182',
+        #'172.16.128.31:9182',
+        #'172.16.128.39:9182',
+        #'172.16.128.41:9182',
+        #'172.16.128.42:9182',
+        #'172.16.128.45:9182',
+        #'172.16.128.46:9182',
+        #'172.16.128.51:9182',
+        #'172.16.128.52:9182',
+        #'172.16.128.55:9182',
+        #'172.16.128.58:9182',
+        #'172.16.128.59:9182',
+        #'172.16.128.60:9182',
+        #'172.16.128.61:9182',
+        #'172.16.128.65:9182',
+        #'172.16.128.75:9182',
+        #'172.16.192.11:9182',
+        #'172.16.192.13:9182',
+        #'172.16.192.16:9182',
+        #'172.16.192.18:9182',
+        #'172.16.192.19:9182',
+        #'172.16.192.22:9182',
+        #'172.16.192.26:9182',
+        #'172.16.192.27:9182',
+        #'172.16.192.32:9182',
+        #'172.16.192.33:9182',
+        #'172.16.192.34:9182',
+        #'172.16.192.35:9182',
+        #'172.16.192.36:9182',
+        #'172.16.192.37:9182',
+        #'172.16.192.41:9182',
+        #'172.16.192.42:9182'
+        ]
+#    params:
+#      collect[]:
+#        - cpu
+#        - meminfo
+#        - diskstats
+#        - netdev
+#        - netstat
+#        - filefd
+#        - filesystem
+#        - xfs
+#        - systemd
