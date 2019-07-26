@@ -1,9 +1,9 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
-#AutoIt3Wrapper_Icon=icons\MyAutoIt3_Blue.ico
+#AutoIt3Wrapper_Icon=icons\MyAutoIt3_Green.ico
 #AutoIt3Wrapper_Outfile=..\bin\akk.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.102
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.106
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -105,6 +105,7 @@ Global Const $IntMax = 0x7FFFFFFFFFFFFFFF
 Global Const $ComputerName = StringReplace(StringFormat("%-16s", @ComputerName), " ", ".")
 Global Const $AkkVersion = FileGetVersion(@ScriptFullPath)
 Global Const $ScreenCaptureWnd = False
+Global Const $ScreenCaptureWinActivate = False
 Global $NetPhoneUserChecksum = ""
 Global $NetPhoneUser
 Global $ActiveWinTitle
@@ -552,24 +553,25 @@ Func ScreenCaptureNetPhoneClient()
         If ProcessExists($NetPhoneClientFileName) Then ConsoleLog("Error ScreenCaptureNetPhoneClient")
     Else
         Local $iState = WinGetState($hWnd)
-        If WinActivate($hWnd) Then
+        If $ScreenCaptureWinActivate Then
+            WinActivate($hWnd)
             Sleep(250)
-            Local $aPos = WinGetPos($hWnd)
-            $aPos[0] = $aPos[0] + 57
-            $aPos[1] = $aPos[1] + $aPos[3] - 54
-            $aPos[2] = $aPos[0] + 174
-            $aPos[3] = $aPos[1] + 15
-            WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneClientPos", 0, _ArrayToString($aPos))
-            $NetPhoneUserChecksum = PixelChecksum($aPos[0], $aPos[1], $aPos[2], $aPos[3], 1, Default, 1)
-            If Not FileExists($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png") _
-                    And Not FileExists($LogScreenCapNetDir & "del\" & $NetPhoneUserChecksum & ".png") _
-                    And Not FileExists($LogScreenCapNetDir & "ini\" & $NetPhoneUserChecksum & ".png") Then
-                _ScreenCapture_Capture($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png", $aPos[0], $aPos[1], $aPos[2], $aPos[3], 0)
-            EndIf
-            If BitAND($iState, $WIN_STATE_MINIMIZED) Then WinSetState($hWnd, Default, @SW_MINIMIZE)
         EndIf
+        Local $aPos = WinGetPos($hWnd)
+        $aPos[0] = $aPos[0] + 57
+        $aPos[1] = $aPos[1] + $aPos[3] - 54
+        $aPos[2] = $aPos[0] + 174
+        $aPos[3] = $aPos[1] + 15
+        WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneClientPos", 0, _ArrayToString($aPos))
+        $NetPhoneUserChecksum = PixelChecksum($aPos[0], $aPos[1], $aPos[2], $aPos[3], 1, Default, 1)
+        If Not FileExists($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png") _
+                And Not FileExists($LogScreenCapNetDir & "del\" & $NetPhoneUserChecksum & ".png") _
+                And Not FileExists($LogScreenCapNetDir & "ini\" & $NetPhoneUserChecksum & ".png") Then
+            _ScreenCapture_Capture($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png", $aPos[0], $aPos[1], $aPos[2], $aPos[3], 0)
+        EndIf
+        If BitAND($iState, $WIN_STATE_MINIMIZED) Then WinSetState($hWnd, Default, @SW_MINIMIZE)
     EndIf
-    WinActivate($hWndActive)
+    If $ScreenCaptureWinActivate Then WinActivate($hWndActive)
     $NetPhoneUser = IniRead($IniGlobalExPath, "$NetPhoneUser", $NetPhoneUserChecksum, "NULL")
     WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUser", 0, $NetPhoneUser)
     WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $NetPhoneUserChecksum)
@@ -925,7 +927,7 @@ Func MetaProcessCount($ProcessName)
     Local $aProcessList = ProcessList($ProcessName)
     Local $sDrive = "", $sDir = "", $sFileName = "", $sExtension = ""
     _PathSplit($ProcessName, $sDrive, $sDir, $sFileName, $sExtension)
-    Local $MetaProcessCount = 'akk_process_count{computername="@ComputerName@",process="' & $sFileName & '"} ' & $aProcessList[0][0]
+    Local $MetaProcessCount = 'akk_process_count{process="' & $sFileName & '"} ' & $aProcessList[0][0]
     Return $MetaProcessCount
 EndFunc   ;==>MetaProcessCount
 
@@ -972,7 +974,7 @@ Func SetupWmiExporter()
 EndFunc   ;==>SetupWmiExporter
 
 Func WriteMetaDataFile()
-    Local $MetaData = 'akk_metadata{computername="@ComputerName@",username="@UserName@"' _
+    Local $MetaData = 'akk_metadata{username="@UserName@",ip_address="@IPAddress1@"' _
              & ',netphone_user="' & ($ActiveWinTitle = "LockScreen" ? "LockScreen" : $NetPhoneUser) & '"'
     If $WmiExporterMetadataString <> "NULL" And StringLen($WmiExporterMetadataString) And Not StringIsSpace($WmiExporterMetadataString) Then
         $MetaData &= "," & $WmiExporterMetadataString
@@ -980,20 +982,20 @@ Func WriteMetaDataFile()
     $MetaData &= '} 1'
 
     $IdleTime = _Timer_GetIdleTime()
-    Local $MetaIdleTime = 'akk_idletime_sec{computername="@ComputerName@"} ' & $IdleTime / 1e3
+    Local $MetaIdleTime = 'akk_idletime_sec ' & $IdleTime / 1e3
 
     Local $aMemStats = MemGetStats()
-    Local $MetaMemLoad = 'akk_memstats_load{computername="@ComputerName@"} ' & $aMemStats[$MEM_LOAD] ; Memory Load (Percentage of memory in use)
-    Local $MetaMemTotalPhysRam = 'akk_memstats_total_physram_gb{computername="@ComputerName@"} ' & Round($aMemStats[$MEM_TOTALPHYSRAM] / 1024 / 1024, 2) ; Total physical RAM
-    Local $MetaMemAvailPhysRam = 'akk_memstats_avail_physram_gb{computername="@ComputerName@"} ' & Round($aMemStats[$MEM_AVAILPHYSRAM] / 1024 / 1024, 2) ; Available physical RAM
-    Local $MetaMemTotalPageFile = 'akk_memstats_total_pagefile_gb{computername="@ComputerName@"} ' & Round($aMemStats[$MEM_TOTALPAGEFILE] / 1024 / 1024, 2) ; Total Pagefile
-    Local $MetaMemAvailPageFile = 'akk_memstats_avail_pagefile_gb{computername="@ComputerName@"} ' & Round($aMemStats[$MEM_AVAILPAGEFILE] / 1024 / 1024, 2) ; Available Pagefile
-    Local $MetaMemTotalVirtual = 'akk_memstats_total_virtual_gb{computername="@ComputerName@"} ' & Round($aMemStats[$MEM_TOTALVIRTUAL] / 1024 / 1024, 2) ; Total virtual
-    Local $MetaMemAvailVirtual = 'akk_memstats_avail_virtual_gb{computername="@ComputerName@"} ' & Round($aMemStats[$MEM_AVAILVIRTUAL] / 1024 / 1024, 2) ; Available virtual
+    Local $MetaMemLoad = 'akk_memstats_load ' & $aMemStats[$MEM_LOAD] ; Memory Load (Percentage of memory in use)
+    Local $MetaMemTotalPhysRam = 'akk_memstats_total_physram_gb ' & Round($aMemStats[$MEM_TOTALPHYSRAM] / 1024 / 1024, 2) ; Total physical RAM
+    Local $MetaMemAvailPhysRam = 'akk_memstats_avail_physram_gb ' & Round($aMemStats[$MEM_AVAILPHYSRAM] / 1024 / 1024, 2) ; Available physical RAM
+    Local $MetaMemTotalPageFile = 'akk_memstats_total_pagefile_gb ' & Round($aMemStats[$MEM_TOTALPAGEFILE] / 1024 / 1024, 2) ; Total Pagefile
+    Local $MetaMemAvailPageFile = 'akk_memstats_avail_pagefile_gb ' & Round($aMemStats[$MEM_AVAILPAGEFILE] / 1024 / 1024, 2) ; Available Pagefile
+    Local $MetaMemTotalVirtual = 'akk_memstats_total_virtual_gb ' & Round($aMemStats[$MEM_TOTALVIRTUAL] / 1024 / 1024, 2) ; Total virtual
+    Local $MetaMemAvailVirtual = 'akk_memstats_avail_virtual_gb ' & Round($aMemStats[$MEM_AVAILVIRTUAL] / 1024 / 1024, 2) ; Available virtual
 
-    Local $MetaEventLogFull = 'akk_eventlog_full{computername="@ComputerName@"} ' & ($EventLogFull ? 1 : 0)
-    Local $MetaEventLogCount = 'akk_eventlog_count{computername="@ComputerName@"} ' & $EventLogCount
-    Local $MetaEventLogOldest = 'akk_eventlog_oldest{computername="@ComputerName@"} ' & $EventLogOldest
+    Local $MetaEventLogFull = 'akk_eventlog_full ' & ($EventLogFull ? 1 : 0)
+    Local $MetaEventLogCount = 'akk_eventlog_count ' & $EventLogCount
+    Local $MetaEventLogOldest = 'akk_eventlog_oldest ' & $EventLogOldest
 
     Local $MetaProcessCountChrome = MetaProcessCount("chrome.exe")
     Local $MetaProcessCountJavaw = MetaProcessCount("javaw.exe")
