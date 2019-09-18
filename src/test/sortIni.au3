@@ -12,37 +12,37 @@ _Example($sFilePath)
 
 Func _Example($sFilePath)
 	Local $aSections[0][2]
-    Local $aSection[0][2]
-    Local $aResult[0][1]
+	Local $aSection[0][2]
+	Local $aResult[0][1]
 	Local $aLines = FileReadToArray($sFilePath)
-    If @error Then Return SetError(@error, 0, 0)
-    Local $sLine
-    Local $iSplitIdx
+	If @error Then Return SetError(@error, 0, 0)
+	Local $sLine
+	Local $iSplitIdx
 	For $i = 0 To UBound($aLines) - 1
-        $sLine = StringStripWS($aLines[$i], $STR_STRIPLEADING)
-        $iSplitIdx = StringInStr($sLine, "=")
+		$sLine = StringStripWS($aLines[$i], $STR_STRIPLEADING)
+		$iSplitIdx = StringInStr($sLine, "=")
 		If StringLeft($sLine, 1) = "[" Then
 			_ArrayAdd($aSections, $sLine)
-            _ArrayDelete($aSection, "0-" & UBound($aSection) - 1)
+			_ArrayDelete($aSection, "0-" & UBound($aSection) - 1)
 		ElseIf $iSplitIdx Then
 			_ArrayAdd($aSection, StringMid($sLine, 1, $iSplitIdx - 1))
-            $aSection[UBound($aSection) - 1][1] = StringMid($sLine, $iSplitIdx + 1)
+			$aSection[UBound($aSection) - 1][1] = StringMid($sLine, $iSplitIdx + 1)
 			$aSections[UBound($aSections) - 1][1] = $aSection
-        Else
-            ConsoleWrite("Else " & $sLine & @CRLF)
+		Else
+			ConsoleWrite("Else " & $sLine & @CRLF)
 		EndIf
 	Next
 ;~     _ArraySort($aSections)
-    For $i = 0 To UBound($aSections) -1
-        If $i > 0 Then _ArrayAdd($aResult, "")
-        _ArrayAdd($aResult, $aSections[$i][0])
-        $aSection = $aSections[$i][1]
-        _ArraySort($aSection)
-        For $j = 0 To UBound($aSection) -1
-            _ArrayAdd($aResult, $aSection[$j][0] & "=" & $aSection[$j][1])
-        Next
-    Next
-    _FileWriteFromArray($sFilePath, $aResult)
+	For $i = 0 To UBound($aSections) - 1
+		If $i > 0 Then _ArrayAdd($aResult, "")
+		_ArrayAdd($aResult, $aSections[$i][0])
+		$aSection = $aSections[$i][1]
+		_ArraySort($aSection)
+		For $j = 0 To UBound($aSection) - 1
+			_ArrayAdd($aResult, $aSection[$j][0] & "=" & $aSection[$j][1])
+		Next
+	Next
+	_FileWriteFromArray($sFilePath, $aResult)
 EndFunc   ;==>_Example
 
 
