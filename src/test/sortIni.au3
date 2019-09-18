@@ -8,9 +8,9 @@ $sFilePath = @ScriptDir & '\test.ini'
 
 
 
-_Example($sFilePath)
+_IniReadToArray($sFilePath)
 
-Func _Example($sFilePath)
+Func _IniReadToArray($sFilePath)
 	Local $aSections[0][2]
 	Local $aSection[0][2]
 	Local $aResult[0][1]
@@ -18,16 +18,16 @@ Func _Example($sFilePath)
 	If @error Then Return SetError(@error, 0, 0)
 	For $i = 0 To UBound($aLines) - 1
 		Local $sLine = StringStripWS($aLines[$i], $STR_STRIPLEADING)
-		Local $iSplitIdx = StringInStr($sLine, "=")
 		If StringLeft($sLine, 1) = "[" Then
 			_ArrayAdd($aSections, $sLine)
 			_ArrayDelete($aSection, "0-" & UBound($aSection) - 1)
-		ElseIf $iSplitIdx Then
+            ContinueLoop
+        EndIf
+        Local $iSplitIdx = StringInStr($sLine, "=")
+		If $iSplitIdx Then
 			_ArrayAdd($aSection, StringMid($sLine, 1, $iSplitIdx - 1))
 			$aSection[UBound($aSection) - 1][1] = StringMid($sLine, $iSplitIdx + 1)
 			$aSections[UBound($aSections) - 1][1] = $aSection
-		Else
-			ConsoleWrite("Else " & $sLine & @CRLF)
 		EndIf
 	Next
 ;~     _ArraySort($aSections)
@@ -41,7 +41,7 @@ Func _Example($sFilePath)
 		Next
 	Next
 	_FileWriteFromArray($sFilePath, $aResult)
-EndFunc   ;==>_Example
+EndFunc   ;==>_IniReadToArray
 
 
 
