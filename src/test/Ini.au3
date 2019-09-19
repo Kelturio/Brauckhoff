@@ -4,7 +4,7 @@
 #include <File.au3>
 
 ; #INDEX# =======================================================================================================================
-; Title .........: Array
+; Title .........: Ini
 ; AutoIt Version : 3.3.14.5
 ; Language ......: English
 ; Description ...: Functions for manipulating ini files.
