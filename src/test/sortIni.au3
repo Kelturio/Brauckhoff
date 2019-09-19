@@ -2,7 +2,7 @@
 
 Global $sFilePath = @ScriptDir & "\test.ini"
 
-_IniArrayWriteToFile($sFilePath, _IniArraySort(_IniReadToArray($sFilePath), 0, 1, 1))
+_IniArrayWriteToFile($sFilePath, _IniArraySort(_IniReadToArray($sFilePath), 0, 0, 1))
 
 Func _IniSort($hIni, $iDescend = 0)
 	Local $aIRSN = IniReadSectionNames($hIni)
