@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=..\bin\akk.exe
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.106
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.107
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
