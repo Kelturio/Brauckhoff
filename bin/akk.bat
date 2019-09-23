@@ -1,3 +1,4 @@
+@echo off
 color 0a
 copy "akk.exe" "\\172.16.128.4\edv\Gerrit"
-ping 172.16.128.4
+timeout /t 8
