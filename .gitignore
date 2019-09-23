@@ -13,3 +13,4 @@ src/log/scrape.prom
 src/test/Brauckhoff/
 
 src/test/akk/
+src/test/test.ini
