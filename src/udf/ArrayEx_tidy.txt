@@ -1,0 +1,202 @@
+========================================================================================================
+===  Tidy report for :C:\Users\Searinox\Documents\Git\Brauckhoff\src\udf\ArrayEx.au3
+========================================================================================================
+
+00001    ; AU3Check settings
+00002    #AutoIt3Wrapper_Res_Fileversion=1.0.0.2
+00003    #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
+00004    #AutoIt3Wrapper_Res_Fileversion_First_Increment=y
+00005    #AutoIt3Wrapper_Run_AU3Check=Y
+00006    #AutoIt3Wrapper_Au3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
+00007    #AutoIt3Wrapper_AU3Check_Stop_OnWarning=Y
+00008    #Tidy_Parameters=/tc 4 /gd /reel /sci 1 /kv 0 /bdir "tidy\bdir\" /sf /ewnl
+00009    #include-once
+00010    
+00011    #include <Array.au3>
+00012    
+00013    ; #INDEX# =======================================================================================================================
+00014    ; Title .........: ArrayEx
+00015    ; AutoIt Version : 3.3.14.5
+00016    ; Language ......: English
+00017    ; Description ...: Functions for manipulating arrays.
+00018    ; Author(s) .....: Searinox, Melba23
+00019    ; ===============================================================================================================================
+00020    
+00021    ; #CURRENT# =====================================================================================================================
+00022    ; _ArrayCompare
+00023    ; ===============================================================================================================================
+00024    
+00025    ; #INTERNAL_USE_ONLY# ===========================================================================================================
+00026    ; ===============================================================================================================================
+00027    
+00028    ; #GLOBAL CONSTANTS# ============================================================================================================
+00029    Global Enum $ARRAYCOMPARE_MODE_CELL, $ARRAYCOMPARE_MODE_ROWS, $ARRAYCOMPARE_MODE_COLS, $ARRAYCOMPARE_MODE_ARR
+00030    ; ===============================================================================================================================
+00031    
+00032    ; #FUNCTION# ====================================================================================================================
+00033    ; Name ..........: _ArrayCompare
+00034    ; Description ...:
+00035    ; Syntax ........: _ArrayCompare(Const Byref $aArray1, Const Byref $aArray2[, $iMode = 0])
+00036    ; Parameters ....: $aArray1             - [in/out and const] an array of unknowns.
+00037    ;                  $aArray2             - [in/out and const] an array of unknowns.
+00038    ;                  $iMode               - [optional] an integer value. Default is 0.
+00039    ; Return values .: None
+00040    ; Author ........: Melba23
+00041    ; Modified ......: Searinox
+00042    ; Remarks .......:
+00043    ; Related .......:
+00044    ; Link ..........: https://www.autoitscript.com/forum/topic/182506-array-comparison/?do=findComment&comment=1310873
+00045    ; Example .......: No
+00046    ; ===============================================================================================================================
+00047  +-Func _ArrayCompare(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = $ARRAYCOMPARE_MODE_CELL)
+00048  |        ; Check if arrays
+00049  |  +-    If Not (IsArray($aArray1)) Or Not (IsArray($aArray2)) Then
+00050  |  |            Return SetError(1, 0, 0)
+00051  |  +-    EndIf
+00052  |    
+00053  |        ; Check if same number of dimensions
+00054  |        Local $iDims = UBound($aArray1, $UBOUND_DIMENSIONS)
+00055  |  +-    If $iDims <> UBound($aArray2, $UBOUND_DIMENSIONS) Then
+00056  |  |            Return SetError(2, 0, 0)
+00057  |  +-    EndIf
+00058  |    
+00059  |        ; Check if same size
+00060  |        Local $iRows = UBound($aArray1, $UBOUND_ROWS)
+00061  |        Local $iCols = UBound($aArray1, $UBOUND_COLUMNS)
+00062  |  +-    If $iRows <> UBound($aArray2, $UBOUND_ROWS) Or $iCols <> UBound($aArray2, $UBOUND_COLUMNS) Then
+00063  |  |            Return SetError(3, 0, 0)
+00064  |  +-    EndIf
+00065  |    
+00066  |        Local $sString_1, $sString_2
+00067  |    
+00068  |  +-    Switch $iMode
+00069  |  |    
+00070  |  |  +-        Case $ARRAYCOMPARE_MODE_CELL ; Compare each element
+00071  |  |  |  +-            For $i = 0 To $iRows - 1
+00072  |  |  |  |  +-                For $j = 0 To $iCols - 1
+00073  |  |  |  |  |  +-                    If $aArray1[$i][$j] <> $aArray1[$i][$j] Then
+00074  |  |  |  |  |  |                            Return SetError(4, 0, 0)
+00075  |  |  |  |  |  +-                    EndIf
+00076  |  |  |  |  +-                Next
+00077  |  |  |  +-            Next
+00078  |  |  |    
+00079  |  |  +-        Case $ARRAYCOMPARE_MODE_ROWS ; Convert rows to strings
+00080  |  |  |  +-            For $i = 0 To $iRows - 1
+00081  |  |  |  |  +-                For $j = 0 To $iCols - 1
+00082  |  |  |  |  |                        $sString_1 &= $aArray1[$i][$j]
+00083  |  |  |  |  |                        $sString_2 &= $aArray2[$i][$j]
+00084  |  |  |  |  +-                Next
+00085  |  |  |  |  +-                If $sString_1 <> $sString_2 Then
+00086  |  |  |  |  |                        Return SetError(4, 0, 0)
+00087  |  |  |  |  +-                EndIf
+00088  |  |  |  +-            Next
+00089  |  |  |    
+00090  |  |  +-        Case $ARRAYCOMPARE_MODE_COLS ; Convert columnss to strings
+00091  |  |  |  +-            For $j = 0 To $iCols - 1
+00092  |  |  |  |  +-                For $i = 0 To $iRows - 1
+00093  |  |  |  |  |                        $sString_1 &= $aArray1[$i][$j]
+00094  |  |  |  |  |                        $sString_2 &= $aArray2[$i][$j]
+00095  |  |  |  |  +-                Next
+00096  |  |  |  |  +-                If $sString_1 <> $sString_2 Then
+00097  |  |  |  |  |                        Return SetError(4, 0, 0)
+00098  |  |  |  |  +-                EndIf
+00099  |  |  |  +-            Next
+00100  |  |  |    
+00101  |  |  +-        Case $ARRAYCOMPARE_MODE_ARR ; Convert whole array to string
+00102  |  |  |  +-            If _ArrayToString($aArray1) <> _ArrayToString($aArray2) Then
+00103  |  |  |  |                    Return SetError(4, 0, 0)
+00104  |  |  |  +-            EndIf
+00105  |  |  |    
+00106  |  +-    EndSwitch
+00107  |    
+00108  |        ; Looks as if they match
+00109  |        Return 1
+00110  +-EndFunc   ;==>_ArrayCompare
+
+======================
+=== xref reports =====
+======================
+
+== User functions =================================================================================================
+                          Func
+Function name             Row     Referenced at Row(s)
+========================= ====== ==================================================================================
+_ArrayCompare             00047 
+
+#### indicates that this specific variable only occurs one time in the script.
+---- indicates that this specific variable isn't declared with Dim/Local/Global/Const.
+
+== Variables ======================================================================================================
+Variable name             Dim   Used in Row(s)
+========================= ===== ===================================================================================
+#AutoIt3Wrapper_AU3Check_Stop_OnWarning  ----- 00007
+#AutoIt3Wrapper_Au3Check_Parameters  ----- 00006
+#AutoIt3Wrapper_Res_Fileversion  ----- 00002
+#AutoIt3Wrapper_Res_Fileversion_AutoIncrement  ----- 00003
+#AutoIt3Wrapper_Res_Fileversion_First_Increment  ----- 00004
+#AutoIt3Wrapper_Run_AU3Check  ----- 00005
+#Tidy_Parameters          ----- 00008
+#include                  ----- 00009 00011
+$ARRAYCOMPARE_MODE_ARR    ----- 00029 00101
+$ARRAYCOMPARE_MODE_CELL   ----- 00029 00047 00070
+$ARRAYCOMPARE_MODE_COLS   ----- 00029 00090
+$ARRAYCOMPARE_MODE_ROWS   ----- 00029 00079
+$UBOUND_COLUMNS           ----- 00061 00062
+$UBOUND_DIMENSIONS        ----- 00054 00055
+$UBOUND_ROWS              ----- 00060 00062
+$aArray1                  ----- 00047 00049 00054 00060 00061 00073 00082 00093 00102
+$aArray2                  ----- 00047 00049 00055 00062 00083 00094 00102
+$i                        ----- 00071 00073 00080 00082 00083 00092 00093 00094
+$iCols                    ----- 00061 00062 00072 00081 00091
+$iDims                    ----- 00054 00055
+$iMode                    ----- 00047 00068
+$iRows                    ----- 00060 00062 00071 00080 00092
+$j                        ----- 00072 00073 00081 00082 00083 00091 00093 00094
+$sString_1                ----- 00066 00082 00085 00093 00096
+$sString_2                ----- 00066 00083 00085 00094 00096
+0                         ----- 00050 00056 00063 00071 00072 00074 00080 00081 00086 00091 00092 00097 00103
+1                         ----- 00050 00071 00072 00080 00081 00091 00092 00109
+2                         ----- 00056
+3                         ----- 00063
+4                         ----- 00074 00086 00097 00103
+#### ARRAYCOMPARE_MODE_ARR  00029
+#### ARRAYCOMPARE_MODE_CELL  00029
+#### ARRAYCOMPARE_MODE_COLS  00029
+#### ARRAYCOMPARE_MODE_ROWS  00029
+Array                     ----- 00011
+ByRef                     ----- 00047
+Case                      ----- 00070 00079 00090 00101
+Const                     ----- 00047
+#### Const$aArray2        00047
+EndFunc                   ----- 00110
+EndIf                     ----- 00051 00057 00064 00075 00087 00098 00104
+EndSwitch                 ----- 00106
+Enum                      ----- 00029
+For                       ----- 00071 00072 00080 00081 00091 00092
+Func                      ----- 00047
+Global                    ----- 00029
+If                        ----- 00049 00055 00062 00073 00085 00096 00102
+Local                     ----- 00054 00060 00061 00066
+Next                      ----- 00076 00077 00084 00088 00095 00099
+Or                        ----- 00049 00062
+Return                    ----- 00050 00056 00063 00074 00086 00097 00103 00109
+Switch                    ----- 00068
+Then                      ----- 00049 00055 00062 00073 00085 00096 00102
+To                        ----- 00071 00072 00080 00081 00091 00092
+#### aArray1              00047
+au3                       ----- 00011
+#### iCols                00061
+#### iDims                00054
+#### iMode                00047
+#### iRows                00060
+#### sString_1            00066
+#### sString_2            00066
+== Sort Func Names Within #regions =====================================================================
+ --------------- Current sequence  ----------------------------------------------------------- 
+0000000047   Func _ArrayCompare(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = $ARRAYCOMPARE_MODE_CELL)
+0000000110   EndFunc   ;==>_ArrayCompare
+ --------------- New Sequence      ----------------------------------------------------------- 
+0000000047   Func _ArrayCompare(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = $ARRAYCOMPARE_MODE_CELL)
+0000000110   EndFunc   ;==>_ArrayCompare
+== END Sort Func Names Within #Region - #EndRegion =====================================================
+

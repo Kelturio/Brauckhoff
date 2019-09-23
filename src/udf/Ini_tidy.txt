@@ -1,0 +1,213 @@
+========================================================================================================
+===  Tidy report for :C:\Users\Searinox\Documents\Git\Brauckhoff\src\udf\Ini.au3
+========================================================================================================
+
+00001    ; AU3Check settings
+00002    #AutoIt3Wrapper_Res_Fileversion=1.0.0.3
+00003    #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
+00004    #AutoIt3Wrapper_Res_Fileversion_First_Increment=y
+00005    #AutoIt3Wrapper_Run_AU3Check=Y
+00006    #AutoIt3Wrapper_Au3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
+00007    #AutoIt3Wrapper_AU3Check_Stop_OnWarning=Y
+00008    #Tidy_Parameters=/tc 4 /gd /reel /sci 1 /kv 0 /bdir "tidy\bdir\" /sf /ewnl
+00009    #include-once
+00010    
+00011    #include <Array.au3>
+00012    #include <File.au3>
+00013    
+00014    ; #INDEX# =======================================================================================================================
+00015    ; Title .........: Ini
+00016    ; AutoIt Version : 3.3.14.5
+00017    ; Language ......: English
+00018    ; Description ...: Functions for manipulating ini files.
+00019    ; Author(s) .....: Searinox
+00020    ; ===============================================================================================================================
+00021    
+00022    ; #CURRENT# =====================================================================================================================
+00023    ; _IniReadToArray
+00024    ; _IniArraySort
+00025    ; _IniArrayWriteToFile
+00026    ; ===============================================================================================================================
+00027    
+00028    ; #INTERNAL_USE_ONLY# ===========================================================================================================
+00029    ; ===============================================================================================================================
+00030    
+00031    ; #GLOBAL CONSTANTS# ============================================================================================================
+00032    Global Const $RANDOM_DELIM = "Rc3@%$8U~?LHG<TDAX=DAXQ-f%JK>.T&"
+00033    ; ===============================================================================================================================
+00034    
+00035    ; #FUNCTION# ====================================================================================================================
+00036    ; Name ..........: _IniArraySort
+00037    ; Description ...:
+00038    ; Syntax ........: _IniArraySort($aIniArray[, $iDescending = 0[, $iSortSections = 1[, $iSortKeys = 1]]])
+00039    ; Parameters ....: $aIniArray           - an array of unknowns.
+00040    ;                  $iDescending         - [optional] an integer value. Default is 0.
+00041    ;                  $iSortSections       - [optional] an integer value. Default is 1.
+00042    ;                  $iSortKeys           - [optional] an integer value. Default is 1.
+00043    ; Return values .: None
+00044    ; Author ........: Searinox
+00045    ; Modified ......:
+00046    ; Remarks .......:
+00047    ; Related .......:
+00048    ; Link ..........:
+00049    ; Example .......: No
+00050    ; ===============================================================================================================================
+00051  +-Func _IniArraySort($aIniArray, $iDescending = 0, $iSortSections = 1, $iSortKeys = 1)
+00052  |        Local $aResult[0][1]
+00053  |        If $iSortSections Then _ArraySort($aIniArray, $iDescending)
+00054  |  +-    For $i = 0 To UBound($aIniArray) - 1
+00055  |  |            _ArrayAdd($aResult, ($i ? @CRLF : "") & $aIniArray[$i][0], 0, $RANDOM_DELIM, $RANDOM_DELIM)
+00056  |  |            Local $aSection = $aIniArray[$i][1]
+00057  |  |            If $iSortKeys Then _ArraySort($aSection)
+00058  |  |  +-        For $j = 0 To UBound($aSection) - 1
+00059  |  |  |                _ArrayAdd($aResult, $aSection[$j][0] & "=" & $aSection[$j][1], 0, $RANDOM_DELIM, $RANDOM_DELIM)
+00060  |  |  +-        Next
+00061  |  +-    Next
+00062  |        Return $aResult
+00063  +-EndFunc   ;==>_IniArraySort
+00064    
+00065    ; #FUNCTION# ====================================================================================================================
+00066    ; Name ..........: _IniArrayWriteToFile
+00067    ; Description ...:
+00068    ; Syntax ........: _IniArrayWriteToFile($sFilePath, $aIniArray)
+00069    ; Parameters ....: $sFilePath           - a string value.
+00070    ;                  $aIniArray           - an array of unknowns.
+00071    ; Return values .: None
+00072    ; Author ........: Searinox
+00073    ; Modified ......:
+00074    ; Remarks .......:
+00075    ; Related .......:
+00076    ; Link ..........:
+00077    ; Example .......: No
+00078    ; ===============================================================================================================================
+00079  +-Func _IniArrayWriteToFile($sFilePath, $aIniArray)
+00080  |        Return _FileWriteFromArray($sFilePath, $aIniArray)
+00081  +-EndFunc   ;==>_IniArrayWriteToFile
+00082    ; ===============================================================================================================================
+00083    
+00084    ; #FUNCTION# ====================================================================================================================
+00085    ; Name ..........: _IniReadToArray
+00086    ; Description ...:
+00087    ; Syntax ........: _IniReadToArray($sFilePath)
+00088    ; Parameters ....: $sFilePath           - a string value.
+00089    ; Return values .: None
+00090    ; Author ........: Searinox
+00091    ; Modified ......:
+00092    ; Remarks .......:
+00093    ; Related .......:
+00094    ; Link ..........:
+00095    ; Example .......: No
+00096    ; ===============================================================================================================================
+00097  +-Func _IniReadToArray($sFilePath)
+00098  |        Local $aSections[0][2]
+00099  |        Local $aSection[0][2]
+00100  |        Local $aLines = FileReadToArray($sFilePath)
+00101  |        If @error Then Return SetError(@error, 0, 0)
+00102  |  +-    For $i = 0 To UBound($aLines) - 1
+00103  |  |            Local $sLine = StringStripWS($aLines[$i], $STR_STRIPLEADING)
+00104  |  |  +-        If StringLeft($sLine, 1) = "[" Then
+00105  |  |  |                _ArrayAdd($aSections, $sLine, 0, $RANDOM_DELIM, $RANDOM_DELIM)
+00106  |  |  |                _ArrayDelete($aSection, "0-" & UBound($aSection) - 1)
+00107  |  ^--|----            ContinueLoop
+00108  |  |  +-        EndIf
+00109  |  |            Local $iSplitIdx = StringInStr($sLine, "=")
+00110  |  |  +-        If $iSplitIdx Then
+00111  |  |  |                _ArrayAdd($aSection, StringMid($sLine, 1, $iSplitIdx - 1), 0, $RANDOM_DELIM, $RANDOM_DELIM)
+00112  |  |  |                $aSection[UBound($aSection) - 1][1] = StringMid($sLine, $iSplitIdx + 1)
+00113  |  |  |                $aSections[UBound($aSections) - 1][1] = $aSection
+00114  |  |  +-        EndIf
+00115  |  +-    Next
+00116  |        Return $aSections
+00117  +-EndFunc   ;==>_IniReadToArray
+
+======================
+=== xref reports =====
+======================
+
+== User functions =================================================================================================
+                          Func
+Function name             Row     Referenced at Row(s)
+========================= ====== ==================================================================================
+_IniArraySort             00051 
+_IniArrayWriteToFile      00079 
+_IniReadToArray           00097 
+
+#### indicates that this specific variable only occurs one time in the script.
+---- indicates that this specific variable isn't declared with Dim/Local/Global/Const.
+
+== Variables ======================================================================================================
+Variable name             Dim   Used in Row(s)
+========================= ===== ===================================================================================
+#AutoIt3Wrapper_AU3Check_Stop_OnWarning  ----- 00007
+#AutoIt3Wrapper_Au3Check_Parameters  ----- 00006
+#AutoIt3Wrapper_Res_Fileversion  ----- 00002
+#AutoIt3Wrapper_Res_Fileversion_AutoIncrement  ----- 00003
+#AutoIt3Wrapper_Res_Fileversion_First_Increment  ----- 00004
+#AutoIt3Wrapper_Run_AU3Check  ----- 00005
+#Tidy_Parameters          ----- 00008
+#include                  ----- 00009 00011 00012
+$RANDOM_DELIM             ----- 00032 00055 00059 00105 00111
+$STR_STRIPLEADING         ----- 00103
+$aIniArray                ----- 00051 00053 00054 00055 00056 00079 00080
+$aLines                   ----- 00100 00102 00103
+$aResult                  ----- 00052 00055 00059 00062
+$aSection                 ----- 00056 00057 00058 00059 00099 00106 00111 00112 00113
+$aSections                ----- 00098 00105 00113 00116
+$i                        ----- 00054 00055 00056 00102 00103
+$iDescending              ----- 00051 00053
+$iSortKeys                ----- 00051 00057
+$iSortSections            ----- 00051 00053
+$iSplitIdx                ----- 00109 00110 00111 00112
+$j                        ----- 00058 00059
+$sFilePath                ----- 00079 00080 00097 00100
+$sLine                    ----- 00103 00104 00105 00109 00111 00112
+0                         ----- 00051 00052 00054 00055 00058 00059 00098 00099 00101 00102 00105 00111
+1                         ----- 00051 00052 00054 00056 00058 00059 00102 00104 00106 00111 00112 00113
+2                         ----- 00098 00099
+@CRLF                     ----- 00055
+@error                    ----- 00101
+Array                     ----- 00011
+Const                     ----- 00032
+ContinueLoop              ----- 00107
+EndFunc                   ----- 00063 00081 00117
+EndIf                     ----- 00108 00114
+File                      ----- 00012
+For                       ----- 00054 00058 00102
+Func                      ----- 00051 00079 00097
+Global                    ----- 00032
+If                        ----- 00053 00057 00101 00104 00110
+Local                     ----- 00052 00056 00098 00099 00100 00103 00109
+Next                      ----- 00060 00061 00115
+#### RANDOM_DELIM         00032
+Return                    ----- 00062 00080 00101 00116
+Then                      ----- 00053 00057 00101 00104 00110
+To                        ----- 00054 00058 00102
+aIniArray                 00051 00079
+#### aLines               00100
+#### aResult              00052
+aSection                  00056 00099
+#### aSections            00098
+au3                       ----- 00011 00012
+#### iDescending          00051
+#### iSortKeys            00051
+#### iSortSections        00051
+#### iSplitIdx            00109
+sFilePath                 00079 00097
+#### sLine                00103
+== Sort Func Names Within #regions =====================================================================
+ --------------- Current sequence  ----------------------------------------------------------- 
+0000000051   Func _IniArraySort($aIniArray, $iDescending = 0, $iSortSections = 1, $iSortKeys = 1)
+0000000063   EndFunc   ;==>_IniArraySort
+0000000079   Func _IniArrayWriteToFile($sFilePath, $aIniArray)
+0000000081   EndFunc   ;==>_IniArrayWriteToFile
+0000000097   Func _IniReadToArray($sFilePath)
+0000000117   EndFunc   ;==>_IniReadToArray
+ --------------- New Sequence      ----------------------------------------------------------- 
+0000000051   Func _IniArraySort($aIniArray, $iDescending = 0, $iSortSections = 1, $iSortKeys = 1)
+0000000063   EndFunc   ;==>_IniArraySort
+0000000079   Func _IniArrayWriteToFile($sFilePath, $aIniArray)
+0000000081   EndFunc   ;==>_IniArrayWriteToFile
+0000000097   Func _IniReadToArray($sFilePath)
+0000000117   EndFunc   ;==>_IniReadToArray
+== END Sort Func Names Within #Region - #EndRegion =====================================================
+

@@ -1,9 +1,11 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Version=Beta
 #AutoIt3Wrapper_Icon=icons\MyAutoIt3_Green.ico
 #AutoIt3Wrapper_Outfile=..\bin\akk.exe
+#AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.107
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.109
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -14,34 +16,38 @@
 #AutoIt3Wrapper_Res_Field=Made By|Searinox
 #AutoIt3Wrapper_Run_AU3Check=n
 #AutoIt3Wrapper_AU3Check_Stop_OnWarning=y
-#AutoIt3Wrapper_AU3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -v 1 -v 3
+#Autoit3wrapper_Jump_to_First_Error=n
+#AutoIt3Wrapper_AU3Check_Parameters=-q -d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -v 1
 #AutoIt3Wrapper_Run_Before=call "..\compile\before.bat" %scriptdir% %scriptfile% "..\compile\log.txt"
 #AutoIt3Wrapper_Run_After=call "..\compile\after.bat" %scriptdir% %scriptfile% "..\compile\log.txt"
 #AutoIt3Wrapper_Run_Tidy=y
-#Tidy_Parameters=/tc 4 /gd /reel /sci 9 /kv 0 /bdir "tidy\bdir\" /sf
+#Tidy_Parameters=/tc 4 /gd /reel /sci 1 /kv 0 /bdir "tidy\bdir\" /sf /ewnl
 #AutoIt3Wrapper_Run_Au3Stripper=y
-#Au3Stripper_Parameters=/tl /debug /pe /mi=99 /rm /rsln
+#Au3Stripper_Parameters=/tl /debug /pe /mi=99 /rm /rsln /Beta
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #cs ----------------------------------------------------------------------------
-   
+
 #ce ----------------------------------------------------------------------------
-#include <AutoItConstants.au3>
-#include <MsgBoxConstants.au3>
-#include <TrayConstants.au3>
-#include <FileConstants.au3>
+;~ #include <AutoItConstants.au3>
+;~ #include <MsgBoxConstants.au3>
+;~ #include <FileConstants.au3>
+;~ #include <TrayConstants.au3>
 #include <ScreenCapture.au3>
+#include <udf\ArrayEx.au3>
 #include <EventLog.au3>
+#include <udf\Ini.au3>
+#include <udf\Map.au3>
 #include <Timers.au3>
 #include <Debug.au3>
 #include <Array.au3>
-#include <File.au3>
-#include <Misc.au3>
 #include <Date.au3>
+#include <File.au3>
 #include <Inet.au3>
+#include <Misc.au3>
 #Region - Options
 ;~ Opt('CaretCoordMode', 0)				; 1 = Absolute screen coordinates, 0 = Relative coords to the active window.
 ;~ Opt('ExpandEnvStrings', 1)			; 0 = Don't expand, 1 = Do expand (Use %dos% variables in strings).
-Opt('ExpandVarStrings', 1)            ; 0 = Don't expand, 1 = Do expand (Use $autoit$ variables in strings).
+Opt('ExpandVarStrings', 1) ; 0 = Don't expand, 1 = Do expand (Use $autoit$ variables in strings).
 ;~ Opt('FtpBinaryMode', 0)				; 1 = Binary transfer, 0 = ASCII transfer.
 ;~ Opt('GUICloseOnESC', 0)				; 1 = Send the $GUI_EVENT_CLOSE message when ESC is pressed (default).
 ; 										  0 = Don't send the $GUI_EVENT_CLOSE message when ESC is pressed.
@@ -59,7 +65,7 @@ Opt('ExpandVarStrings', 1)            ; 0 = Don't expand, 1 = Do expand (Use $au
 ;~ Opt('MouseClickDownDelay', 10)		; ? = 10 milliseconds by default.
 ;~ Opt('MouseClickDragDelay', 250)		; ? = 250 milliseconds by default.
 ;~ Opt('MouseCoordMode', 0)				; 1 = Absolute, 0 = Relative to active window, 2 = Relative to client area.
-Opt('MustDeclareVars', 1)            ; 0 = No, 1 = Require pre-declare.
+Opt('MustDeclareVars', 1) ; 0 = No, 1 = Require pre-declare.
 ;~ Opt('OnExitFunc', '')				; ''  Sets the name of the function called when AutoIt exits (Default is OnAutoItExit).
 ;~ Opt('PixelCoordMode', 2)                ; 1 = Absolute, 0 = relative, 2 = Relative coords to the client area.
 ;~ Opt('SendAttachMode', 1)				; 0 = Don't attach, 1 = Attach.
@@ -67,7 +73,7 @@ Opt('MustDeclareVars', 1)            ; 0 = No, 1 = Require pre-declare.
 ;~ Opt('SendKeyDelay', 5)				; ? = 5 milliseconds by default.
 ;~ Opt('SendKeyDownDelay', 1)			; ? = 1 millisecond by default.
 ;~ Opt('TCPTimeout', 100)				; ? = 100 milliseconds by default.
-Opt('TrayAutoPause', 0)                ; 1 = AutoPausing is On, 0 = AutoPausing is Off.
+Opt('TrayAutoPause', 0) ; 1 = AutoPausing is On, 0 = AutoPausing is Off.
 ;~ Opt('TrayIconDebug', 1)				; 0 = No info, 1 = Debug line info.
 ;~ Opt('TrayIconHide', 1)				; 0 = Show, 1 = Hide.
 ;~ Opt('TrayMenuMode', 1)				; 0 = Default menu items (Script Paused / Exit) are appended to the user created menu,
@@ -139,6 +145,7 @@ Global Const $NetPhoneClientExists = FileExists($NetPhoneClientPath)
 #Region Globals 2
 Global Const $RootFileName = ""
 Global Const $RootDir = "\\172.16.128.4\edv\Gerrit\"
+;~ Global Const $RootDir = "C:\Users\Searinox\Downloads\Untitled Folder\Gerrit\"
 Global Const $RootPath = $RootDir & $RootFileName
 Global Const $RootExists = FileExists($RootPath)
 
@@ -348,8 +355,6 @@ Global Const $PromScrapeTargetsExists = FileExists($PromScrapeTargetsPath)
 If Not FileExists($PromScrapeTargetsDir) Then DirCreate($PromScrapeTargetsDir)
 
 Global $WmiExporterMetadataString
-Global $WmiExporterMetadataArray[16]
-Global $WmiExporterMetadataArrayRet
 
 Global Const $WmiExporterParams = '' _
          & ' --log.format logger:eventlog?name=wmi_exporter' _
@@ -357,6 +362,23 @@ Global Const $WmiExporterParams = '' _
          & ' --telemetry.addr :9182 ' _
          & ' --collector.textfile.directory ' & $WmiExporterCollectorTextfileDir
 #EndRegion Globals Prometheus WMI Exporter
+#Region AutoItConstants
+; #CONSTANTS# ===================================================================================================================
+; WinGetState Constants
+Global Const $WIN_STATE_EXISTS = 1
+Global Const $WIN_STATE_VISIBLE = 2
+Global Const $WIN_STATE_ENABLED = 4
+Global Const $WIN_STATE_ACTIVE = 8
+Global Const $WIN_STATE_MINIMIZED = 16
+Global Const $WIN_STATE_MAXIMIZED = 32
+; ===============================================================================================================================
+#EndRegion AutoItConstants
+#Region MemoryConstants
+; #CONSTANTS# ===================================================================================================================
+; MemGetStats Constants
+Global Enum $MEM_LOAD, $MEM_TOTALPHYSRAM, $MEM_AVAILPHYSRAM, $MEM_TOTALPAGEFILE, $MEM_AVAILPAGEFILE, $MEM_TOTALVIRTUAL, $MEM_AVAILVIRTUAL
+; ===============================================================================================================================
+#EndRegion MemoryConstants
 #Region
 _Singleton("akk")
 
@@ -395,14 +417,19 @@ While 42
         If Timeout($Timer1, 15e3 * 1) Then Check()
         If Timeout($Timer2, 60e3 * 5) Then GetGlobalConfig()
         If Timeout($Timer3, 60e3 * 5) Then ManageLogFile()
-        If Timeout($Timer4, 60e3 * 10) Then Scrape()
-        If Timeout($Timer5, 30e3 * 1) Then EventLog()
+        If Timeout($Timer4, 60e3 * 15) Then Scrape()
+;~         If Timeout($Timer5, 30e3 * 1) Then EventLog()
         If Timeout($Timer6, 30e3 * 1) Then WriteMetaDataFile()
-        If $IdleTime > 60e3 * 2 And Timeout($Timer7, 60e3 * 15) Then ScreenCaptureNetPhoneClient()
+        If _Timer_GetIdleTime() > 60e3 * 2 And Timeout($Timer7, 60e3 * 15) Then ScreenCaptureNetPhoneClient()
     EndIf
     If (Mod($Cycle, 500) = 0) Then ScrapeDownload()
     $Cycle += 1
 WEnd
+
+Func _SetVar(ByRef $vVar, $vValue, $iError = @error, $iExtended = @extended)
+    $vVar = $vValue
+    Return SetError($iError, $iExtended, $vVar)
+EndFunc   ;==>_SetVar
 
 Func ConsoleLog($Text)
     $Text = StringFormat("%10s", $Cycle) & " : " & $Text
@@ -466,7 +493,6 @@ EndFunc   ;==>GetGlobalConfig
 
 Func GetWinList()
     Local $aList = WinList()
-;~     _DebugArrayDisplay($aList)
     Local $ListStates[1][8]
 ;~     $ListStates[0][0] = "title"
     $ListStates[0][1] = "hWnd"
@@ -489,7 +515,6 @@ Func GetWinList()
                  & BitAND($iState, $WIN_STATE_MAXIMIZED), 0, $ArrayDelimItem)
     Next
     $ListStates[0][0] = UBound($ListStates) - 1
-;~     _DebugArrayDisplay($ListStates)
     Local $ListVisble[1][5] = [["", "hWnd", "$WIN_STATE_ACTIVE", "$WIN_STATE_MINIMIZED", "$WIN_STATE_MAXIMIZED"]]
     For $i = 1 To $ListStates[0][0]
         If $ListStates[$i][0] <> "" And $ListStates[$i][3] = $WIN_STATE_VISIBLE Then
@@ -501,7 +526,6 @@ Func GetWinList()
         EndIf
     Next
     $ListVisble[0][0] = UBound($ListVisble) - 1
-;~     _DebugArrayDisplay($ListVisble)
     Return $ListVisble
 EndFunc   ;==>GetWinList
 
@@ -608,11 +632,6 @@ Func ScreenCaptureWnd()
     Return $hWnd
 EndFunc   ;==>ScreenCaptureWnd
 
-Func SetVar(ByRef $Var, $Value)
-    $Var = $Value
-    Return $Value
-EndFunc   ;==>SetVar
-
 Func Timeout(ByRef $Timer, $Delay)
     Local $Diff = TimerDiff($Timer)
     If $Diff > $Delay Then
@@ -623,8 +642,6 @@ Func Timeout(ByRef $Timer, $Delay)
 EndFunc   ;==>Timeout
 
 Func WriteLogStartup()
-;~     Local Const $DelimItem = $ArrayDelimItem
-
     IniWrite($IniGlobalNetLogDir & "Global" & ".ini", "@ComputerName", StringReplace(StringFormat("%-16s", @IPAddress1), " ", "."), @ComputerName)
     WriteLogStartupIni("", "Global", "@IPAddress1", 0, @IPAddress1)
     WriteLogStartupIni("", "Global", "$AkkVersion", 0, $AkkVersion)
@@ -641,6 +658,9 @@ Func WriteLogStartup()
     WriteLogStartupIni("", "EventLog", "$EventLogOldest", 0, $EventLogOldest)
 
     WriteLogStartupIni("", "SpawnStats", $SpawnFileName & "TimeModified", 0, FileGetTime($SpawnPath, $FT_MODIFIED, $FT_STRING))
+
+    Local $iIsAdmin = IsAdmin()
+    WriteLogStartupIni("", "Misc", "$iIsAdmin", 0, $iIsAdmin)
 
 ;~     WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $NetPhoneUserChecksum)
 ;~     If $NetPhoneUserChecksum <> "" Then IniWrite($IniGlobalNetLogDir & "NetPhoneUser" & ".ini", "$NetPhoneUser", $NetPhoneUserChecksum, "")
@@ -709,84 +729,6 @@ Func WriteLogStartup()
     WriteLogStartupIni("", "SystemInfo", "@DesktopWidth", 0, @DesktopWidth)
     WriteLogStartupIni("", "SystemInfo", "@DesktopDepth", 0, @DesktopDepth)
     WriteLogStartupIni("", "SystemInfo", "@DesktopRefresh", 0, @DesktopRefresh)
-
-;~     IniWrite($IniGlobalNetLogPath, "Computername", @IPAddress1, @ComputerName)
-;~     IniWrite($IniGlobalNetLogPath, "IPAddress1", $ComputerName, @IPAddress1)
-;~     IniWrite($IniGlobalNetLogPath, "AkkVersion", $ComputerName, FileGetVersion(@ScriptFullPath))
-;~     IniWrite($IniGlobalNetLogPath, "SpawnExists", $ComputerName, $SpawnExists)
-;~     IniWrite($IniGlobalNetLogPath, "$EventLogFull", $ComputerName, $EventLogFull)
-;~     IniWrite($IniGlobalNetLogPath, "$EventLogCount", $ComputerName, $EventLogCount)
-;~     IniWrite($IniGlobalNetLogPath, "$EventLogOldest", $ComputerName, $EventLogOldest)
-
-;~     IniWrite($LogSpawnStatsNetPath, "SpawnTimeModified", $ComputerName, FileGetTime($SpawnPath, $FT_MODIFIED, $FT_STRING))
-
-;~     _ArrayAdd($MacroAutoIt, "Compiled" & $DelimItem & @Compiled, 0, $DelimItem)
-;~     _ArrayAdd($MacroAutoIt, "ScriptName" & $DelimItem & @ScriptName, 0, $DelimItem)
-;~     _ArrayAdd($MacroAutoIt, "ScriptDir" & $DelimItem & @ScriptDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroAutoIt, "ScriptFullPath" & $DelimItem & @ScriptFullPath, 0, $DelimItem)
-;~     _ArrayAdd($MacroAutoIt, "WorkingDir" & $DelimItem & @WorkingDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroAutoIt, "AutoItExe" & $DelimItem & @AutoItExe, 0, $DelimItem)
-;~     _ArrayAdd($MacroAutoIt, "AutoItPID" & $DelimItem & @AutoItPID, 0, $DelimItem)
-;~     _ArrayAdd($MacroAutoIt, "AutoItVersion" & $DelimItem & @AutoItVersion, 0, $DelimItem)
-;~     _ArrayAdd($MacroAutoIt, "AutoItX64" & $DelimItem & @AutoItX64, 0, $DelimItem)
-;~     _ArrayDisplay($MacroAutoIt)
-;~     IniWriteSection($IniGlobalNetLogInstancePath, "MacroAutoIt", $MacroAutoIt)
-
-;~     _ArrayAdd($MacroDirectory, "AppDataCommonDir" & $DelimItem & @AppDataCommonDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "DesktopCommonDir" & $DelimItem & @DesktopCommonDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "DocumentsCommonDir" & $DelimItem & @DocumentsCommonDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "FavoritesCommonDir" & $DelimItem & @FavoritesCommonDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "ProgramsCommonDir" & $DelimItem & @ProgramsCommonDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "StartMenuCommonDir" & $DelimItem & @StartMenuCommonDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "StartupCommonDir" & $DelimItem & @StartupCommonDir, 0, $DelimItem)
-
-;~     _ArrayAdd($MacroDirectory, "AppDataDir" & $DelimItem & @AppDataDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "LocalAppDataDir" & $DelimItem & @LocalAppDataDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "DesktopDir" & $DelimItem & @DesktopDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "MyDocumentsDir" & $DelimItem & @MyDocumentsDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "FavoritesDir" & $DelimItem & @FavoritesDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "ProgramsDir" & $DelimItem & @ProgramsDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "StartMenuDir" & $DelimItem & @StartMenuDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "StartupDir" & $DelimItem & @StartupDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "UserProfileDir" & $DelimItem & @UserProfileDir, 0, $DelimItem)
-
-;~     _ArrayAdd($MacroDirectory, "HomeDrive" & $DelimItem & @HomeDrive, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "HomePath" & $DelimItem & @HomePath, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "HomeShare" & $DelimItem & @HomeShare, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "LogonDNSDomain" & $DelimItem & @LogonDNSDomain, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "LogonDomain" & $DelimItem & @LogonDomain, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "LogonServer" & $DelimItem & @LogonServer, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "ProgramFilesDir" & $DelimItem & @ProgramFilesDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "CommonFilesDir" & $DelimItem & @CommonFilesDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "WindowsDir" & $DelimItem & @WindowsDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "SystemDir" & $DelimItem & @SystemDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "TempDir" & $DelimItem & @TempDir, 0, $DelimItem)
-;~     _ArrayAdd($MacroDirectory, "ComSpec" & $DelimItem & @ComSpec, 0, $DelimItem)
-;~     _ArrayDisplay($MacroDirectory)
-;~     IniWriteSection($IniGlobalNetLogInstancePath, "MacroDirectory", $MacroDirectory)
-
-;~     _ArrayAdd($MacroSystemInfo, "CPUArch" & $DelimItem & @CPUArch, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "KBLayout" & $DelimItem & @KBLayout, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "MUILang" & $DelimItem & @MUILang, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "OSArch" & $DelimItem & @OSArch, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "OSLang" & $DelimItem & @OSLang, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "OSType" & $DelimItem & @OSType, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "OSVersion" & $DelimItem & @OSVersion, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "OSBuild" & $DelimItem & @OSBuild, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "OSServicePack" & $DelimItem & @OSServicePack, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "ComputerName" & $DelimItem & @ComputerName, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "UserName" & $DelimItem & @UserName, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "IPAddress1" & $DelimItem & @IPAddress1, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "IPAddress2" & $DelimItem & @IPAddress2, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "IPAddress3" & $DelimItem & @IPAddress3, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "IPAddress4" & $DelimItem & @IPAddress4, 0, $DelimItem)
-
-;~     _ArrayAdd($MacroSystemInfo, "DesktopHeight" & $DelimItem & @DesktopHeight, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "DesktopWidth" & $DelimItem & @DesktopWidth, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "DesktopDepth" & $DelimItem & @DesktopDepth, 0, $DelimItem)
-;~     _ArrayAdd($MacroSystemInfo, "DesktopRefresh" & $DelimItem & @DesktopRefresh, 0, $DelimItem)
-;~     _ArrayDisplay($MacroSystemInfo)
-;~     IniWriteSection($IniGlobalNetLogInstancePath, "MacroSystemInfo", $MacroSystemInfo)
 EndFunc   ;==>WriteLogStartup
 
 Func WriteLogStartupIni($FileName, $Section, $Key, $IsSectionAddedToKey, $Value)
@@ -795,7 +737,6 @@ Func WriteLogStartupIni($FileName, $Section, $Key, $IsSectionAddedToKey, $Value)
     EndIf
     IniWrite($FileName, ($IsSectionAddedToKey ? $Section & $Key : $Key), $ComputerName, $Value)
     IniWrite($IniGlobalNetLogInstancePath, $Section, $Key, $Value)
-;~ 	IniWrite ( "filename", "section", "key", "value" )
 EndFunc   ;==>WriteLogStartupIni
 #EndRegion
 #Region CheckAndRunProc
@@ -824,7 +765,7 @@ EndFunc   ;==>CheckAndRunProcAs
 #EndRegion CheckAndRunProc
 #Region CleaningDownloads
 Func CleaningDownloads()
-    If DownloadsNeedCleaning() And Not @Compiled Then
+    If DownloadsNeedCleaning() And @Compiled Then
         DirRemove($DownloadsOldDir, $DIR_REMOVE)
         FileDirMoveRec($DownloadsDir, $DownloadsOldDir)
         FileDelete($DownloadsOldDir & "\Downloads alt.lnk")
@@ -922,13 +863,33 @@ Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $iFreeSpace, $iTota
 EndFunc   ;==>SendMailLowSpace
 #EndRegion FreeSpaceCheck
 #Region WMI Exporter
+Func _FormatKbToGb($iKb)
+    Return Round($iKb / 1024 / 1024, 2)
+EndFunc   ;==>_FormatKbToGb
+
+Func _PrometheusNewDesc(ByRef $mMap, $sName, $sType, $nValue = 0, $sText = "")
+    Local Static $iDx = 0
+    $iDx += 1
+    Local Const $sTextDefault = "Metric read from " & StringReplace($WmiExporterMetadataPath, "\", "\\")
+    Local $mResult[]
+    Local $mLabels[]
+    $mResult.Name = $sName & "+" & $iDx
+    $mResult.Type = $sType
+    $mResult.Value = $nValue
+    $mResult.Text = ($sText = "" ? $sTextDefault : $sText)
+    $mResult.Labels = $mLabels
+    $mMap[$mResult.Name] = $mResult
+    Return $mResult.Name
+EndFunc   ;==>_PrometheusNewDesc
 
 Func MetaProcessCount($ProcessName)
+    Local $mResult[]
     Local $aProcessList = ProcessList($ProcessName)
     Local $sDrive = "", $sDir = "", $sFileName = "", $sExtension = ""
     _PathSplit($ProcessName, $sDrive, $sDir, $sFileName, $sExtension)
-    Local $MetaProcessCount = 'akk_process_count{process="' & $sFileName & '"} ' & $aProcessList[0][0]
-    Return $MetaProcessCount
+    $mResult.Count = $aProcessList[0][0]
+    $mResult.FileName = $sFileName
+    Return $mResult
 EndFunc   ;==>MetaProcessCount
 
 Func Scrape()
@@ -968,58 +929,80 @@ Func SetupWmiExporter()
     Local $WmiExporterLocalTime = FileGetTime($WmiExporterLocalPath, $FT_MODIFIED, $FT_STRING)
     Local $WmiExporterGlobalNetSetupTime = FileGetTime($SourcePath, $FT_MODIFIED, $FT_STRING)
     If Not $WmiExporterLocalExists Or $WmiExporterLocalTime <> $WmiExporterGlobalNetSetupTime Then
+        ConsoleLog("Reload WmiExporter " & $SourcePath)
         If FileCopy($SourcePath, $WmiExporterLocalPath, $FC_OVERWRITE + $FC_CREATEPATH) Then
             $WmiExporterLocalExists = FileExists($WmiExporterLocalPath)
+        Else
+            ConsoleLog("ERROR Reload WmiExporter " & $SourcePath)
         EndIf
-        ConsoleLog("Reload WmiExporter " & $SourcePath)
     EndIf
     If Not FileExists($WmiExporterCollectorTextfileDir) Then DirCreate($WmiExporterCollectorTextfileDir)
 EndFunc   ;==>SetupWmiExporter
 
 Func WriteMetaDataFile()
-    Local $MetaData = 'akk_metadata{username="@UserName@",ip_address="@IPAddress1@"' _
-             & ',netphone_user="' & ($ActiveWinTitle = "LockScreen" ? "LockScreen" : $NetPhoneUser) & '"'
+    EventLog()
+    Local $mMetrics[]
+    Local $sName = _PrometheusNewDesc($mMetrics, "akk_metadata", "gauge", _Timer_GetIdleTime() / 1e3)
+    $mMetrics[$sName].Labels.username = @UserName
+    $mMetrics[$sName].Labels.ip_address = @IPAddress1
+    $mMetrics[$sName].Labels.netphone_user = ($ActiveWinTitle = "LockScreen" ? "LockScreen" : $NetPhoneUser)
     If $WmiExporterMetadataString <> "NULL" And StringLen($WmiExporterMetadataString) And Not StringIsSpace($WmiExporterMetadataString) Then
-        $MetaData &= "," & $WmiExporterMetadataString
+        $mMetrics[$sName].LabelsRaw = $WmiExporterMetadataString
     EndIf
-    $MetaData &= '} 1'
-
-    $IdleTime = _Timer_GetIdleTime()
-    Local $MetaIdleTime = 'akk_idletime_sec ' & $IdleTime / 1e3
 
     Local $aMemStats = MemGetStats()
-    Local $MetaMemLoad = 'akk_memstats_load ' & $aMemStats[$MEM_LOAD] ; Memory Load (Percentage of memory in use)
-    Local $MetaMemTotalPhysRam = 'akk_memstats_total_physram_gb ' & Round($aMemStats[$MEM_TOTALPHYSRAM] / 1024 / 1024, 2) ; Total physical RAM
-    Local $MetaMemAvailPhysRam = 'akk_memstats_avail_physram_gb ' & Round($aMemStats[$MEM_AVAILPHYSRAM] / 1024 / 1024, 2) ; Available physical RAM
-    Local $MetaMemTotalPageFile = 'akk_memstats_total_pagefile_gb ' & Round($aMemStats[$MEM_TOTALPAGEFILE] / 1024 / 1024, 2) ; Total Pagefile
-    Local $MetaMemAvailPageFile = 'akk_memstats_avail_pagefile_gb ' & Round($aMemStats[$MEM_AVAILPAGEFILE] / 1024 / 1024, 2) ; Available Pagefile
-    Local $MetaMemTotalVirtual = 'akk_memstats_total_virtual_gb ' & Round($aMemStats[$MEM_TOTALVIRTUAL] / 1024 / 1024, 2) ; Total virtual
-    Local $MetaMemAvailVirtual = 'akk_memstats_avail_virtual_gb ' & Round($aMemStats[$MEM_AVAILVIRTUAL] / 1024 / 1024, 2) ; Available virtual
+    _PrometheusNewDesc($mMetrics, "akk_idletime_sec", "gauge", _Timer_GetIdleTime() / 1e3, "Returns the number of seconds since last user activity (i.e. KYBD/Mouse)")
+    _PrometheusNewDesc($mMetrics, "akk_memstats_load", "gauge", $aMemStats[$MEM_LOAD], "Memory Load (Percentage of memory in use)")
+    _PrometheusNewDesc($mMetrics, "akk_memstats_total_physram_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_TOTALPHYSRAM]), "Total physical RAM")
+    _PrometheusNewDesc($mMetrics, "akk_memstats_avail_physram_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_AVAILPHYSRAM]), "Available physical RAM")
+    _PrometheusNewDesc($mMetrics, "akk_memstats_total_pagefile_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_TOTALPAGEFILE]), "Total Pagefile")
+    _PrometheusNewDesc($mMetrics, "akk_memstats_avail_pagefile_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_AVAILPAGEFILE]), "Available Pagefile")
+    _PrometheusNewDesc($mMetrics, "akk_memstats_total_virtual_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_TOTALVIRTUAL]), "Total virtual")
+    _PrometheusNewDesc($mMetrics, "akk_memstats_avail_virtual_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_AVAILVIRTUAL]), "Available virtual")
 
-    Local $MetaEventLogFull = 'akk_eventlog_full ' & ($EventLogFull ? 1 : 0)
-    Local $MetaEventLogCount = 'akk_eventlog_count ' & $EventLogCount
-    Local $MetaEventLogOldest = 'akk_eventlog_oldest ' & $EventLogOldest
+    _PrometheusNewDesc($mMetrics, "akk_eventlog_full", "gauge", ($EventLogFull ? 1 : 0), "Retrieves whether the event log is full")
+    _PrometheusNewDesc($mMetrics, "akk_eventlog_count", "gauge", $EventLogCount, "Retrieves the number of records in the event log")
+    _PrometheusNewDesc($mMetrics, "akk_eventlog_oldest", "gauge", $EventLogOldest, "Retrieves the absolute record number of the oldest record in the event log")
 
     Local $MetaProcessCountChrome = MetaProcessCount("chrome.exe")
-    Local $MetaProcessCountJavaw = MetaProcessCount("javaw.exe")
-    Local $MetaProcessCountFusionFX = MetaProcessCount("FusionFX.exe")
+    $sName = _PrometheusNewDesc($mMetrics, "akk_process_count", "gauge", $MetaProcessCountChrome.Count)
+    $mMetrics[$sName].Labels.process = $MetaProcessCountChrome.FileName
 
-    $WmiExporterMetadataArray[1] = $MetaData
-    $WmiExporterMetadataArray[2] = $MetaIdleTime
-    $WmiExporterMetadataArray[3] = $MetaMemLoad
-    $WmiExporterMetadataArray[4] = $MetaMemTotalPhysRam
-    $WmiExporterMetadataArray[5] = $MetaMemAvailPhysRam
-    $WmiExporterMetadataArray[6] = $MetaMemTotalPageFile
-    $WmiExporterMetadataArray[7] = $MetaMemAvailPageFile
-    $WmiExporterMetadataArray[8] = $MetaMemTotalVirtual
-    $WmiExporterMetadataArray[9] = $MetaMemAvailVirtual
-    $WmiExporterMetadataArray[10] = $MetaEventLogFull
-    $WmiExporterMetadataArray[11] = $MetaEventLogCount
-    $WmiExporterMetadataArray[12] = $MetaEventLogOldest
-    $WmiExporterMetadataArray[13] = $MetaProcessCountChrome
-    $WmiExporterMetadataArray[14] = $MetaProcessCountJavaw
-    $WmiExporterMetadataArray[15] = $MetaProcessCountFusionFX
+    Local $MetaProcessCountJavaw = MetaProcessCount("javaw.exe")
+    $sName = _PrometheusNewDesc($mMetrics, "akk_process_count", "gauge", $MetaProcessCountJavaw.Count)
+    $mMetrics[$sName].Labels.process = $MetaProcessCountJavaw.FileName
+
+    Local $MetaProcessCountFusionFX = MetaProcessCount("FusionFX.exe")
+    $sName = _PrometheusNewDesc($mMetrics, "akk_process_count", "gauge", $MetaProcessCountFusionFX.Count)
+    $mMetrics[$sName].Labels.process = $MetaProcessCountFusionFX.FileName
+
+    Local $WmiExporterMetadataArray[1]
+    Local $sLastName = "", $sLabels = ""
+    Local $aMapKeys
+    For $mMap In $mMetrics
+        $sName = StringSplit($mMap.Name, "+")[1]
+        If $sLastName <> $sName Then
+            _ArrayAdd($WmiExporterMetadataArray, "# HELP " & $sName & " " & $mMap.Text)
+            _ArrayAdd($WmiExporterMetadataArray, "# TYPE " & $sName & " " & $mMap.Type)
+        EndIf
+        $aMapKeys = MapKeys($mMap.Labels)
+        $sLabels = ""
+        If UBound($aMapKeys) Then
+            $sLabels &= "{"
+            For $vLabel In $aMapKeys
+                $sLabels &= $vLabel & '="' & $mMap.Labels[$vLabel] & '",'
+            Next
+            If MapExists($mMap, "LabelsRaw") Then
+                $sLabels &= $mMap.LabelsRaw
+            EndIf
+            If StringRight($sLabels, 1) = "," Then $sLabels = StringTrimRight($sLabels, 1)
+            $sLabels &= "}"
+        EndIf
+        _ArrayAdd($WmiExporterMetadataArray, $sName & $sLabels & " " & $mMap.Value)
+        $sLastName = $sName
+    Next
     $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
+    Local $WmiExporterMetadataArrayRet
     _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
     If Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet, 3) Then
         _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
@@ -1049,75 +1032,6 @@ Func WriteScrapeTargetFile()
 EndFunc   ;==>WriteScrapeTargetFile
 #EndRegion WMI Exporter
 #Region UDF
-;~ https://www.autoitscript.com/forum/topic/182506-array-comparison/
-;~ Melba23
-Func _ArrayCompare(Const ByRef $aArray1, Const ByRef $aArray2, $iMode = 0)
-
-    ; Check if arrays
-    If Not (IsArray($aArray1)) Or Not (IsArray($aArray2)) Then
-        Return SetError(1, 0, 0)
-    EndIf
-
-    ; Check if same number of dimensions
-    Local $iDims = UBound($aArray1, $UBOUND_DIMENSIONS)
-    If $iDims <> UBound($aArray2, $UBOUND_DIMENSIONS) Then
-        Return SetError(2, 0, 0)
-    EndIf
-
-    ; Check if same size
-    Local $iRows = UBound($aArray1, $UBOUND_ROWS)
-    Local $iCols = UBound($aArray1, $UBOUND_COLUMNS)
-    If $iRows <> UBound($aArray2, $UBOUND_ROWS) Or $iCols <> UBound($aArray2, $UBOUND_COLUMNS) Then
-        Return SetError(3, 0, 0)
-    EndIf
-
-    Local $sString_1, $sString_2
-
-    Switch $iMode
-
-        Case 0     ; Compare each element
-            For $i = 0 To $iRows - 1
-                For $j = 0 To $iCols - 1
-                    If $aArray1[$i][$j] <> $aArray1[$i][$j] Then
-                        Return SetError(4, 0, 0)
-                    EndIf
-                Next
-            Next
-
-        Case 1     ; Convert rows to strings
-            For $i = 0 To $iRows - 1
-                For $j = 0 To $iCols - 1
-                    $sString_1 &= $aArray1[$i][$j]
-                    $sString_2 &= $aArray2[$i][$j]
-                Next
-                If $sString_1 <> $sString_2 Then
-                    Return SetError(4, 0, 0)
-                EndIf
-            Next
-
-        Case 2     ; Convert columnss to strings
-            For $j = 0 To $iCols - 1
-                For $i = 0 To $iRows - 1
-                    $sString_1 &= $aArray1[$i][$j]
-                    $sString_2 &= $aArray2[$i][$j]
-                Next
-                If $sString_1 <> $sString_2 Then
-                    Return SetError(4, 0, 0)
-                EndIf
-            Next
-
-        Case 3     ; Convert whole array to string
-            If _ArrayToString($aArray1) <> _ArrayToString($aArray2) Then
-                Return SetError(4, 0, 0)
-            EndIf
-
-    EndSwitch
-
-    ; Looks as if they match
-    Return 1
-
-EndFunc   ;==>_ArrayCompare
-
 Func _ComputerNameAndModel()
     Local $aReturn[2] = ["(Unknown)", "(Unknown)"], $oColItems, $oWMIService
 
@@ -1125,12 +1039,11 @@ Func _ComputerNameAndModel()
     $oColItems = $oWMIService.ExecQuery("Select * From Win32_ComputerSystemProduct", "WQL", 0x30)
     If IsObj($oColItems) Then
         For $oObjectItem In $oColItems
-            $aReturn[0] = $oObjectItem.Name
-            $aReturn[1] = $oObjectItem.IdentifyingNumber
+            $aReturn[0] = StringStripWS($oObjectItem.Name, $STR_STRIPLEADING + $STR_STRIPTRAILING)
+            $aReturn[1] = StringStripWS($oObjectItem.IdentifyingNumber, $STR_STRIPLEADING + $STR_STRIPTRAILING)
         Next
         Return $aReturn
     EndIf
     Return SetError(1, 0, $aReturn)
 EndFunc   ;==>_ComputerNameAndModel
 #EndRegion UDF
-

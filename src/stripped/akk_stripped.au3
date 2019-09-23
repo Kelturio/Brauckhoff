@@ -1,442 +1,640 @@
 Global Const $0 = '{66087055-AD66-4C7C-9A18-38A2310B8337}'
 Global Const $1 = '{E09D739D-CCD4-44EE-8EBA-3FBF8BE4FC58}'
 Global Const $2 = '{1D5BE4B5-FA4A-452D-9CDD-5DB35105E7EB}'
-Global Const $3 = "struct;long Left;long Top;long Right;long Bottom;endstruct"
-Global Const $4 = "struct;word Year;word Month;word Dow;word Day;word Hour;word Minute;word Second;word MSeconds;endstruct"
-Global Const $5 = "struct;long Bias;wchar StdName[32];word StdDate[8];long StdBias;wchar DayName[32];word DayDate[8];long DayBias;endstruct"
-Global Const $6 = "struct;byte GUID[16];ulong NumberOfValues;ulong Type;ptr Values;endstruct"
-Global Const $7 = "uint Count;" & $6
-Global Const $8 = "uint Version;ptr Callback;bool NoThread;bool NoCodecs"
-Global Const $9 = "byte CLSID[16];byte FormatID[16];ptr CodecName;ptr DllName;ptr FormatDesc;ptr FileExt;" & "ptr MimeType;dword Flags;dword Version;dword SigCount;dword SigSize;ptr SigPattern;ptr SigMask"
-Global Const $a = "struct;ulong Data1;ushort Data2;ushort Data3;byte Data4[8];endstruct"
-Global Const $b = "dword Length;ptr Descriptor;bool InheritHandle"
-Global Const $c = 'struct;dword OSVersionInfoSize;dword MajorVersion;dword MinorVersion;dword BuildNumber;dword PlatformId;wchar CSDVersion[128];endstruct'
-Global Const $d = "dword Size;dword Flags;handle hCursor;" & "struct;long X;long Y;endstruct"
-Global Const $e = _l()
-Func _2()
-Local $f = DllStructCreate($d)
-Local $g = DllStructGetSize($f)
-DllStructSetData($f, "Size", $g)
-Local $h = DllCall("user32.dll", "bool", "GetCursorInfo", "struct*", $f)
-If @error Or Not $h[0] Then Return SetError(@error + 10, @extended, 0)
-Local $i[5]
-$i[0] = True
-$i[1] = DllStructGetData($f, "Flags") <> 0
-$i[2] = DllStructGetData($f, "hCursor")
-$i[3] = DllStructGetData($f, "X")
-$i[4] = DllStructGetData($f, "Y")
-Return $i
-EndFunc
-Func _l()
-Local $j = DllStructCreate($c)
-DllStructSetData($j, 1, DllStructGetSize($j))
-Local $h = DllCall('kernel32.dll', 'bool', 'GetVersionExW', 'struct*', $j)
-If @error Or Not $h[0] Then Return SetError(@error, @extended, 0)
-Return BitOR(BitShift(DllStructGetData($j, 2), -8), DllStructGetData($j, 3))
-EndFunc
-Func _14($k)
-Local $l = DllStructCreate($a)
-_15($k, $l)
-If @error Then Return SetError(@error + 10, @extended, 0)
+Global Const $3 = "struct;long X;long Y;endstruct"
+Global Const $4 = "struct;long Left;long Top;long Right;long Bottom;endstruct"
+Global Const $5 = "struct;word Year;word Month;word Dow;word Day;word Hour;word Minute;word Second;word MSeconds;endstruct"
+Global Const $6 = "struct;long Bias;wchar StdName[32];word StdDate[8];long StdBias;wchar DayName[32];word DayDate[8];long DayBias;endstruct"
+Global Const $7 = "struct;byte GUID[16];ulong NumberOfValues;ulong Type;ptr Values;endstruct"
+Global Const $8 = "uint Count;" & $7
+Global Const $9 = "uint Version;ptr Callback;bool NoThread;bool NoCodecs"
+Global Const $a = "byte CLSID[16];byte FormatID[16];ptr CodecName;ptr DllName;ptr FormatDesc;ptr FileExt;" & "ptr MimeType;dword Flags;dword Version;dword SigCount;dword SigSize;ptr SigPattern;ptr SigMask"
+Global Const $b = "struct;ulong Data1;ushort Data2;ushort Data3;byte Data4[8];endstruct"
+Global Const $c = "dword Length;ptr Descriptor;bool InheritHandle"
+Func _m($d, $e, $f = 0, $g = 0, $h = 0, $i = "wparam", $j = "lparam", $k = "lresult")
+Local $l = DllCall("user32.dll", $k, "SendMessageW", "hwnd", $d, "uint", $e, $i, $f, $j, $g)
+If @error Then Return SetError(@error, @extended, "")
+If $h >= 0 And $h <= 4 Then Return $l[$h]
 Return $l
 EndFunc
-Func _15($k, $l)
-Local $m = DllCall("ole32.dll", "long", "CLSIDFromString", "wstr", $k, "struct*", $l)
+Global Const $m = Ptr(-1)
+Global Const $n = Ptr(-1)
+Global Const $o = BitShift(0x0100, 8)
+Global Const $p = BitShift(0x2000, 8)
+Global Const $q = BitShift(0x8000, 8)
+Global Const $r = "dword Size;dword Flags;handle hCursor;" & $3
+Global Const $s = "bool Icon;dword XHotSpot;dword YHotSpot;handle hMask;handle hColor"
+Func _r($t, $u, $v, $w, $x, $y, $0z, $10, $11)
+Local $l = DllCall("gdi32.dll", "bool", "BitBlt", "handle", $t, "int", $u, "int", $v, "int", $w, "int", $x, "handle", $y, "int", $0z, "int", $10, "dword", $11)
 If @error Then Return SetError(@error, @extended, False)
-Return $m[0]
+Return $l[0]
 EndFunc
-Func _1x($l)
-Local $m = DllCall("ole32.dll", "int", "StringFromGUID2", "struct*", $l, "wstr", "", "int", 40)
-If @error Or Not $m[0] Then Return SetError(@error, @extended, "")
-Return SetExtended($m[0], $m[2])
-EndFunc
-Func _22($n, $o = 0, $p = True, $q = False)
-Local $r = "wstr"
-If Not IsString($n) Then $r = "struct*"
-Local $m = DllCall("kernel32.dll", "int", "WideCharToMultiByte", "uint", $o, "dword", 0, $r, $n, "int", -1, "ptr", 0, "int", 0, "ptr", 0, "ptr", 0)
-If @error Or Not $m[0] Then Return SetError(@error + 20, @extended, "")
-Local $s = DllStructCreate((($q) ?("byte") :("char")) & "[" & $m[0] & "]")
-$m = DllCall("kernel32.dll", "int", "WideCharToMultiByte", "uint", $o, "dword", 0, $r, $n, "int", -1, "struct*", $s, "int", $m[0], "ptr", 0, "ptr", 0)
-If @error Or Not $m[0] Then Return SetError(@error + 10, @extended, "")
-If $p Then Return DllStructGetData($s, 1)
-Return $s
-EndFunc
-Func _2h($t)
-Local $m = DllCall("gdi32.dll", "bool", "DeleteObject", "handle", $t)
-If @error Then Return SetError(@error, @extended, False)
-Return $m[0]
-EndFunc
-Func _2r($u, $v)
-Local $m = DllCall("gdi32.dll", "handle", "SelectObject", "handle", $u, "handle", $v)
-If @error Then Return SetError(@error, @extended, False)
-Return $m[0]
-EndFunc
-Func _3x($w, $x, $y, $0z, $10, $11, $12, $13, $14)
-Local $m = DllCall("gdi32.dll", "bool", "BitBlt", "handle", $w, "int", $x, "int", $y, "int", $0z, "int", $10, "handle", $11, "int", $12, "int", $13, "dword", $14)
-If @error Then Return SetError(@error, @extended, False)
-Return $m[0]
-EndFunc
-Func _43($u, $0z, $10)
-Local $m = DllCall("gdi32.dll", "handle", "CreateCompatibleBitmap", "handle", $u, "int", $0z, "int", $10)
+Func _y($12)
+Local $l = DllCall("user32.dll", "handle", "CopyIcon", "handle", $12)
 If @error Then Return SetError(@error, @extended, 0)
-Return $m[0]
+Return $l[0]
 EndFunc
-Func _4p($u)
-Local $m = DllCall("gdi32.dll", "handle", "CreateCompatibleDC", "handle", $u)
+Func _10($13, $w, $x)
+Local $l = DllCall("gdi32.dll", "handle", "CreateCompatibleBitmap", "handle", $13, "int", $w, "int", $x)
 If @error Then Return SetError(@error, @extended, 0)
-Return $m[0]
+Return $l[0]
 EndFunc
-Func _4q($u)
-Local $m = DllCall("gdi32.dll", "bool", "DeleteDC", "handle", $u)
+Func _11($13)
+Local $l = DllCall("gdi32.dll", "handle", "CreateCompatibleDC", "handle", $13)
+If @error Then Return SetError(@error, @extended, 0)
+Return $l[0]
+EndFunc
+Func _1e($13)
+Local $l = DllCall("gdi32.dll", "bool", "DeleteDC", "handle", $13)
 If @error Then Return SetError(@error, @extended, False)
-Return $m[0]
+Return $l[0]
 EndFunc
-Func _4t($u, $15, $16, $17)
-Local $m = DllCall("user32.dll", "bool", "DrawIcon", "handle", $u, "int", $15, "int", $16, "handle", $17)
+Func _1f($14)
+Local $l = DllCall("gdi32.dll", "bool", "DeleteObject", "handle", $14)
 If @error Then Return SetError(@error, @extended, False)
-Return $m[0]
+Return $l[0]
 EndFunc
-Func _50($18)
-Local $m = DllCall("user32.dll", "handle", "GetDC", "hwnd", $18)
-If @error Then Return SetError(@error, @extended, 0)
-Return $m[0]
-EndFunc
-Func _56($18, $u)
-Local $m = DllCall("user32.dll", "int", "ReleaseDC", "hwnd", $18, "handle", $u)
+Func _1g($12)
+Local $l = DllCall("user32.dll", "bool", "DestroyIcon", "handle", $12)
 If @error Then Return SetError(@error, @extended, False)
-Return $m[0]
+Return $l[0]
 EndFunc
-Global Const $19 = "bool Icon;dword XHotSpot;dword YHotSpot;handle hMask;handle hColor"
-Func _5f($17)
-Local $m = DllCall("user32.dll", "handle", "CopyIcon", "handle", $17)
-If @error Then Return SetError(@error, @extended, 0)
-Return $m[0]
-EndFunc
-Func _5l($17)
-Local $m = DllCall("user32.dll", "bool", "DestroyIcon", "handle", $17)
+Func _1k($13, $15, $16, $12)
+Local $l = DllCall("user32.dll", "bool", "DrawIcon", "handle", $13, "int", $15, "int", $16, "handle", $12)
 If @error Then Return SetError(@error, @extended, False)
-Return $m[0]
+Return $l[0]
 EndFunc
-Func _5q($17)
-Local $1a = DllStructCreate($19)
-Local $h = DllCall("user32.dll", "bool", "GetIconInfo", "handle", $17, "struct*", $1a)
-If @error Or Not $h[0] Then Return SetError(@error + 10, @extended, 0)
-Local $1b[6]
-$1b[0] = True
-$1b[1] = DllStructGetData($1a, "Icon") <> 0
-$1b[2] = DllStructGetData($1a, "XHotSpot")
-$1b[3] = DllStructGetData($1a, "YHotSpot")
-$1b[4] = DllStructGetData($1a, "hMask")
-$1b[5] = DllStructGetData($1a, "hColor")
-Return $1b
+Func _2l()
+Local $17 = DllStructCreate($r)
+Local $18 = DllStructGetSize($17)
+DllStructSetData($17, "Size", $18)
+Local $19 = DllCall("user32.dll", "bool", "GetCursorInfo", "struct*", $17)
+If @error Or Not $19[0] Then Return SetError(@error + 10, @extended, 0)
+Local $1a[5]
+$1a[0] = True
+$1a[1] = DllStructGetData($17, "Flags") <> 0
+$1a[2] = DllStructGetData($17, "hCursor")
+$1a[3] = DllStructGetData($17, "X")
+$1a[4] = DllStructGetData($17, "Y")
+Return $1a
 EndFunc
-Global $1c = 0
-Global $1d = 0
-Global $1e = 0
-Global $1f = True
-Func _ce($1g, $1h, $1i, $1j, $1k, $1l = 0x00021808)
-Local $m = DllCall($1c, "int", "GdipCloneBitmapArea", "float", $1h, "float", $1i, "float", $1j, "float", $1k, "int", $1l, "handle", $1g, "handle*", 0)
+Func _2m($d)
+Local $l = DllCall("user32.dll", "handle", "GetDC", "hwnd", $d)
 If @error Then Return SetError(@error, @extended, 0)
-If $m[0] Then Return SetError(10, $m[0], 0)
-Return $m[7]
+Return $l[0]
 EndFunc
-Func _ci($1g, $1m = 0)
-Local $m = DllCall($1c, "int", "GdipCreateBitmapFromHBITMAP", "handle", $1g, "handle", $1m, "handle*", 0)
+Func _2n()
+Local $l = DllCall("user32.dll", "hwnd", "GetDesktopWindow")
 If @error Then Return SetError(@error, @extended, 0)
-If $m[0] Then Return SetError(10, $m[0], 0)
-Return $m[3]
+Return $l[0]
 EndFunc
-Func _dh()
-Local $1n = _dj()
-Local $1o = _dm()
-Local $1p = DllStructCreate("byte[" & $1o & "]")
-Local $m = DllCall($1c, "int", "GdipGetImageEncoders", "uint", $1n, "uint", $1o, "struct*", $1p)
+Func _2w($12)
+Local $1b = DllStructCreate($s)
+Local $19 = DllCall("user32.dll", "bool", "GetIconInfo", "handle", $12, "struct*", $1b)
+If @error Or Not $19[0] Then Return SetError(@error + 10, @extended, 0)
+Local $1c[6]
+$1c[0] = True
+$1c[1] = DllStructGetData($1b, "Icon") <> 0
+$1c[2] = DllStructGetData($1b, "XHotSpot")
+$1c[3] = DllStructGetData($1b, "YHotSpot")
+$1c[4] = DllStructGetData($1b, "hMask")
+$1c[5] = DllStructGetData($1b, "hColor")
+Return $1c
+EndFunc
+Func _3e($1d)
+Local $l = DllCall("user32.dll", "int", "GetSystemMetrics", "int", $1d)
 If @error Then Return SetError(@error, @extended, 0)
-If $m[0] Then Return SetError(10, $m[0], 0)
-Local $1q = DllStructGetPtr($1p)
-Local $1r, $1s[$1n + 1][14]
-$1s[0][0] = $1n
-For $1t = 1 To $1n
-$1r = DllStructCreate($9, $1q)
-$1s[$1t][1] = _1x(DllStructGetPtr($1r, "CLSID"))
-$1s[$1t][2] = _1x(DllStructGetPtr($1r, "FormatID"))
-$1s[$1t][3] = _22(DllStructGetData($1r, "CodecName"))
-$1s[$1t][4] = _22(DllStructGetData($1r, "DllName"))
-$1s[$1t][5] = _22(DllStructGetData($1r, "FormatDesc"))
-$1s[$1t][6] = _22(DllStructGetData($1r, "FileExt"))
-$1s[$1t][7] = _22(DllStructGetData($1r, "MimeType"))
-$1s[$1t][8] = DllStructGetData($1r, "Flags")
-$1s[$1t][9] = DllStructGetData($1r, "Version")
-$1s[$1t][10] = DllStructGetData($1r, "SigCount")
-$1s[$1t][11] = DllStructGetData($1r, "SigSize")
-$1s[$1t][12] = DllStructGetData($1r, "SigPattern")
-$1s[$1t][13] = DllStructGetData($1r, "SigMask")
-$1q += DllStructGetSize($1r)
+Return $l[0]
+EndFunc
+Func _3m($d)
+Local $1e = DllStructCreate($4)
+Local $19 = DllCall("user32.dll", "bool", "GetWindowRect", "hwnd", $d, "struct*", $1e)
+If @error Or Not $19[0] Then Return SetError(@error + 10, @extended, 0)
+Return $1e
+EndFunc
+Func _3t($1f)
+Local $1g = DllStructCreate($b)
+_3u($1f, $1g)
+If @error Then Return SetError(@error + 10, @extended, 0)
+Return $1g
+EndFunc
+Func _3u($1f, $1g)
+Local $l = DllCall("ole32.dll", "long", "CLSIDFromString", "wstr", $1f, "struct*", $1g)
+If @error Then Return SetError(@error, @extended, False)
+Return $l[0]
+EndFunc
+Func _50($d, $13)
+Local $l = DllCall("user32.dll", "int", "ReleaseDC", "hwnd", $d, "handle", $13)
+If @error Then Return SetError(@error, @extended, False)
+Return $l[0]
+EndFunc
+Func _52($13, $1h)
+Local $l = DllCall("gdi32.dll", "handle", "SelectObject", "handle", $13, "handle", $1h)
+If @error Then Return SetError(@error, @extended, False)
+Return $l[0]
+EndFunc
+Func _5u($1g)
+Local $l = DllCall("ole32.dll", "int", "StringFromGUID2", "struct*", $1g, "wstr", "", "int", 40)
+If @error Or Not $l[0] Then Return SetError(@error, @extended, "")
+Return SetExtended($l[0], $l[2])
+EndFunc
+Func _67($1i, $1j = 0, $1k = True)
+Local $1l = "wstr"
+If Not IsString($1i) Then $1l = "struct*"
+Local $l = DllCall("kernel32.dll", "int", "WideCharToMultiByte", "uint", $1j, "dword", 0, $1l, $1i, "int", -1, "ptr", 0, "int", 0, "ptr", 0, "ptr", 0)
+If @error Or Not $l[0] Then Return SetError(@error + 20, @extended, "")
+Local $1m = DllStructCreate("char[" & $l[0] & "]")
+$l = DllCall("kernel32.dll", "int", "WideCharToMultiByte", "uint", $1j, "dword", 0, $1l, $1i, "int", -1, "struct*", $1m, "int", $l[0], "ptr", 0, "ptr", 0)
+If @error Or Not $l[0] Then Return SetError(@error + 10, @extended, "")
+If $1k Then Return DllStructGetData($1m, 1)
+Return $1m
+EndFunc
+Global Const $1n = 'struct;dword OSVersionInfoSize;dword MajorVersion;dword MinorVersion;dword BuildNumber;dword PlatformId;wchar CSDVersion[128];endstruct'
+Global Const $1o = _7b()
+Func _7b()
+Local $1p = DllStructCreate($1n)
+DllStructSetData($1p, 1, DllStructGetSize($1p))
+Local $19 = DllCall('kernel32.dll', 'bool', 'GetVersionExW', 'struct*', $1p)
+If @error Or Not $19[0] Then Return SetError(@error, @extended, 0)
+Return BitOR(BitShift(DllStructGetData($1p, 2), -8), DllStructGetData($1p, 3))
+EndFunc
+Global $1q = 0
+Global $1r = 0
+Global $1s = 0
+Global $1t = True
+Func _ee($1u, $1v, $1w, $1x, $1y, $1z = 0x00021808)
+Local $l = DllCall($1q, "int", "GdipCloneBitmapArea", "float", $1v, "float", $1w, "float", $1x, "float", $1y, "int", $1z, "handle", $1u, "handle*", 0)
+If @error Then Return SetError(@error, @extended, 0)
+If $l[0] Then Return SetError(10, $l[0], 0)
+Return $l[7]
+EndFunc
+Func _ei($1u, $20 = 0)
+Local $l = DllCall($1q, "int", "GdipCreateBitmapFromHBITMAP", "handle", $1u, "handle", $20, "handle*", 0)
+If @error Then Return SetError(@error, @extended, 0)
+If $l[0] Then Return SetError(10, $l[0], 0)
+Return $l[3]
+EndFunc
+Func _fg()
+Local $21 = _fi()
+Local $22 = _fl()
+Local $23 = DllStructCreate("byte[" & $22 & "]")
+Local $l = DllCall($1q, "int", "GdipGetImageEncoders", "uint", $21, "uint", $22, "struct*", $23)
+If @error Then Return SetError(@error, @extended, 0)
+If $l[0] Then Return SetError(10, $l[0], 0)
+Local $24 = DllStructGetPtr($23)
+Local $25, $26[$21 + 1][14]
+$26[0][0] = $21
+For $27 = 1 To $21
+$25 = DllStructCreate($a, $24)
+$26[$27][1] = _5u(DllStructGetPtr($25, "CLSID"))
+$26[$27][2] = _5u(DllStructGetPtr($25, "FormatID"))
+$26[$27][3] = _67(DllStructGetData($25, "CodecName"))
+$26[$27][4] = _67(DllStructGetData($25, "DllName"))
+$26[$27][5] = _67(DllStructGetData($25, "FormatDesc"))
+$26[$27][6] = _67(DllStructGetData($25, "FileExt"))
+$26[$27][7] = _67(DllStructGetData($25, "MimeType"))
+$26[$27][8] = DllStructGetData($25, "Flags")
+$26[$27][9] = DllStructGetData($25, "Version")
+$26[$27][10] = DllStructGetData($25, "SigCount")
+$26[$27][11] = DllStructGetData($25, "SigSize")
+$26[$27][12] = DllStructGetData($25, "SigPattern")
+$26[$27][13] = DllStructGetData($25, "SigMask")
+$24 += DllStructGetSize($25)
 Next
-Return $1s
+Return $26
 EndFunc
-Func _di($1u)
-Local $1v = _dh()
+Func _fh($28)
+Local $29 = _fg()
 If @error Then Return SetError(@error, 0, "")
-For $1t = 1 To $1v[0][0]
-If StringInStr($1v[$1t][6], "*." & $1u) > 0 Then Return $1v[$1t][1]
+For $27 = 1 To $29[0][0]
+If StringInStr($29[$27][6], "*." & $28) > 0 Then Return $29[$27][1]
 Next
 Return SetError(-1, -1, "")
 EndFunc
-Func _dj()
-Local $m = DllCall($1c, "int", "GdipGetImageEncodersSize", "uint*", 0, "uint*", 0)
+Func _fi()
+Local $l = DllCall($1q, "int", "GdipGetImageEncodersSize", "uint*", 0, "uint*", 0)
 If @error Then Return SetError(@error, @extended, -1)
-If $m[0] Then Return SetError(10, $m[0], -1)
-Return $m[1]
+If $l[0] Then Return SetError(10, $l[0], -1)
+Return $l[1]
 EndFunc
-Func _dm()
-Local $m = DllCall($1c, "int", "GdipGetImageEncodersSize", "uint*", 0, "uint*", 0)
+Func _fl()
+Local $l = DllCall($1q, "int", "GdipGetImageEncodersSize", "uint*", 0, "uint*", 0)
 If @error Then Return SetError(@error, @extended, -1)
-If $m[0] Then Return SetError(10, $m[0], -1)
-Return $m[2]
+If $l[0] Then Return SetError(10, $l[0], -1)
+Return $l[2]
 EndFunc
-Func _fv($1w)
-Local $m = DllCall($1c, "int", "GdipDisposeImage", "handle", $1w)
+Func _hr($2a)
+Local $l = DllCall($1q, "int", "GdipDisposeImage", "handle", $2a)
 If @error Then Return SetError(@error, @extended, False)
-If $m[0] Then Return SetError(10, $m[0], False)
+If $l[0] Then Return SetError(10, $l[0], False)
 Return True
 EndFunc
-Func _g0($1w)
-Local $m = DllCall($1c, "int", "GdipGetImageHeight", "handle", $1w, "uint*", 0)
+Func _hv($2a)
+Local $l = DllCall($1q, "int", "GdipGetImageHeight", "handle", $2a, "uint*", 0)
 If @error Then Return SetError(@error, @extended, -1)
-If $m[0] Then Return SetError(10, $m[0], -1)
-Return $m[2]
+If $l[0] Then Return SetError(10, $l[0], -1)
+Return $l[2]
 EndFunc
-Func _gb($1w)
-Local $m = DllCall($1c, "int", "GdipGetImageWidth", "handle", $1w, "uint*", -1)
+Func _i2($2a)
+Local $l = DllCall($1q, "int", "GdipGetImageWidth", "handle", $2a, "uint*", -1)
 If @error Then Return SetError(@error, @extended, -1)
-If $m[0] Then Return SetError(10, $m[0], -1)
-Return $m[2]
+If $l[0] Then Return SetError(10, $l[0], -1)
+Return $l[2]
 EndFunc
-Func _gi($1w, $1x, $1y, $1z = 0)
-Local $l = _14($1y)
-Local $m = DllCall($1c, "int", "GdipSaveImageToFile", "handle", $1w, "wstr", $1x, "struct*", $l, "struct*", $1z)
+Func _i7($2a, $2b, $2c, $2d = 0)
+Local $1g = _3t($2c)
+Local $l = DllCall($1q, "int", "GdipSaveImageToFile", "handle", $2a, "wstr", $2b, "struct*", $1g, "struct*", $2d)
 If @error Then Return SetError(@error, @extended, False)
-If $m[0] Then Return SetError(10, $m[0], False)
+If $l[0] Then Return SetError(10, $l[0], False)
 Return True
 EndFunc
-Func _he(ByRef $1z, $k, $20, $21, $22)
-Local $1n = DllStructGetData($1z, "Count")
-Local $23 = DllStructGetPtr($1z, "GUID") +($1n * _hg())
-Local $24 = DllStructCreate($6, $23)
-_15($k, $23)
-DllStructSetData($24, "Type", $21)
-DllStructSetData($24, "NumberOfValues", $20)
-DllStructSetData($24, "Values", $22)
-DllStructSetData($1z, "Count", $1n + 1)
+Func _j1(ByRef $2d, $1f, $2e, $2f, $2g)
+Local $21 = DllStructGetData($2d, "Count")
+Local $2h = DllStructGetPtr($2d, "GUID") +($21 * _j3())
+Local $2i = DllStructCreate($7, $2h)
+_3u($1f, $2h)
+DllStructSetData($2i, "Type", $2f)
+DllStructSetData($2i, "NumberOfValues", $2e)
+DllStructSetData($2i, "Values", $2g)
+DllStructSetData($2d, "Count", $21 + 1)
 EndFunc
-Func _hf($1n)
-Local $25 = $7
-For $26 = 2 To $1n
-$25 &= ";struct;byte[16];ulong;ulong;ptr;endstruct"
+Func _j2($21)
+Local $2j = $8
+For $2k = 2 To $21
+$2j &= ";struct;byte[16];ulong;ulong;ptr;endstruct"
 Next
-Return DllStructCreate($25)
+Return DllStructCreate($2j)
 EndFunc
-Func _hg()
-Local $24 = DllStructCreate($6)
-Return DllStructGetSize($24)
+Func _j3()
+Local $2i = DllStructCreate($7)
+Return DllStructGetSize($2i)
 EndFunc
-Func _kg()
-If $1c = 0 Then Return SetError(-1, -1, False)
-$1d -= 1
-If $1d = 0 Then
-DllCall($1c, "none", "GdiplusShutdown", "ulong_ptr", $1e)
-DllClose($1c)
-$1c = 0
+Func _lw()
+If $1q = 0 Then Return SetError(-1, -1, False)
+$1r -= 1
+If $1r = 0 Then
+DllCall($1q, "none", "GdiplusShutdown", "ulong_ptr", $1s)
+DllClose($1q)
+$1q = 0
 EndIf
 Return True
 EndFunc
-Func _kh($27 = Default, $28 = False)
-$1d += 1
-If $1d > 1 Then Return True
-If $27 = Default Then $27 = "gdiplus.dll"
-$1c = DllOpen($27)
-If $1c = -1 Then
-$1d = 0
+Func _lx($2l = Default, $2m = False)
+$1r += 1
+If $1r > 1 Then Return True
+If $2l = Default Then $2l = "gdiplus.dll"
+$1q = DllOpen($2l)
+If $1q = -1 Then
+$1r = 0
 Return SetError(1, 2, False)
 EndIf
-Local $29 = FileGetVersion($27)
-$29 = StringSplit($29, ".")
-If $29[1] > 5 Then $1f = False
-Local $2a = DllStructCreate($8)
-Local $2b = DllStructCreate("ulong_ptr Data")
-DllStructSetData($2a, "Version", 1)
-Local $m = DllCall($1c, "int", "GdiplusStartup", "struct*", $2b, "struct*", $2a, "ptr", 0)
+Local $2n = FileGetVersion($2l)
+$2n = StringSplit($2n, ".")
+If $2n[1] > 5 Then $1t = False
+Local $2o = DllStructCreate($9)
+Local $2p = DllStructCreate("ulong_ptr Data")
+DllStructSetData($2o, "Version", 1)
+Local $l = DllCall($1q, "int", "GdiplusStartup", "struct*", $2p, "struct*", $2o, "ptr", 0)
 If @error Then Return SetError(@error, @extended, False)
-If $m[0] Then Return SetError(10, $m[0], False)
-$1e = DllStructGetData($2b, "Data")
-If $28 Then Return $1c
-Return SetExtended($29[1], True)
+If $l[0] Then Return SetError(10, $l[0], False)
+$1s = DllStructGetData($2p, "Data")
+If $2m Then Return $1q
+Return SetExtended($2n[1], True)
 EndFunc
-Func _kt($1x, $2c = True)
-Local $2d = _ku(".\:", $1x)
-If($2d > 0) And(StringMid($1x, $2d, 1) = '.') Then
-If $2c Then
-Return StringMid($1x, $2d + 1)
+Func _m9($2b, $2q = True)
+Local $1d = _ma(".\:", $2b)
+If($1d > 0) And(StringMid($2b, $1d, 1) = '.') Then
+If $2q Then
+Return StringMid($2b, $1d + 1)
 Else
-Return StringMid($1x, $2d)
+Return StringMid($2b, $1d)
 EndIf
 Else
 Return ""
 EndIf
 EndFunc
-Func _ku($2e, $2f)
-Local $2g, $2h
-For $1t = 1 To StringLen($2e)
-$2g = StringMid($2e, $1t, 1)
-$2h = StringInStr($2f, $2g, 2, -1)
-If $2h > 0 Then Return $2h
+Func _ma($2r, $2s)
+Local $2t, $2u
+For $27 = 1 To StringLen($2r)
+$2t = StringMid($2r, $27, 1)
+$2u = StringInStr($2s, $2t, 0, -1)
+If $2u > 0 Then Return $2u
 Next
 EndFunc
-Func _ls()
-Local $m = DllCall("user32.dll", "hwnd", "GetDesktopWindow")
-If @error Then Return SetError(@error, @extended, 0)
-Return $m[0]
-EndFunc
-Func _m2($2d)
-Local $m = DllCall("user32.dll", "int", "GetSystemMetrics", "int", $2d)
-If @error Then Return SetError(@error, @extended, 0)
-Return $m[0]
-EndFunc
-Func _m6($18)
-Local $2i = DllStructCreate($3)
-Local $h = DllCall("user32.dll", "bool", "GetWindowRect", "hwnd", $18, "struct*", $2i)
-If @error Or Not $h[0] Then Return SetError(@error + 10, @extended, 0)
-Return $2i
-EndFunc
-Global $2j = 0x00021808
-Global $2k = 100
-Global $2l = 24
-Global $2m = 2
-Global Const $2n = 0x00CC0020
-Func _mq($1x = "", $2o = 0, $2p = 0, $2q = -1, $2r = -1, $2s = True)
-Local $2t = False
-If $2q = -1 Then $2q = _m2(0) - 1
-If $2r = -1 Then $2r = _m2(1) - 1
-If $2q < $2o Then Return SetError(-1, 0, $2t)
-If $2r < $2p Then Return SetError(-2, 0, $2t)
-Local $2u =($2q - $2o) + 1
-Local $2v =($2r - $2p) + 1
-Local $18 = _ls()
-Local $2w = _50($18)
-Local $2x = _4p($2w)
-Local $2y = _43($2w, $2u, $2v)
-_2r($2x, $2y)
-_3x($2x, 0, 0, $2u, $2v, $2w, $2o, $2p, $2n)
-If $2s Then
-Local $i = _2()
-If Not @error And $i[1] Then
-$2s = True
-Local $17 = _5f($i[2])
-Local $1b = _5q($17)
+Global $2v = 0x00021808
+Global $2w = 100
+Global $2x = 24
+Global $2y = 2
+Global Const $2z = 0x00CC0020
+Func _n4($2b = "", $30 = 0, $31 = 0, $32 = -1, $33 = -1, $34 = True)
+Local $35 = False
+If $32 = -1 Then $32 = _3e(0) - 1
+If $33 = -1 Then $33 = _3e(1) - 1
+If $32 < $30 Then Return SetError(-1, 0, $35)
+If $33 < $31 Then Return SetError(-2, 0, $35)
+Local $36 =($32 - $30) + 1
+Local $37 =($33 - $31) + 1
+Local $d = _2n()
+Local $38 = _2m($d)
+Local $39 = _11($38)
+Local $3a = _10($38, $36, $37)
+_52($39, $3a)
+_r($39, 0, 0, $36, $37, $38, $30, $31, $2z)
+If $34 Then
+Local $1a = _2l()
+If Not @error And $1a[1] Then
+$34 = True
+Local $12 = _y($1a[2])
+Local $1c = _2w($12)
 If Not @error Then
-_2h($1b[4])
-If $1b[5] <> 0 Then _2h($1b[5])
-_4t($2x, $i[3] - $1b[2] - $2o, $i[4] - $1b[3] - $2p, $17)
+_1f($1c[4])
+If $1c[5] <> 0 Then _1f($1c[5])
+_1k($39, $1a[3] - $1c[2] - $30, $1a[4] - $1c[3] - $31, $12)
 EndIf
-_5l($17)
+_1g($12)
 EndIf
 EndIf
-_56($18, $2w)
-_4q($2x)
-If $1x = "" Then Return $2y
-$2t = _ms($1x, $2y, True)
-Return SetError(@error, @extended, $2t)
+_50($d, $38)
+_1e($39)
+If $2b = "" Then Return $3a
+$35 = _n6($2b, $3a, True)
+Return SetError(@error, @extended, $35)
 EndFunc
-Func _mr($1x, $18, $2o = 0, $2p = 0, $2q = -1, $2r = -1, $2s = True)
-If Not IsHWnd($18) Then $18 = WinGetHandle($18)
-Local $2i = DllStructCreate($3)
-Local Const $2z = 9
-Local $2t = DllCall("dwmapi.dll", "long", "DwmGetWindowAttribute", "hwnd", $18, "dword", $2z, "struct*", $2i, "dword", DllStructGetSize($2i))
-If(@error Or $2t[0] Or(Abs(DllStructGetData($2i, "Left")) + Abs(DllStructGetData($2i, "Top")) + Abs(DllStructGetData($2i, "Right")) + Abs(DllStructGetData($2i, "Bottom"))) = 0) Then
-$2i = _m6($18)
+Func _n5($2b, $d, $30 = 0, $31 = 0, $32 = -1, $33 = -1, $34 = True)
+If Not IsHWnd($d) Then $d = WinGetHandle($d)
+Local $1e = DllStructCreate($4)
+Local Const $3b = 9
+Local $35 = DllCall("dwmapi.dll", "long", "DwmGetWindowAttribute", "hwnd", $d, "dword", $3b, "struct*", $1e, "dword", DllStructGetSize($1e))
+If(@error Or $35[0] Or(Abs(DllStructGetData($1e, "Left")) + Abs(DllStructGetData($1e, "Top")) + Abs(DllStructGetData($1e, "Right")) + Abs(DllStructGetData($1e, "Bottom"))) = 0) Then
+$1e = _3m($d)
 If @error Then Return SetError(@error + 10, @extended, False)
 EndIf
-$2o += DllStructGetData($2i, "Left")
-$2p += DllStructGetData($2i, "Top")
-If $2q = -1 Then $2q = DllStructGetData($2i, "Right") - DllStructGetData($2i, "Left") - 1
-If $2r = -1 Then $2r = DllStructGetData($2i, "Bottom") - DllStructGetData($2i, "Top") - 1
-$2q += DllStructGetData($2i, "Left")
-$2r += DllStructGetData($2i, "Top")
-If $2o > DllStructGetData($2i, "Right") Then $2o = DllStructGetData($2i, "Left")
-If $2p > DllStructGetData($2i, "Bottom") Then $2p = DllStructGetData($2i, "Top")
-If $2q > DllStructGetData($2i, "Right") Then $2q = DllStructGetData($2i, "Right") - 1
-If $2r > DllStructGetData($2i, "Bottom") Then $2r = DllStructGetData($2i, "Bottom") - 1
-$2t = _mq($1x, $2o, $2p, $2q, $2r, $2s)
-Return SetError(@error, @extended, $2t)
+$30 += DllStructGetData($1e, "Left")
+$31 += DllStructGetData($1e, "Top")
+If $32 = -1 Then $32 = DllStructGetData($1e, "Right") - DllStructGetData($1e, "Left") - 1
+If $33 = -1 Then $33 = DllStructGetData($1e, "Bottom") - DllStructGetData($1e, "Top") - 1
+$32 += DllStructGetData($1e, "Left")
+$33 += DllStructGetData($1e, "Top")
+If $30 > DllStructGetData($1e, "Right") Then $30 = DllStructGetData($1e, "Left")
+If $31 > DllStructGetData($1e, "Bottom") Then $31 = DllStructGetData($1e, "Top")
+If $32 > DllStructGetData($1e, "Right") Then $32 = DllStructGetData($1e, "Right") - 1
+If $33 > DllStructGetData($1e, "Bottom") Then $33 = DllStructGetData($1e, "Bottom") - 1
+$35 = _n4($2b, $30, $31, $32, $33, $34)
+Return SetError(@error, @extended, $35)
 EndFunc
-Func _ms($1x, $1g, $30 = True)
-_kh()
+Func _n6($2b, $1u, $3c = True)
+_lx()
 If @error Then Return SetError(-1, -1, False)
-Local $31 = StringUpper(_kt($1x))
-Local $32 = _di($31)
-If $32 = "" Then Return SetError(-2, -2, False)
-Local $1w = _ci($1g)
+Local $3d = StringUpper(_m9($2b))
+Local $3e = _fh($3d)
+If $3e = "" Then Return SetError(-2, -2, False)
+Local $2a = _ei($1u)
 If @error Then Return SetError(-3, -3, False)
-Local $33, $1z
-Switch $31
+Local $3f, $2d
+Switch $3d
 Case "BMP"
-Local $15 = _gb($1w)
-Local $16 = _g0($1w)
-Local $34 = _ce($1w, 0, 0, $15, $16, $2j)
-_fv($1w)
-$1w = $34
+Local $15 = _i2($2a)
+Local $16 = _hv($2a)
+Local $3g = _ee($2a, 0, 0, $15, $16, $2v)
+_hr($2a)
+$2a = $3g
 Case "JPG", "JPEG"
-$1z = _hf(1)
-$33 = DllStructCreate("int Quality")
-DllStructSetData($33, "Quality", $2k)
-_he($1z, $2, 1, 4, DllStructGetPtr($33))
+$2d = _j2(1)
+$3f = DllStructCreate("int Quality")
+DllStructSetData($3f, "Quality", $2w)
+_j1($2d, $2, 1, 4, DllStructGetPtr($3f))
 Case "TIF", "TIFF"
-$1z = _hf(2)
-$33 = DllStructCreate("int ColorDepth;int Compression")
-DllStructSetData($33, "ColorDepth", $2l)
-DllStructSetData($33, "Compression", $2m)
-_he($1z, $0, 1, 4, DllStructGetPtr($33, "ColorDepth"))
-_he($1z, $1, 1, 4, DllStructGetPtr($33, "Compression"))
+$2d = _j2(2)
+$3f = DllStructCreate("int ColorDepth;int Compression")
+DllStructSetData($3f, "ColorDepth", $2x)
+DllStructSetData($3f, "Compression", $2y)
+_j1($2d, $0, 1, 4, DllStructGetPtr($3f, "ColorDepth"))
+_j1($2d, $1, 1, 4, DllStructGetPtr($3f, "Compression"))
 EndSwitch
-Local $35 = 0
-If IsDllStruct($1z) Then $35 = $1z
-Local $2t = _gi($1w, $1x, $32, $35)
-_fv($1w)
-If $30 Then _2h($1g)
-_kg()
-Return SetError($2t = False, 0, $2t)
+Local $3h = 0
+If IsDllStruct($2d) Then $3h = $2d
+Local $35 = _i7($2a, $2b, $3e, $3h)
+_hr($2a)
+If $3c Then _1f($1u)
+_lw()
+Return SetError($35 = False, 0, $35)
 EndFunc
-Global Enum $36, $37, $38, $39, $3a, $3b, $3c
-Global Const $3d = 0x007F
-Func _o0($3e = 0, $3f = 0, $3g = 0, $3h = '')
-If Not $3e Then $3e = 0x0400
-Local $3i = 'wstr'
-If Not StringStripWS($3h, 1 + 2) Then
-$3i = 'ptr'
-$3h = 0
+Global Enum $3i, $3j, $3k, $3l, $3m, $3n, $3o
+Func _nb(ByRef $3p, $3q, $3r = 0, $3s = "|", $3t = @CRLF, $3u = $3i)
+If $3r = Default Then $3r = 0
+If $3s = Default Then $3s = "|"
+If $3t = Default Then $3t = @CRLF
+If $3u = Default Then $3u = $3i
+If Not IsArray($3p) Then Return SetError(1, 0, -1)
+Local $3v = UBound($3p, 1)
+Local $3w = 0
+Switch $3u
+Case $3k
+$3w = Int
+Case $3l
+$3w = Number
+Case $3m
+$3w = Ptr
+Case $3n
+$3w = Hwnd
+Case $3o
+$3w = String
+EndSwitch
+Switch UBound($3p, 0)
+Case 1
+If $3u = $3j Then
+ReDim $3p[$3v + 1]
+$3p[$3v] = $3q
+Return $3v
 EndIf
-Local $h = DllCall('kernel32.dll', 'int', 'GetDateFormatW', 'dword', $3e, 'dword', $3g, 'struct*', $3f, $3i, $3h, 'wstr', '', 'int', 2048)
-If @error Or Not $h[0] Then Return SetError(@error, @extended, '')
-Return $h[5]
+If IsArray($3q) Then
+If UBound($3q, 0) <> 1 Then Return SetError(5, 0, -1)
+$3w = 0
+Else
+Local $3x = StringSplit($3q, $3s, 2 + 1)
+If UBound($3x, 1) = 1 Then
+$3x[0] = $3q
+EndIf
+$3q = $3x
+EndIf
+Local $3y = UBound($3q, 1)
+ReDim $3p[$3v + $3y]
+For $2k = 0 To $3y - 1
+If IsFunc($3w) Then
+$3p[$3v + $2k] = $3w($3q[$2k])
+Else
+$3p[$3v + $2k] = $3q[$2k]
+EndIf
+Next
+Return $3v + $3y - 1
+Case 2
+Local $3z = UBound($3p, 2)
+If $3r < 0 Or $3r > $3z - 1 Then Return SetError(4, 0, -1)
+Local $40, $41 = 0, $42
+If IsArray($3q) Then
+If UBound($3q, 0) <> 2 Then Return SetError(5, 0, -1)
+$40 = UBound($3q, 1)
+$41 = UBound($3q, 2)
+$3w = 0
+Else
+Local $43 = StringSplit($3q, $3t, 2 + 1)
+$40 = UBound($43, 1)
+Local $3x[$40][0], $44
+For $2k = 0 To $40 - 1
+$44 = StringSplit($43[$2k], $3s, 2 + 1)
+$42 = UBound($44)
+If $42 > $41 Then
+$41 = $42
+ReDim $3x[$40][$41]
+EndIf
+For $45 = 0 To $42 - 1
+$3x[$2k][$45] = $44[$45]
+Next
+Next
+$3q = $3x
+EndIf
+If UBound($3q, 2) + $3r > UBound($3p, 2) Then Return SetError(3, 0, -1)
+ReDim $3p[$3v + $40][$3z]
+For $46 = 0 To $40 - 1
+For $45 = 0 To $3z - 1
+If $45 < $3r Then
+$3p[$46 + $3v][$45] = ""
+ElseIf $45 - $3r > $41 - 1 Then
+$3p[$46 + $3v][$45] = ""
+Else
+If IsFunc($3w) Then
+$3p[$46 + $3v][$45] = $3w($3q[$46][$45 - $3r])
+Else
+$3p[$46 + $3v][$45] = $3q[$46][$45 - $3r]
+EndIf
+EndIf
+Next
+Next
+Case Else
+Return SetError(2, 0, -1)
+EndSwitch
+Return UBound($3p, 1) - 1
 EndFunc
-Func _oo($3j, $1l = Default)
-Local Const $3k = 128
-If $1l = Default Then $1l = 0
-$3j = Int($3j)
-If $3j < 1 Or $3j > 7 Then Return SetError(1, 0, "")
-Local $3f = DllStructCreate($4)
-DllStructSetData($3f, "Year", BitAND($1l, $3k) ? 2007 : 2006)
-DllStructSetData($3f, "Month", 1)
-DllStructSetData($3f, "Day", $3j)
-Return _o0(BitAND($1l, 2) ? 0x0400 : $3d, $3f, 0, BitAND($1l, 1) ? "ddd" : "dddd")
-EndFunc
-Func _or($3l)
-If StringIsInt($3l) Then
-Select
-Case Mod($3l, 4) = 0 And Mod($3l, 100) <> 0
+Func _o2(Const ByRef $3p, $47 = "|", $48 = -1, $49 = -1, $3t = @CRLF, $4a = -1, $4b = -1)
+If $47 = Default Then $47 = "|"
+If $3t = Default Then $3t = @CRLF
+If $48 = Default Then $48 = -1
+If $49 = Default Then $49 = -1
+If $4a = Default Then $4a = -1
+If $4b = Default Then $4b = -1
+If Not IsArray($3p) Then Return SetError(1, 0, -1)
+Local $3v = UBound($3p, 1) - 1
+If $48 = -1 Then $48 = 0
+If $49 = -1 Then $49 = $3v
+If $48 < -1 Or $49 < -1 Then Return SetError(3, 0, -1)
+If $48 > $3v Or $49 > $3v Then Return SetError(3, 0, "")
+If $48 > $49 Then Return SetError(4, 0, -1)
+Local $4c = ""
+Switch UBound($3p, 0)
+Case 1
+For $2k = $48 To $49
+$4c &= $3p[$2k] & $47
+Next
+Return StringTrimRight($4c, StringLen($47))
+Case 2
+Local $3z = UBound($3p, 2) - 1
+If $4a = -1 Then $4a = 0
+If $4b = -1 Then $4b = $3z
+If $4a < -1 Or $4b < -1 Then Return SetError(5, 0, -1)
+If $4a > $3z Or $4b > $3z Then Return SetError(5, 0, -1)
+If $4a > $4b Then Return SetError(6, 0, -1)
+For $2k = $48 To $49
+For $45 = $4a To $4b
+$4c &= $3p[$2k][$45] & $47
+Next
+$4c = StringTrimRight($4c, StringLen($47)) & $3t
+Next
+Return StringTrimRight($4c, StringLen($3t))
+Case Else
+Return SetError(2, 0, -1)
+EndSwitch
 Return 1
-Case Mod($3l, 400) = 0
+EndFunc
+Global Enum $4d, $4e, $4f, $4g
+Func _oh(Const ByRef $4h, Const ByRef $4i, $4j = $4d)
+If Not(IsArray($4h)) Or Not(IsArray($4i)) Then
+Return SetError(1, 0, 0)
+EndIf
+Local $4k = UBound($4h, 0)
+If $4k <> UBound($4i, 0) Then
+Return SetError(2, 0, 0)
+EndIf
+Local $4l = UBound($4h, 1)
+Local $4m = UBound($4h, 2)
+If $4l <> UBound($4i, 1) Or $4m <> UBound($4i, 2) Then
+Return SetError(3, 0, 0)
+EndIf
+Local $4n, $4o
+Switch $4j
+Case $4d
+For $2k = 0 To $4l - 1
+For $45 = 0 To $4m - 1
+If $4h[$2k][$45] <> $4h[$2k][$45] Then
+Return SetError(4, 0, 0)
+EndIf
+Next
+Next
+Case $4e
+For $2k = 0 To $4l - 1
+For $45 = 0 To $4m - 1
+$4n &= $4h[$2k][$45]
+$4o &= $4i[$2k][$45]
+Next
+If $4n <> $4o Then
+Return SetError(4, 0, 0)
+EndIf
+Next
+Case $4f
+For $45 = 0 To $4m - 1
+For $2k = 0 To $4l - 1
+$4n &= $4h[$2k][$45]
+$4o &= $4i[$2k][$45]
+Next
+If $4n <> $4o Then
+Return SetError(4, 0, 0)
+EndIf
+Next
+Case $4g
+If _o2($4h) <> _o2($4i) Then
+Return SetError(4, 0, 0)
+EndIf
+EndSwitch
+Return 1
+EndFunc
+Global Const $4p = 0x007F
+Func _p2($4q = 0, $4r = 0, $4s = 0, $4t = '')
+If Not $4q Then $4q = 0x0400
+Local $4u = 'wstr'
+If Not StringStripWS($4t, 1 + 2) Then
+$4u = 'ptr'
+$4t = 0
+EndIf
+Local $19 = DllCall('kernel32.dll', 'int', 'GetDateFormatW', 'dword', $4q, 'dword', $4s, 'struct*', $4r, $4u, $4t, 'wstr', '', 'int', 2048)
+If @error Or Not $19[0] Then Return SetError(@error, @extended, '')
+Return $19[5]
+EndFunc
+Func _pq($4v, $1z = Default)
+Local Const $4w = 128
+If $1z = Default Then $1z = 0
+$4v = Int($4v)
+If $4v < 1 Or $4v > 7 Then Return SetError(1, 0, "")
+Local $4r = DllStructCreate($5)
+DllStructSetData($4r, "Year", BitAND($1z, $4w) ? 2007 : 2006)
+DllStructSetData($4r, "Month", 1)
+DllStructSetData($4r, "Day", $4v)
+Return _p2(BitAND($1z, 2) ? 0x0400 : $4p, $4r, 0, BitAND($1z, 1) ? "ddd" : "dddd")
+EndFunc
+Func _pt($4x)
+If StringIsInt($4x) Then
+Select
+Case Mod($4x, 4) = 0 And Mod($4x, 100) <> 0
+Return 1
+Case Mod($4x, 400) = 0
 Return 1
 Case Else
 Return 0
@@ -444,1358 +642,1252 @@ EndSelect
 EndIf
 Return SetError(1, 0, 0)
 EndFunc
-Func _os($3m)
-$3m = Int($3m)
-Return $3m >= 1 And $3m <= 12
+Func _pu($4y)
+$4y = Int($4y)
+Return $4y >= 1 And $4y <= 12
 EndFunc
-Func _ot($3n)
-Local $3o[4], $3p[4]
-_p2($3n, $3o, $3p)
-If Not StringIsInt($3o[1]) Then Return 0
-If Not StringIsInt($3o[2]) Then Return 0
-If Not StringIsInt($3o[3]) Then Return 0
-$3o[1] = Int($3o[1])
-$3o[2] = Int($3o[2])
-$3o[3] = Int($3o[3])
-Local $3q = _pl($3o[1])
-If $3o[1] < 1000 Or $3o[1] > 2999 Then Return 0
-If $3o[2] < 1 Or $3o[2] > 12 Then Return 0
-If $3o[3] < 1 Or $3o[3] > $3q[$3o[2]] Then Return 0
-If $3p[0] < 1 Then Return 1
-If $3p[0] < 2 Then Return 0
-If $3p[0] = 2 Then $3p[3] = "00"
-If Not StringIsInt($3p[1]) Then Return 0
-If Not StringIsInt($3p[2]) Then Return 0
-If Not StringIsInt($3p[3]) Then Return 0
-$3p[1] = Int($3p[1])
-$3p[2] = Int($3p[2])
-$3p[3] = Int($3p[3])
-If $3p[1] < 0 Or $3p[1] > 23 Then Return 0
-If $3p[2] < 0 Or $3p[2] > 59 Then Return 0
-If $3p[3] < 0 Or $3p[3] > 59 Then Return 0
+Func _pv($4z)
+Local $50[4], $51[4]
+_q4($4z, $50, $51)
+If Not StringIsInt($50[1]) Then Return 0
+If Not StringIsInt($50[2]) Then Return 0
+If Not StringIsInt($50[3]) Then Return 0
+$50[1] = Int($50[1])
+$50[2] = Int($50[2])
+$50[3] = Int($50[3])
+Local $52 = _qn($50[1])
+If $50[1] < 1000 Or $50[1] > 2999 Then Return 0
+If $50[2] < 1 Or $50[2] > 12 Then Return 0
+If $50[3] < 1 Or $50[3] > $52[$50[2]] Then Return 0
+If $51[0] < 1 Then Return 1
+If $51[0] < 2 Then Return 0
+If $51[0] = 2 Then $51[3] = "00"
+If Not StringIsInt($51[1]) Then Return 0
+If Not StringIsInt($51[2]) Then Return 0
+If Not StringIsInt($51[3]) Then Return 0
+$51[1] = Int($51[1])
+$51[2] = Int($51[2])
+$51[3] = Int($51[3])
+If $51[1] < 0 Or $51[1] > 23 Then Return 0
+If $51[2] < 0 Or $51[2] > 59 Then Return 0
+If $51[3] < 0 Or $51[3] > 59 Then Return 0
 Return 1
 EndFunc
-Func _p2($3n, ByRef $3r, ByRef $3s)
-Local $3t = StringSplit($3n, " T")
-If $3t[0] > 0 Then $3r = StringSplit($3t[1], "/-.")
-If $3t[0] > 1 Then
-$3s = StringSplit($3t[2], ":")
-If UBound($3s) < 4 Then ReDim $3s[4]
+Func _q4($4z, ByRef $53, ByRef $54)
+Local $55 = StringSplit($4z, " T")
+If $55[0] > 0 Then $53 = StringSplit($55[1], "/-.")
+If $55[0] > 1 Then
+$54 = StringSplit($55[2], ":")
+If UBound($54) < 4 Then ReDim $54[4]
 Else
-Dim $3s[4]
+Dim $54[4]
 EndIf
-If UBound($3r) < 4 Then ReDim $3r[4]
-For $3u = 1 To 3
-If StringIsInt($3r[$3u]) Then
-$3r[$3u] = Int($3r[$3u])
+If UBound($53) < 4 Then ReDim $53[4]
+For $56 = 1 To 3
+If StringIsInt($53[$56]) Then
+$53[$56] = Int($53[$56])
 Else
-$3r[$3u] = -1
+$53[$56] = -1
 EndIf
-If StringIsInt($3s[$3u]) Then
-$3s[$3u] = Int($3s[$3u])
+If StringIsInt($54[$56]) Then
+$54[$56] = Int($54[$56])
 Else
-$3s[$3u] = 0
+$54[$56] = 0
 EndIf
 Next
 Return 1
 EndFunc
-Func _p5($3l, $3v, $3w)
-If Not _ot(StringFormat("%04d/%02d/%02d", $3l, $3v, $3w)) Then
+Func _q7($4x, $57, $58)
+If Not _pv(StringFormat("%04d/%02d/%02d", $4x, $57, $58)) Then
 Return SetError(1, 0, "")
 EndIf
-If $3v < 3 Then
-$3v = $3v + 12
-$3l = $3l - 1
+If $57 < 3 Then
+$57 = $57 + 12
+$4x = $4x - 1
 EndIf
-Local $3x = Int($3l / 100)
-Local $3y = Int($3x / 4)
-Local $3z = 2 - $3x + $3y
-Local $40 = Int(1461 *($3l + 4716) / 4)
-Local $41 = Int(153 *($3v + 1) / 5)
-Local $42 = $3z + $3w + $40 + $41 - 1524.5
-Return $42
+Local $59 = Int($4x / 100)
+Local $5a = Int($59 / 4)
+Local $5b = 2 - $59 + $5a
+Local $5c = Int(1461 *($4x + 4716) / 4)
+Local $5d = Int(153 *($57 + 1) / 5)
+Local $5e = $5b + $58 + $5c + $5d - 1524.5
+Return $5e
 EndFunc
-Func _p6($43, $1l = Default)
-If $1l = Default Then $1l = 0
-$43 = Int($43)
-If Not _os($43) Then Return SetError(1, 0, "")
-Local $3f = DllStructCreate($4)
-DllStructSetData($3f, "Year", @YEAR)
-DllStructSetData($3f, "Month", $43)
-DllStructSetData($3f, "Day", 1)
-Return _o0(BitAND($1l, 2) ? 0x0400 : $3d, $3f, 0, BitAND($1l, 1) ? "MMM" : "MMMM")
+Func _q8($5f, $1z = Default)
+If $1z = Default Then $1z = 0
+$5f = Int($5f)
+If Not _pu($5f) Then Return SetError(1, 0, "")
+Local $4r = DllStructCreate($5)
+DllStructSetData($4r, "Year", @YEAR)
+DllStructSetData($4r, "Month", $5f)
+DllStructSetData($4r, "Day", 1)
+Return _p2(BitAND($1z, 2) ? 0x0400 : $4p, $4r, 0, BitAND($1z, 1) ? "MMM" : "MMMM")
 EndFunc
-Func _pl($3l)
-Local $44 = [12, 31,(_or($3l) ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-Return $44
+Func _qn($4x)
+Local $5g = [12, 31,(_pt($4x) ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+Return $5g
 EndFunc
-Func _pm($45)
-Local $46 = DllStructCreate($4, $45)
-Local $47 = DllStructCreate($4)
-DllStructSetData($47, "Month", DllStructGetData($46, "Month"))
-DllStructSetData($47, "Day", DllStructGetData($46, "Day"))
-DllStructSetData($47, "Year", DllStructGetData($46, "Year"))
-DllStructSetData($47, "Hour", DllStructGetData($46, "Hour"))
-DllStructSetData($47, "Minute", DllStructGetData($46, "Minute"))
-DllStructSetData($47, "Second", DllStructGetData($46, "Second"))
-DllStructSetData($47, "MSeconds", DllStructGetData($46, "MSeconds"))
-DllStructSetData($47, "DOW", DllStructGetData($46, "DOW"))
-Return $47
+Func _qo($5h)
+Local $5i = DllStructCreate($5, $5h)
+Local $5j = DllStructCreate($5)
+DllStructSetData($5j, "Month", DllStructGetData($5i, "Month"))
+DllStructSetData($5j, "Day", DllStructGetData($5i, "Day"))
+DllStructSetData($5j, "Year", DllStructGetData($5i, "Year"))
+DllStructSetData($5j, "Hour", DllStructGetData($5i, "Hour"))
+DllStructSetData($5j, "Minute", DllStructGetData($5i, "Minute"))
+DllStructSetData($5j, "Second", DllStructGetData($5i, "Second"))
+DllStructSetData($5j, "MSeconds", DllStructGetData($5i, "MSeconds"))
+DllStructSetData($5j, "DOW", DllStructGetData($5i, "DOW"))
+Return $5j
 EndFunc
-Func _q9()
-Local $48 = DllStructCreate($5)
-Local $m = DllCall("kernel32.dll", "dword", "GetTimeZoneInformation", "struct*", $48)
-If @error Or $m[0] = -1 Then Return SetError(@error, @extended, 0)
-Local $1s[8]
-$1s[0] = $m[0]
-$1s[1] = DllStructGetData($48, "Bias")
-$1s[2] = DllStructGetData($48, "StdName")
-$1s[3] = _pm(DllStructGetPtr($48, "StdDate"))
-$1s[4] = DllStructGetData($48, "StdBias")
-$1s[5] = DllStructGetData($48, "DayName")
-$1s[6] = _pm(DllStructGetPtr($48, "DayDate"))
-$1s[7] = DllStructGetData($48, "DayBias")
-Return $1s
+Func _rb()
+Local $5k = DllStructCreate($6)
+Local $l = DllCall("kernel32.dll", "dword", "GetTimeZoneInformation", "struct*", $5k)
+If @error Or $l[0] = -1 Then Return SetError(@error, @extended, 0)
+Local $26[8]
+$26[0] = $l[0]
+$26[1] = DllStructGetData($5k, "Bias")
+$26[2] = _67(DllStructGetPtr($5k, "StdName"))
+$26[3] = _qo(DllStructGetPtr($5k, "StdDate"))
+$26[4] = DllStructGetData($5k, "StdBias")
+$26[5] = _67(DllStructGetPtr($5k, "DayName"))
+$26[6] = _qo(DllStructGetPtr($5k, "DayDate"))
+$26[7] = DllStructGetData($5k, "DayBias")
+Return $26
 EndFunc
-Global $49
-Func _wn($4a)
-Local $m = DllCall("advapi32.dll", "bool", "CloseEventLog", "handle", $4a)
+Global $5l
+Func _rr($5m)
+Local $l = DllCall("advapi32.dll", "bool", "CloseEventLog", "handle", $5m)
 If @error Then Return SetError(@error, @extended, False)
-Return $m[0] <> 0
+Return $l[0] <> 0
 EndFunc
-Func _wo($4a)
-Local $m = DllCall("advapi32.dll", "bool", "GetNumberOfEventLogRecords", "handle", $4a, "dword*", 0)
+Func _rs($5m)
+Local $l = DllCall("advapi32.dll", "bool", "GetNumberOfEventLogRecords", "handle", $5m, "dword*", 0)
 If @error Then Return SetError(@error, @extended, -1)
-If $m[0] = 0 Then Return -1
-Return $m[2]
+If $l[0] = 0 Then Return -1
+Return $l[2]
 EndFunc
-Func _x1($4a)
-Local $m = DllCall("advapi32.dll", "bool", "GetEventLogInformation", "handle", $4a, "dword", 0, "dword*", 0, "dword", 4, "dword*", 0)
+Func _s5($5m)
+Local $l = DllCall("advapi32.dll", "bool", "GetEventLogInformation", "handle", $5m, "dword", 0, "dword*", 0, "dword", 4, "dword*", 0)
 If @error Then Return SetError(@error, @extended, False)
-Return $m[3] <> 0
+Return $l[3] <> 0
 EndFunc
-Func _x3($4a)
-Local $m = DllCall("advapi32.dll", "bool", "GetOldestEventLogRecord", "handle", $4a, "dword*", 0)
+Func _s7($5m)
+Local $l = DllCall("advapi32.dll", "bool", "GetOldestEventLogRecord", "handle", $5m, "dword*", 0)
 If @error Then Return SetError(@error, @extended, 0)
-Return $m[2]
+Return $l[2]
 EndFunc
-Func _x4($4b, $4c)
-$49 = $4c
-Local $m = DllCall("advapi32.dll", "handle", "OpenEventLogW", "wstr", $4b, "wstr", $4c)
+Func _s8($5n, $5o)
+$5l = $5o
+Local $l = DllCall("advapi32.dll", "handle", "OpenEventLogW", "wstr", $5n, "wstr", $5o)
 If @error Then Return SetError(@error, @extended, 0)
-Return $m[0]
+Return $l[0]
 EndFunc
-Func _xa()
-Local $4d = DllStructCreate("uint;dword")
-DllStructSetData($4d, 1, DllStructGetSize($4d))
-Local $m = DllCall("user32.dll", "bool", "GetLastInputInfo", "struct*", $4d)
-If @error Or $m[0] = 0 Then Return SetError(@error, @extended, 0)
-Local $4e = DllCall("kernel32.dll", "dword", "GetTickCount")
-If @error Or Not $m[0] Then Return SetError(@error, @extended, 0)
-Local $4f = $4e[0] - DllStructGetData($4d, 2)
-If $4f < 0 Then Return SetExtended(1, $4e[0])
-Return $4f
+Func _sd($5p)
+Local $5q = FileOpen($5p, 0)
+If $5q = -1 Then Return SetError(1, 0, 0)
+Local $5r = StringStripWS(FileRead($5q), 2)
+FileClose($5q)
+Return UBound(StringRegExp($5r, "\R", 3)) + 1 - Int($5r = "")
 EndFunc
-Global $4g[11]
-Global Const $4h = "struct;uint Mask;int Item;int SubItem;uint State;uint StateMask;ptr Text;int TextMax;int Image;lparam Param;" & "int Indent;int GroupID;uint Columns;ptr pColumns;ptr piColFmt;int iGroup;endstruct"
-#Au3Stripper_Ignore_Funcs=__ArrayDisplay_SortCallBack
-Func __ArrayDisplay_SortCallBack($4i, $4j, $18)
-If $4g[3] = $4g[4] Then
-If Not $4g[7] Then
-$4g[5] *= -1
-$4g[7] = 1
-EndIf
-Else
-$4g[7] = 1
-EndIf
-$4g[6] = $4g[3]
-Local $4k = _xs($18, $4i, $4g[3])
-Local $4l = _xs($18, $4j, $4g[3])
-If $4g[8] = 1 Then
-If(StringIsFloat($4k) Or StringIsInt($4k)) Then $4k = Number($4k)
-If(StringIsFloat($4l) Or StringIsInt($4l)) Then $4l = Number($4l)
-EndIf
-Local $4m
-If $4g[8] < 2 Then
-$4m = 0
-If $4k < $4l Then
-$4m = -1
-ElseIf $4k > $4l Then
-$4m = 1
-EndIf
-Else
-$4m = DllCall('shlwapi.dll', 'int', 'StrCmpLogicalW', 'wstr', $4k, 'wstr', $4l)[0]
-EndIf
-$4m = $4m * $4g[5]
-Return $4m
-EndFunc
-Func _xs($18, $2d, $4n = 0)
-Local $1p = DllStructCreate("wchar Text[4096]")
-Local $1q = DllStructGetPtr($1p)
-Local $4o = DllStructCreate($4h)
-DllStructSetData($4o, "SubItem", $4n)
-DllStructSetData($4o, "TextMax", 4096)
-DllStructSetData($4o, "Text", $1q)
-If IsHWnd($18) Then
-DllCall("user32.dll", "lresult", "SendMessageW", "hwnd", $18, "uint", 0x1073, "wparam", $2d, "struct*", $4o)
-Else
-Local $4p = DllStructGetPtr($4o)
-GUICtrlSendMsg($18, 0x1073, $2d, $4p)
-EndIf
-Return DllStructGetData($1p, "Text")
-EndFunc
-Global Enum $4q, $4r, $4s, $4t, $4u, $4v, $4w, $4x
-Func _yf(ByRef $4y, $4z, $50 = 0, $51 = "|", $52 = @CRLF, $53 = $4q)
-If $50 = Default Then $50 = 0
-If $51 = Default Then $51 = "|"
-If $52 = Default Then $52 = @CRLF
-If $53 = Default Then $53 = $4q
-If Not IsArray($4y) Then Return SetError(1, 0, -1)
-Local $54 = UBound($4y, 1)
-Local $55 = 0
-Switch $53
-Case $4s
-$55 = Int
-Case $4t
-$55 = Number
-Case $4u
-$55 = Ptr
-Case $4v
-$55 = Hwnd
-Case $4w
-$55 = String
-Case $4x
-$55 = "Boolean"
-EndSwitch
-Switch UBound($4y, 0)
-Case 1
-If $53 = $4r Then
-ReDim $4y[$54 + 1]
-$4y[$54] = $4z
-Return $54
-EndIf
-If IsArray($4z) Then
-If UBound($4z, 0) <> 1 Then Return SetError(5, 0, -1)
-$55 = 0
-Else
-Local $56 = StringSplit($4z, $51, 2 + 1)
-If UBound($56, 1) = 1 Then
-$56[0] = $4z
-EndIf
-$4z = $56
-EndIf
-Local $57 = UBound($4z, 1)
-ReDim $4y[$54 + $57]
-For $26 = 0 To $57 - 1
-If String($55) = "Boolean" Then
-Switch $4z[$26]
-Case "True", "1"
-$4y[$54 + $26] = True
-Case "False", "0", ""
-$4y[$54 + $26] = False
-EndSwitch
-ElseIf IsFunc($55) Then
-$4y[$54 + $26] = $55($4z[$26])
-Else
-$4y[$54 + $26] = $4z[$26]
-EndIf
-Next
-Return $54 + $57 - 1
-Case 2
-Local $58 = UBound($4y, 2)
-If $50 < 0 Or $50 > $58 - 1 Then Return SetError(4, 0, -1)
-Local $59, $5a = 0, $5b
-If IsArray($4z) Then
-If UBound($4z, 0) <> 2 Then Return SetError(5, 0, -1)
-$59 = UBound($4z, 1)
-$5a = UBound($4z, 2)
-$55 = 0
-Else
-Local $5c = StringSplit($4z, $52, 2 + 1)
-$59 = UBound($5c, 1)
-Local $56[$59][0], $5d
-For $26 = 0 To $59 - 1
-$5d = StringSplit($5c[$26], $51, 2 + 1)
-$5b = UBound($5d)
-If $5b > $5a Then
-$5a = $5b
-ReDim $56[$59][$5a]
-EndIf
-For $5e = 0 To $5b - 1
-$56[$26][$5e] = $5d[$5e]
-Next
-Next
-$4z = $56
-EndIf
-If UBound($4z, 2) + $50 > UBound($4y, 2) Then Return SetError(3, 0, -1)
-ReDim $4y[$54 + $59][$58]
-For $5f = 0 To $59 - 1
-For $5e = 0 To $58 - 1
-If $5e < $50 Then
-$4y[$5f + $54][$5e] = ""
-ElseIf $5e - $50 > $5a - 1 Then
-$4y[$5f + $54][$5e] = ""
-Else
-If String($55) = "Boolean" Then
-Switch $4z[$5f][$5e - $50]
-Case "True", "1"
-$4y[$5f + $54][$5e] = True
-Case "False", "0", ""
-$4y[$5f + $54][$5e] = False
-EndSwitch
-ElseIf IsFunc($55) Then
-$4y[$5f + $54][$5e] = $55($4z[$5f][$5e - $50])
-Else
-$4y[$5f + $54][$5e] = $4z[$5f][$5e - $50]
-EndIf
-EndIf
-Next
-Next
-Case Else
-Return SetError(2, 0, -1)
-EndSwitch
-Return UBound($4y, 1) - 1
-EndFunc
-Func _z6(Const ByRef $4y, $5g = "|", $5h = -1, $5i = -1, $52 = @CRLF, $5j = -1, $5k = -1)
-If $5g = Default Then $5g = "|"
-If $52 = Default Then $52 = @CRLF
-If $5h = Default Then $5h = -1
-If $5i = Default Then $5i = -1
-If $5j = Default Then $5j = -1
-If $5k = Default Then $5k = -1
-If Not IsArray($4y) Then Return SetError(1, 0, -1)
-Local $54 = UBound($4y, 1) - 1
-If $5h = -1 Then $5h = 0
-If $5i = -1 Then $5i = $54
-If $5h < -1 Or $5i < -1 Then Return SetError(3, 0, -1)
-If $5h > $54 Or $5i > $54 Then Return SetError(3, 0, "")
-If $5h > $5i Then Return SetError(4, 0, -1)
-Local $5l = ""
-Switch UBound($4y, 0)
-Case 1
-For $26 = $5h To $5i
-$5l &= $4y[$26] & $5g
-Next
-Return StringTrimRight($5l, StringLen($5g))
-Case 2
-Local $58 = UBound($4y, 2) - 1
-If $5j = -1 Then $5j = 0
-If $5k = -1 Then $5k = $58
-If $5j < -1 Or $5k < -1 Then Return SetError(5, 0, -1)
-If $5j > $58 Or $5k > $58 Then Return SetError(5, 0, -1)
-If $5j > $5k Then Return SetError(6, 0, -1)
-For $26 = $5h To $5i
-For $5e = $5j To $5k
-$5l &= $4y[$26][$5e] & $5g
-Next
-$5l = StringTrimRight($5l, StringLen($5g)) & $52
-Next
-Return StringTrimRight($5l, StringLen($52))
-Case Else
-Return SetError(2, 0, -1)
-EndSwitch
-Return 1
-EndFunc
-Func _zj($5m)
-FileReadToArray($5m)
-If @error Then Return SetError(@error, @extended, 0)
-Return @extended
-EndFunc
-Func _zl($5m, $5n = "*", $5o = 0, $5p = False)
-Local $2g = "|", $5q = "", $1x = "", $5r = ""
-$5m = StringRegExpReplace($5m, "[\\/]+$", "") & "\"
-If $5o = Default Then $5o = 0
-If $5p Then $5r = $5m
-If $5n = Default Then $5n = "*"
-If Not FileExists($5m) Then Return SetError(1, 0, 0)
-If StringRegExp($5n, "[\\/:><\|]|(?s)^\s*$") Then Return SetError(2, 0, 0)
-If Not($5o = 0 Or $5o = 1 Or $5o = 2) Then Return SetError(3, 0, 0)
-Local $5s = FileFindFirstFile($5m & $5n)
+Func _sf($5p, $5s = "*", $5t = 0, $5u = False)
+Local $2t = "|", $5v = "", $2b = "", $5w = ""
+$5p = StringRegExpReplace($5p, "[\\/]+$", "") & "\"
+If $5t = Default Then $5t = 0
+If $5u Then $5w = $5p
+If $5s = Default Then $5s = "*"
+If Not FileExists($5p) Then Return SetError(1, 0, 0)
+If StringRegExp($5s, "[\\/:><\|]|(?s)^\s*$") Then Return SetError(2, 0, 0)
+If Not($5t = 0 Or $5t = 1 Or $5t = 2) Then Return SetError(3, 0, 0)
+Local $5x = FileFindFirstFile($5p & $5s)
 If @error Then Return SetError(4, 0, 0)
 While 1
-$1x = FileFindNextFile($5s)
+$2b = FileFindNextFile($5x)
 If @error Then ExitLoop
-If($5o + @extended = 2) Then ContinueLoop
-$5q &= $2g & $5r & $1x
+If($5t + @extended = 2) Then ContinueLoop
+$5v &= $2t & $5w & $2b
 WEnd
-FileClose($5s)
-If $5q = "" Then Return SetError(4, 0, 0)
-Return StringSplit(StringTrimLeft($5q, 1), $2g)
+FileClose($5x)
+If $5v = "" Then Return SetError(4, 0, 0)
+Return StringSplit(StringTrimLeft($5v, 1), $2t)
 EndFunc
-Func _zr($5m, ByRef $5t, $3g = 1, $2g = "")
-$5t = 0
-If $3g = Default Then $3g = 1
-If $2g = Default Then $2g = ""
-Local $5u = True
-If BitAND($3g, 2) Then
-$5u = False
-$3g -= 2
+Func _sl($5p, ByRef $5y, $4s = 1, $2t = "")
+$5y = 0
+If $4s = Default Then $4s = 1
+If $2t = Default Then $2t = ""
+Local $5z = True
+If BitAND($4s, 2) Then
+$5z = False
+$4s -= 2
 EndIf
-Local $5v = 0
-If BitAND($3g, 4) Then
-$5v = 1
-$3g -= 4
+Local $60 = 0
+If BitAND($4s, 4) Then
+$60 = 1
+$4s -= 4
 EndIf
-Local $5w = 0
-If $3g <> 1 Then
-$3g = 0
-$5w = 2
+Local $61 = 0
+If $4s <> 1 Then
+$4s = 0
+$61 = 2
 EndIf
-If $2g Then
-Local $5x = FileReadToArray($5m)
+If $2t Then
+Local $62 = FileReadToArray($5p)
 If @error Then Return SetError(@error, 0, 0)
-Local $54 = UBound($5x) + $3g
-If $5u Then
-Local $58 = UBound(StringSplit($5x[0], $2g, $5v + 2))
-Local $5y[$54][$58]
-Local $5z, $60
-For $26 = 0 To $54 - $3g - 1
-$60 = StringSplit($5x[$26], $2g, $5v + 2)
-$5z = UBound($60)
-If $5z <> $58 Then
+Local $3v = UBound($62) + $4s
+If $5z Then
+Local $3z = UBound(StringSplit($62[0], $2t, $60 + 2))
+Local $63[$3v][$3z]
+Local $64, $65
+For $2k = 0 To $3v - $4s - 1
+$65 = StringSplit($62[$2k], $2t, $60 + 2)
+$64 = UBound($65)
+If $64 <> $3z Then
 Return SetError(3, 0, 0)
 EndIf
-For $5e = 0 To $5z - 1
-$5y[$26 + $3g][$5e] = $60[$5e]
+For $45 = 0 To $64 - 1
+$63[$2k + $4s][$45] = $65[$45]
 Next
 Next
-If $58 < 2 Then Return SetError(4, 0, 0)
-If $3g Then
-$5y[0][0] = $54 - $3g
-$5y[0][1] = $58
+If $3z < 2 Then Return SetError(4, 0, 0)
+If $4s Then
+$63[0][0] = $3v - $4s
+$63[0][1] = $3z
 EndIf
 Else
-Local $5y[$54]
-For $26 = 0 To $54 - $3g - 1
-$5y[$26 + $3g] = StringSplit($5x[$26], $2g, $5v + $5w)
+Local $63[$3v]
+For $2k = 0 To $3v - $4s - 1
+$63[$2k + $4s] = StringSplit($62[$2k], $2t, $60 + $61)
 Next
-If $3g Then
-$5y[0] = $54 - $3g
+If $4s Then
+$63[0] = $3v - $4s
 EndIf
 EndIf
-$5t = $5y
+$5y = $63
 Else
-If $3g Then
-Local $61 = FileOpen($5m, 0)
-If $61 = -1 Then Return SetError(1, 0, 0)
-Local $62 = FileRead($61)
-FileClose($61)
-If StringLen($62) Then
-$5t = StringRegExp(@LF & $62, "(?|(\N+)\z|(\N*)(?:\R))", 3)
-$5t[0] = UBound($5t) - 1
+If $4s Then
+Local $5q = FileOpen($5p, 0)
+If $5q = -1 Then Return SetError(1, 0, 0)
+Local $5r = FileRead($5q)
+FileClose($5q)
+If StringLen($5r) Then
+$5y = StringRegExp(@LF & $5r, "(?|(\N+)\z|(\N*)(?:\R))", 3)
+$5y[0] = UBound($5y) - 1
 Else
 Return SetError(2, 0, 0)
 EndIf
 Else
-$5t = FileReadToArray($5m)
+$5y = FileReadToArray($5p)
 If @error Then
-$5t = 0
+$5y = 0
 Return SetError(@error, 0, 0)
 EndIf
 EndIf
 EndIf
 Return 1
 EndFunc
-Func _zs($5m, Const ByRef $4y, $63 = Default, $64 = Default, $2g = "|")
-Local $65 = 0
-If Not IsArray($4y) Then Return SetError(2, 0, $65)
-Local $66 = UBound($4y, 0)
-If $66 > 2 Then Return SetError(4, 0, 0)
-Local $67 = UBound($4y) - 1
-If $64 = Default Or $64 > $67 Then $64 = $67
-If $63 < 0 Or $63 = Default Then $63 = 0
-If $63 > $64 Then Return SetError(5, 0, $65)
-If $2g = Default Then $2g = "|"
-Local $61 = $5m
-If IsString($5m) Then
-$61 = FileOpen($5m, 2)
-If $61 = -1 Then Return SetError(1, 0, $65)
+Func _sm($5p, Const ByRef $3p, $66 = Default, $67 = Default, $2t = "|")
+Local $h = 0
+If Not IsArray($3p) Then Return SetError(2, 0, $h)
+Local $4k = UBound($3p, 0)
+If $4k > 2 Then Return SetError(4, 0, 0)
+Local $68 = UBound($3p) - 1
+If $67 = Default Or $67 > $68 Then $67 = $68
+If $66 < 0 Or $66 = Default Then $66 = 0
+If $66 > $67 Then Return SetError(5, 0, $h)
+If $2t = Default Then $2t = "|"
+Local $5q = $5p
+If IsString($5p) Then
+$5q = FileOpen($5p, 2)
+If $5q = -1 Then Return SetError(1, 0, $h)
 EndIf
-Local $68 = 0
-$65 = 1
-Switch $66
+Local $69 = 0
+$h = 1
+Switch $4k
 Case 1
-For $26 = $63 To $64
-If Not FileWrite($61, $4y[$26] & @CRLF) Then
-$68 = 3
-$65 = 0
+For $2k = $66 To $67
+If Not FileWrite($5q, $3p[$2k] & @CRLF) Then
+$69 = 3
+$h = 0
 ExitLoop
 EndIf
 Next
 Case 2
-Local $69 = ""
-For $26 = $63 To $64
-$69 = $4y[$26][0]
-For $5e = 1 To UBound($4y, 2) - 1
-$69 &= $2g & $4y[$26][$5e]
+Local $6a = ""
+For $2k = $66 To $67
+$6a = $3p[$2k][0]
+For $45 = 1 To UBound($3p, 2) - 1
+$6a &= $2t & $3p[$2k][$45]
 Next
-If Not FileWrite($61, $69 & @CRLF) Then
-$68 = 3
-$65 = 0
+If Not FileWrite($5q, $6a & @CRLF) Then
+$69 = 3
+$h = 0
 ExitLoop
 EndIf
 Next
 EndSwitch
-If IsString($5m) Then FileClose($61)
-Return SetError($68, 0, $65)
+If IsString($5p) Then FileClose($5q)
+Return SetError($69, 0, $h)
 EndFunc
-Func _zt($6a, $6b, $5o = -1)
-Local $6c = 1
-Local $6d = @YEAR & "-" & @MON & "-" & @MDAY & " " & @HOUR & ":" & @MIN & ":" & @SEC & " : " & $6b
-If $5o = Default Then $5o = -1
-If $5o <> -1 Then
-$6c = 2
-$6d &= @CRLF & FileRead($6a)
+Func _sn($6b, $6c, $5t = -1)
+Local $6d = 1
+Local $6e = @YEAR & "-" & @MON & "-" & @MDAY
+Local $6f = @HOUR & ":" & @MIN & ":" & @SEC
+Local $6g = $6e & " " & $6f & " : " & $6c
+If $5t = Default Then $5t = -1
+If $5t <> -1 Then
+$6d = 2
+$6g &= @CRLF & FileRead($6b)
 EndIf
-Local $61 = $6a
-If IsString($6a) Then $61 = FileOpen($6a, $6c)
-If $61 = -1 Then Return SetError(1, 0, 0)
-Local $65 = FileWriteLine($61, $6d)
-If IsString($6a) Then $65 = FileClose($61)
-If $65 <= 0 Then Return SetError(2, $65, 0)
-Return $65
+Local $5q = $6b
+If IsString($6b) Then
+$5q = FileOpen($6b, $6d)
+EndIf
+If $5q = -1 Then Return SetError(1, 0, 0)
+Local $h = FileWriteLine($5q, $6g)
+If IsString($6b) Then $h = FileClose($5q)
+If $h <= 0 Then Return SetError(2, $h, 0)
+Return $h
 EndFunc
-Func _zy($5m, ByRef $6e, ByRef $6f, ByRef $1x, ByRef $6g)
-Local $4y = StringRegExp($5m, "^\h*((?:\\\\\?\\)*(\\\\[^\?\/\\]+|[A-Za-z]:)?(.*[\/\\]\h*)?((?:[^\.\/\\]|(?(?=\.[^\/\\]*\.)\.))*)?([^\/\\]*))$", 1)
+Func _ss($5p, ByRef $6h, ByRef $6i, ByRef $2b, ByRef $6j)
+Local $3p = StringRegExp($5p, "^\h*((?:\\\\\?\\)*(\\\\[^\?\/\\]+|[A-Za-z]:)?(.*[\/\\]\h*)?((?:[^\.\/\\]|(?(?=\.[^\/\\]*\.)\.))*)?([^\/\\]*))$", 1)
 If @error Then
-ReDim $4y[5]
-$4y[0] = $5m
+ReDim $3p[5]
+$3p[0] = $5p
 EndIf
-$6e = $4y[1]
-If StringLeft($4y[2], 1) == "/" Then
-$6f = StringRegExpReplace($4y[2], "\h*[\/\\]+\h*", "\/")
+$6h = $3p[1]
+If StringLeft($3p[2], 1) == "/" Then
+$6i = StringRegExpReplace($3p[2], "\h*[\/\\]+\h*", "\/")
 Else
-$6f = StringRegExpReplace($4y[2], "\h*[\/\\]+\h*", "\\")
+$6i = StringRegExpReplace($3p[2], "\h*[\/\\]+\h*", "\\")
 EndIf
-$4y[2] = $6f
-$1x = $4y[3]
-$6g = $4y[4]
-Return $4y
+$3p[2] = $6i
+$2b = $3p[3]
+$6j = $3p[4]
+Return $3p
 EndFunc
-Func _105($6h, $5o = 0)
-Local Const $6i = 183
-Local Const $6j = 1
-Local $6k = 0
-If BitAND($5o, 2) Then
-Local $6l = DllStructCreate("byte;byte;word;ptr[4]")
-Local $h = DllCall("advapi32.dll", "bool", "InitializeSecurityDescriptor", "struct*", $6l, "dword", $6j)
-If @error Then Return SetError(@error, @extended, 0)
-If $h[0] Then
-$h = DllCall("advapi32.dll", "bool", "SetSecurityDescriptorDacl", "struct*", $6l, "bool", 1, "ptr", 0, "bool", 0)
-If @error Then Return SetError(@error, @extended, 0)
-If $h[0] Then
-$6k = DllStructCreate($b)
-DllStructSetData($6k, 1, DllStructGetSize($6k))
-DllStructSetData($6k, 2, DllStructGetPtr($6l))
-DllStructSetData($6k, 3, 0)
-EndIf
-EndIf
-EndIf
-Local $6m = DllCall("kernel32.dll", "handle", "CreateMutexW", "struct*", $6k, "bool", 1, "wstr", $6h)
-If @error Then Return SetError(@error, @extended, 0)
-Local $6n = DllCall("kernel32.dll", "dword", "GetLastError")
-If @error Then Return SetError(@error, @extended, 0)
-If $6n[0] = $6i Then
-If BitAND($5o, 1) Then
-DllCall("kernel32.dll", "bool", "CloseHandle", "handle", $6m[0])
-If @error Then Return SetError(@error, @extended, 0)
-Return SetError($6n[0], $6n[0], 0)
-Else
-Exit -1
-EndIf
-EndIf
-Return $6m[0]
+Global Const $6k = 0x000E
+Func _zv()
+Local $6l = DllStructCreate("uint;dword")
+DllStructSetData($6l, 1, DllStructGetSize($6l))
+Local $l = DllCall("user32.dll", "bool", "GetLastInputInfo", "struct*", $6l)
+If @error Or $l[0] = 0 Then Return SetError(@error, @extended, 0)
+Local $6m = DllCall("kernel32.dll", "dword", "GetTickCount")
+If @error Or Not $l[0] Then Return SetError(@error, @extended, 0)
+Local $6n = $6m[0] - DllStructGetData($6l, 2)
+If $6n < 0 Then Return SetExtended(1, $6m[0])
+Return $6n
 EndFunc
-Func _10f($6o, $6p, $6q, $6r, $6s = "", $6t = "", $6u = "", $6v = "", $6w = 0)
-If $6o = "" Or $6q = "" Or $6r = "" Or $6p = "" Or StringLen($6p) > 256 Then Return SetError(1, 0, 0)
-If $6u = "" Then $6u = @ComputerName
+Global Const $6o = "Debug Window hidden text"
+Global $6p = "AutoIt Debug Report"
+Global $6q = True, $6r = True
+Global $6s = 0
+Func _10f()
+Local $6t = Opt("WinDetectHiddenText", 1)
+Local $6u = WinExists($6p, $6o)
+If $6u Then
+If $6s = 0 Then
+$6s = ControlGetHandle($6p, $6o, "Edit1")
+$6q = False
+EndIf
+EndIf
+Opt("WinDetectHiddenText", $6t)
+$6r = False
+If Not $6q Then Return 0
+Local Const $6v = 0x00CF0000
+Local Const $6w = 0x00100000
+Local Const $6x = 0x00200000
+Local Const $6y = 2048
+Local Const $6z = 0xC5
+Local Const $70 = 32
+Local $71 = 580, $72 = 280
+GUICreate($6p, $71, $72, -1, -1, $6v)
+Local $73 = GUICtrlCreateLabel($6o, 0, 0, 1, 1)
+GUICtrlSetState($73, $70)
+Local $74 = GUICtrlCreateEdit("", 4, 4, $71 - 8, $72 - 8, BitOR($6w, $6x, $6y))
+$6s = GUICtrlGetHandle($74)
+GUICtrlSetBkColor($74, 0xFFFFFF)
+GUICtrlSendMsg($74, $6z, 0, 0)
+GUISetState()
+$6q = True
+Return 1
+EndFunc
+#Au3Stripper_Off
+Func __Debug_ReportWindowWrite($sData)
+#Au3Stripper_On
+If $6r Then _10f()
+Local Const $6k = 0x000E
+Local Const $75 = 0xB1
+Local Const $76 = 0xC2
+Local $77 = _m($6s, $6k, 0, 0, 0, "int", "int")
+_m($6s, $75, $77, $77, 0, "int", "int")
+_m($6s, $76, True, $78, 0, "int", "wstr")
+EndFunc
+Func _10h()
+Local $6u = WinExists($6p)
+If $6u Then
+If $6s = 0 Then
+$6s = WinGetHandle($6p)
+Return 0
+EndIf
+EndIf
+Local $79 = Run("Notepad.exe")
+$6s = WinWait("[CLASS:Notepad]")
+If $79 <> WinGetProcess($6s) Then
+Return SetError(3, 0, 0)
+EndIf
+WinActivate($6s)
+WinSetTitle($6s, "", String($6p))
+Return 1
+EndFunc
+#Au3Stripper_Off
+Func __Debug_ReportNotepadWrite($sData)
+#Au3Stripper_On
+If $6s = 0 Then _10h()
+ControlCommand($6s, "", "Edit1", "EditPaste", String($78))
+EndFunc
+Func _10n($7a, $7b, $7c, $7d, $7e = "", $7f = "", $7g = "", $7h = "", $7i = 0)
+If $7a = "" Or $7c = "" Or $7d = "" Or $7b = "" Or StringLen($7b) > 256 Then Return SetError(1, 0, 0)
+If $7g = "" Then $7g = @ComputerName
 If TCPStartup() = 0 Then Return SetError(2, 0, 0)
-Local $6x, $6y
-If StringRegExp($6o, "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$") Then
-$6x = $6o
+Local $7j, $7k
+If StringRegExp($7a, "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$") Then
+$7j = $7a
 Else
-$6x = TCPNameToIP($6o)
+$7j = TCPNameToIP($7a)
 EndIf
-If $6x = "" Then
+If $7j = "" Then
 TCPShutdown()
 Return SetError(3, 0, 0)
 EndIf
-Local $6z = TCPConnect($6x, 25)
-If $6z = -1 Then
+Local $7l = TCPConnect($7j, 25)
+If $7l = -1 Then
 TCPShutdown()
 Return SetError(4, 0, 0)
 EndIf
-Local $70[6], $71[6]
-$70[0] = "HELO " & $6u & @CRLF
-If StringLeft($6u, 5) = "EHLO " Then $70[0] = $6u & @CRLF
-$71[0] = "250"
-$70[1] = "MAIL FROM: <" & $6q & ">" & @CRLF
-$71[1] = "250"
-$70[2] = "RCPT TO: <" & $6r & ">" & @CRLF
-$71[2] = "250"
-$70[3] = "DATA" & @CRLF
-$71[3] = "354"
-Local $m = _q9()
-Local $72 = -$m[1] / 60
-Local $73 = Int($72)
-Local $74 = 0
-If $73 <> $72 Then $74 = Abs($72 - $73) * 60
-$72 = StringFormat(" (%+.2d%.2d)", $73, $74)
-$70[4] = "From:" & $6p & "<" & $6q & ">" & @CRLF & "To:" & "<" & $6r & ">" & @CRLF & "Subject:" & $6s & @CRLF & "Mime-Version: 1.0" & @CRLF & "Date: " & _oo(@WDAY, 1) & ", " & @MDAY & " " & _p6(@MON, 1) & " " & @YEAR & " " & @HOUR & ":" & @MIN & ":" & @SEC & $72 & @CRLF & "Content-Type: text/plain; charset=US-ASCII" & @CRLF & @CRLF
-$71[4] = ""
-$70[5] = @CRLF & "." & @CRLF
-$71[5] = "250"
-If _10h($6z, $70[0], $71[0], $6w, "220", $6v) Then Return SetError(50, 0, 0)
-For $6y = 1 To UBound($70) - 2
-If _10h($6z, $70[$6y], $71[$6y], $6w) Then Return SetError(50 + $6y, 0, 0)
+Local $7m[6], $7n[6]
+$7m[0] = "HELO " & $7g & @CRLF
+If StringLeft($7g, 5) = "EHLO " Then $7m[0] = $7g & @CRLF
+$7n[0] = "250"
+$7m[1] = "MAIL FROM: <" & $7c & ">" & @CRLF
+$7n[1] = "250"
+$7m[2] = "RCPT TO: <" & $7d & ">" & @CRLF
+$7n[2] = "250"
+$7m[3] = "DATA" & @CRLF
+$7n[3] = "354"
+Local $l = _rb()
+Local $7o = -$l[1] / 60
+Local $7p = Int($7o)
+Local $7q = 0
+If $7p <> $7o Then $7q = Abs($7o - $7p) * 60
+$7o = StringFormat(" (%+.2d%.2d)", $7p, $7q)
+$7m[4] = "From:" & $7b & "<" & $7c & ">" & @CRLF & "To:" & "<" & $7d & ">" & @CRLF & "Subject:" & $7e & @CRLF & "Mime-Version: 1.0" & @CRLF & "Date: " & _pq(@WDAY, 1) & ", " & @MDAY & " " & _q8(@MON, 1) & " " & @YEAR & " " & @HOUR & ":" & @MIN & ":" & @SEC & $7o & @CRLF & "Content-Type: text/plain; charset=US-ASCII" & @CRLF & @CRLF
+$7n[4] = ""
+$7m[5] = @CRLF & "." & @CRLF
+$7n[5] = "250"
+If _10p($7l, $7m[0], $7n[0], $7i, "220", $7h) Then Return SetError(50, 0, 0)
+For $7k = 1 To UBound($7m) - 2
+If _10p($7l, $7m[$7k], $7n[$7k], $7i) Then Return SetError(50 + $7k, 0, 0)
 Next
-For $6y = 0 To UBound($6t) - 1
-If StringLeft($6t[$6y], 1) = "." Then $6t[$6y] = "." & $6t[$6y]
-If _10h($6z, $6t[$6y] & @CRLF, "", $6w) Then Return SetError(500 + $6y, 0, 0)
+For $7k = 0 To UBound($7f) - 1
+If StringLeft($7f[$7k], 1) = "." Then $7f[$7k] = "." & $7f[$7k]
+If _10p($7l, $7f[$7k] & @CRLF, "", $7i) Then Return SetError(500 + $7k, 0, 0)
 Next
-$6y = UBound($70) - 1
-If _10h($6z, $70[$6y], $71[$6y], $6w) Then Return SetError(5000, 0, 0)
-TCPCloseSocket($6z)
+$7k = UBound($7m) - 1
+If _10p($7l, $7m[$7k], $7n[$7k], $7i) Then Return SetError(5000, 0, 0)
+TCPCloseSocket($7l)
 TCPShutdown()
 Return 1
 EndFunc
-Func _10g($75, $76 = 0)
-Local $77 = "SMTP trace"
-Local $78 = ControlGetText($77, "", "Static1")
-$75 = StringLeft(StringReplace($75, @CRLF, ""), 70)
-$78 &= @HOUR & ":" & @MIN & ":" & @SEC & " " & $75 & @LF
-If WinExists($77) Then
-ControlSetText($77, "", "Static1", $78)
+Func _10o($7r, $7s = 0)
+Local $7t = "SMTP trace"
+Local $7u = ControlGetText($7t, "", "Static1")
+$7r = StringLeft(StringReplace($7r, @CRLF, ""), 70)
+$7u &= @HOUR & ":" & @MIN & ":" & @SEC & " " & $7r & @LF
+If WinExists($7t) Then
+ControlSetText($7t, "", "Static1", $7u)
 Else
-SplashTextOn($77, $78, 400, 500, 500, 100, 4 + 16, "", 8)
+SplashTextOn($7t, $7u, 400, 500, 500, 100, 4 + 16, "", 8)
 EndIf
-If $76 Then Sleep($76 * 1000)
+If $7s Then Sleep($7s * 1000)
 EndFunc
-Func _10h($6z, $79, $7a, $6w, $7b = "", $6v = "")
-Local $7c, $26, $7d
-If $6w Then _10g($79)
-If $7b <> "" Then
-If $6v <> -1 Then
-If TCPSend($6z, $6v) = 0 Then
-TCPCloseSocket($6z)
+Func _10p($7l, $7v, $7w, $7i, $7x = "", $7h = "")
+Local $7y, $2k, $7z
+If $7i Then _10o($7v)
+If $7x <> "" Then
+If $7h <> -1 Then
+If TCPSend($7l, $7h) = 0 Then
+TCPCloseSocket($7l)
 TCPShutdown()
 Return 1
 EndIf
 EndIf
-$7c = ""
-$7d = TimerInit()
-While StringLeft($7c, StringLen($7b)) <> $7b And TimerDiff($7d) < 45000
-$7c = TCPRecv($6z, 1000)
-If $6w And $7c <> "" Then _10g("intermediate->" & $7c)
+$7y = ""
+$7z = TimerInit()
+While StringLeft($7y, StringLen($7x)) <> $7x And TimerDiff($7z) < 45000
+$7y = TCPRecv($7l, 1000)
+If $7i And $7y <> "" Then _10o("intermediate->" & $7y)
 WEnd
 EndIf
-If TCPSend($6z, $79) = 0 Then
-TCPCloseSocket($6z)
+If TCPSend($7l, $7v) = 0 Then
+TCPCloseSocket($7l)
 TCPShutdown()
 Return 1
 EndIf
-$7d = TimerInit()
-$7c = ""
-While $7c = "" And TimerDiff($7d) < 45000
-$26 += 1
-$7c = TCPRecv($6z, 1000)
-If $7a = "" Then ExitLoop
+$7z = TimerInit()
+$7y = ""
+While $7y = "" And TimerDiff($7z) < 45000
+$2k += 1
+$7y = TCPRecv($7l, 1000)
+If $7w = "" Then ExitLoop
 WEnd
-If $7a <> "" Then
-If $6w Then _10g($26 & " <- " & $7c)
-If StringLeft($7c, StringLen($7a)) <> $7a Then
-TCPCloseSocket($6z)
+If $7w <> "" Then
+If $7i Then _10o($2k & " <- " & $7y)
+If StringLeft($7y, StringLen($7w)) <> $7w Then
+TCPCloseSocket($7l)
 TCPShutdown()
-If $6w Then _10g("<-> " & $7a, 5)
+If $7i Then _10o("<-> " & $7w, 5)
 Return 2
 EndIf
 EndIf
 Return 0
 EndFunc
+Func _10w($80, $5t = 0)
+Local Const $81 = 183
+Local Const $82 = 1
+Local $83 = 0
+If BitAND($5t, 2) Then
+Local $84 = DllStructCreate("byte;byte;word;ptr[4]")
+Local $19 = DllCall("advapi32.dll", "bool", "InitializeSecurityDescriptor", "struct*", $84, "dword", $82)
+If @error Then Return SetError(@error, @extended, 0)
+If $19[0] Then
+$19 = DllCall("advapi32.dll", "bool", "SetSecurityDescriptorDacl", "struct*", $84, "bool", 1, "ptr", 0, "bool", 0)
+If @error Then Return SetError(@error, @extended, 0)
+If $19[0] Then
+$83 = DllStructCreate($c)
+DllStructSetData($83, 1, DllStructGetSize($83))
+DllStructSetData($83, 2, DllStructGetPtr($84))
+DllStructSetData($83, 3, 0)
+EndIf
+EndIf
+EndIf
+Local $85 = DllCall("kernel32.dll", "handle", "CreateMutexW", "struct*", $83, "bool", 1, "wstr", $80)
+If @error Then Return SetError(@error, @extended, 0)
+Local $86 = DllCall("kernel32.dll", "dword", "GetLastError")
+If @error Then Return SetError(@error, @extended, 0)
+If $86[0] = $81 Then
+If BitAND($5t, 1) Then
+DllCall("kernel32.dll", "bool", "CloseHandle", "handle", $85[0])
+If @error Then Return SetError(@error, @extended, 0)
+Return SetError($86[0], $86[0], 0)
+Else
+Exit -1
+EndIf
+EndIf
+Return $85[0]
+EndFunc
 Opt('ExpandVarStrings', 1)
 Opt('MustDeclareVars', 1)
 Opt('TrayAutoPause', 0)
 ConsoleWrite(@CRLF)
-Global Const $7e = 60 * 5
-Global $7f = 0
-Global $7g = TimerInit()
-Global $7h = $7g
-Global $7i = $7g
-Global $7j = $7g
-Global $7k = $7g
-Global $7l = $7g
-Global $7m = $7g
-Global $7n = $7g
-Global Const $7o = StringReplace(StringFormat("%-16s", @ComputerName), " ", ".")
-Global Const $7p = FileGetVersion(@ScriptFullPath)
-Global $7q = ""
-Global $7r
-Global $7s
-Global $7t
-Global Const $7u = "ShadowSpawn.exe"
-Global Const $7v = @MyDocumentsDir & "\Isopedia GmbH\ShadowSpawn\"
-Global Const $7w = $7v & $7u
-Global Const $7x = FileExists($7w)
-Global Const $7y = @ProgramFilesDir & "\KPS designstudio\KPSInfo\"
-Global Const $7z = $7y & "KPSInfo.exe"
-Global Const $80 = FileExists($7z)
-Global Const $81 = "Powerkatalog-Schnittstelle.exe"
-Global Const $82 = @ProgramFilesDir & "\KPS designstudio\Powerkatalog-Schnittstelle\"
-Global Const $83 = $82 & $81
-Global Const $84 = FileExists($83)
-Global Const $85 = "SHDUpdater_min.exe"
-Global Const $86 = @ProgramFilesDir & "\SHDUpdater\"
-Global Const $87 = $86 & $85
-Global Const $88 = FileExists($87)
-Global Const $89 = "NetPhone Client.exe"
-Global Const $8a = @ProgramFilesDir & "\NetPhone Client\"
-Global Const $8b = $8a & $89
-Global Const $8c = FileExists($8b)
-Global Const $8d = "\\172.16.128.4\edv\Gerrit\"
-Global Const $8e = $8d & ""
-Global Const $8f = FileExists($8e)
-Global Const $8g = $8d & "akk\"
-Global Const $8h = $8g & ""
-Global Const $8i = FileExists($8h)
-Global Const $8j = @ScriptDir & "\"
-Global Const $8k = $8j & "akk.exe"
-Global Const $8l = FileExists($8k)
-Global Const $8m = $8d
-Global Const $8n = $8m & "akk.exe"
-Global Const $8o = FileExists($8n)
-Global Const $8p = "akkUpdater.exe"
-Global Const $8q = $8j
-Global Const $8r = $8q & $8p
-Global $8s = FileExists($8r)
-Global Const $8t = $8p
-Global Const $8u = $8d
+Global Const $87 = 60 * 5
+Global $88 = 0
+Global $89 = TimerInit()
+Global $8a = $89
+Global $8b = $89
+Global $8c = $89
+Global $8d = $89
+Global $8e = $89
+Global $8f = $89
+Global Const $8g = StringReplace(StringFormat("%-16s", @ComputerName), " ", ".")
+Global Const $8h = FileGetVersion(@ScriptFullPath)
+Global $8i = ""
+Global $8j
+Global $8k
+Global $8l
+Global Const $8m = "ShadowSpawn.exe"
+Global Const $8n = @MyDocumentsDir & "\Isopedia GmbH\ShadowSpawn\"
+Global Const $8o = $8n & $8m
+Global Const $8p = FileExists($8o)
+Global Const $8q = @ProgramFilesDir & "\KPS designstudio\KPSInfo\"
+Global Const $8r = $8q & "KPSInfo.exe"
+Global Const $8s = FileExists($8r)
+Global Const $8t = "Powerkatalog-Schnittstelle.exe"
+Global Const $8u = @ProgramFilesDir & "\KPS designstudio\Powerkatalog-Schnittstelle\"
 Global Const $8v = $8u & $8t
 Global Const $8w = FileExists($8v)
-Global Const $8x = $8j
-Global Const $8y = $8x & "akk.ini"
-Global Const $8z = FileExists($8y)
-Global Const $90 = "akkGlobalConfig.ini"
-Global Const $91 = $8j
-Global Const $92 = $91 & $90
-Global $93 = FileExists($92)
-Global Const $94 = $90
-Global Const $95 = $8g
-Global Const $96 = $95 & $94
+Global Const $8x = "SHDUpdater_min.exe"
+Global Const $8y = @ProgramFilesDir & "\SHDUpdater\"
+Global Const $8z = $8y & $8x
+Global Const $90 = FileExists($8z)
+Global Const $91 = "NetPhone Client.exe"
+Global Const $92 = @ProgramFilesDir & "\NetPhone Client\"
+Global Const $93 = $92 & $91
+Global Const $94 = FileExists($93)
+Global Const $95 = "\\172.16.128.4\edv\Gerrit\"
+Global Const $96 = $95 & ""
 Global Const $97 = FileExists($96)
-Global Const $98 = "akkGlobalConfigExtended.ini"
-Global Const $99 = $91
-Global Const $9a = $99 & $98
-Global $9b = FileExists($9a)
-Global Const $9c = $98
-Global Const $9d = $8g
-Global Const $9e = $9d & $9c
-Global Const $9f = FileExists($9e)
-Global $9g
-Global $9h = ""
-Global Const $9i = $8j & "log\"
-Global $9j = $9i & $9h
+Global Const $98 = $95 & "akk\"
+Global Const $99 = $98 & ""
+Global Const $9a = FileExists($99)
+Global Const $9b = @ScriptDir & "\"
+Global Const $9c = $9b & "akk.exe"
+Global Const $9d = FileExists($9c)
+Global Const $9e = $95
+Global Const $9f = $9e & "akk.exe"
+Global Const $9g = FileExists($9f)
+Global Const $9h = "akkUpdater.exe"
+Global Const $9i = $9b
+Global Const $9j = $9i & $9h
 Global $9k = FileExists($9j)
-If Not $9k Then DirCreate($9i)
-Global $9l = ""
-Global Const $9m = $8g & "log\" & @ComputerName & "\"
-Global $9n = $9m & $9l
-Global $9o = FileExists($9n)
-If Not $9o Then DirCreate($9m)
-Global $9p = "akkGlobal.log"
-Global Const $9q = $8g & "log\"
-Global $9r = $9q & $9p
-Global $9s = FileExists($9r)
-Global $9t = ""
-Global Const $9u = $8g & "log\_archive\"
-Global $9v = $9u & $9t
-Global $9w = FileExists($9v)
-If Not $9w Then DirCreate($9u)
-Global Const $9x = $8g & "log\"
-Global Const $9y = $9x & "akkGlobal.ini"
+Global Const $9l = $9h
+Global Const $9m = $95
+Global Const $9n = $9m & $9l
+Global Const $9o = FileExists($9n)
+Global Const $9p = $9b
+Global Const $9q = $9p & "akk.ini"
+Global Const $9r = FileExists($9q)
+Global Const $9s = "akkGlobalConfig.ini"
+Global Const $9t = $9b
+Global Const $9u = $9t & $9s
+Global $9v = FileExists($9u)
+Global Const $9w = $9s
+Global Const $9x = $98
+Global Const $9y = $9x & $9w
 Global Const $9z = FileExists($9y)
-Global Const $a0 = "akkGlobalSpawnStats.ini"
-Global Const $a1 = $8g & "log\"
+Global Const $a0 = "akkGlobalConfigExtended.ini"
+Global Const $a1 = $9t
 Global Const $a2 = $a1 & $a0
-Global Const $a3 = FileExists($a2)
-Global Const $a4 = $9m
-Global Const $a5 = $a4 & "akkMacro.ini"
-Global Const $a6 = FileExists($a5)
-Global Const $a7 = $8j & "log\"
-Global Const $a8 = $a7 & "scrape.prom"
-Global Const $a9 = FileExists($a8)
-Global Const $aa = $9m
-Global Const $ab = $aa & "scrape.prom"
-Global Const $ac = FileExists($ab)
-Global Const $ad = $8j & "log\sc\"
-Global Const $ae = $ad & ""
-Global Const $af = FileExists($ae)
-If Not $af Then DirCreate($ad)
-Global Const $ag = $8g & "log\_sc\NetPhoneUser\"
-Global Const $ah = $ag & ""
-Global Const $ai = FileExists($ah)
-If Not $ai Then DirCreate($ag)
-Global Const $aj = @UserProfileDir & "\Downloads"
-Global Const $ak = $aj & " alt"
+Global $a3 = FileExists($a2)
+Global Const $a4 = $a0
+Global Const $a5 = $98
+Global Const $a6 = $a5 & $a4
+Global Const $a7 = FileExists($a6)
+Global $a8
+Global $a9 = ""
+Global Const $aa = $9b & "log\"
+Global $ab = $aa & $a9
+Global $ac = FileExists($ab)
+If Not FileExists($aa) Then DirCreate($aa)
+Global $ad = ""
+Global Const $ae = $98 & "log\" & @ComputerName & "\"
+Global $af = $ae & $ad
+Global $ag = FileExists($af)
+If Not FileExists($ae) Then DirCreate($ae)
+Global $ah = "akkGlobal.log"
+Global Const $ai = $98 & "log\"
+Global $aj = $ai & $ah
+Global $ak = FileExists($aj)
 Global $al = ""
-Global Const $am = @ComputerName
-Global $an
-Global $ao[10][2]
-Global $ap = 0
-Global $aq = 1
-Global $ar
-Global $as = 0
-Global $at
-Global $au
-Global $av
-Global Const $aw = @HomeDrive & "\Brauckhoff\akk\"
-Global Const $ax = $aw & "exf.exe"
-Global $ay = FileExists($ax)
-Global Const $az = $8g
-Global Const $b0 = $az & "exf.exe"
+Global Const $am = $98 & "log\_archive\"
+Global $an = $am & $al
+Global $ao = FileExists($an)
+If Not FileExists($am) Then DirCreate($am)
+Global Const $ap = $98 & "log\"
+Global Const $aq = $ap & "akkGlobal.ini"
+Global Const $ar = FileExists($aq)
+Global Const $as = "akkGlobalSpawnStats.ini"
+Global Const $at = $98 & "log\"
+Global Const $au = $at & $as
+Global Const $av = FileExists($au)
+Global Const $aw = $ae
+Global Const $ax = $aw & "akkMacro.ini"
+Global Const $ay = FileExists($ax)
+Global Const $az = $9b & "log\"
+Global Const $b0 = $az & "scrape.prom"
 Global Const $b1 = FileExists($b0)
-Global Const $b2 = "wmi_exporter.exe"
-Global Const $b3 = @HomeDrive & "\Brauckhoff\wmi_exporter\"
-Global Const $b4 = $b3 & $b2
-Global $b5 = FileExists($b4)
-Global Const $b6 = "wmi_exporter-0.7.999-preview.2-386.exe"
-Global Const $b7 = $8g & "wmi_exporter\"
-Global Const $b8 = $b7 & $b6
-Global Const $b9 = FileExists($b8)
-Global Const $ba = "wmi_exporter-0.7.999-preview.2-amd64.exe"
-Global Const $bb = $8g & "wmi_exporter\"
-Global Const $bc = $bb & $ba
-Global Const $bd = FileExists($bc)
-Global Const $be = "cs,logical_disk,memory,net,os,process,service,system,textfile"
-Global Const $bf = $b3 & "textfile_inputs\"
-Global Const $bg = $bf
-Global Const $bh = $bg & "metadata.prom"
-Global $bi = FileExists($bh)
+Global Const $b2 = $ae
+Global Const $b3 = $b2 & "scrape.prom"
+Global Const $b4 = FileExists($b3)
+Global Const $b5 = $9b & "log\sc\"
+Global Const $b6 = $b5 & ""
+Global Const $b7 = FileExists($b6)
+If Not FileExists($b5) Then DirCreate($b5)
+Global Const $b8 = $98 & "log\_sc\NetPhoneUser\"
+Global Const $b9 = $b8 & ""
+Global Const $ba = FileExists($b9)
+If Not FileExists($b8) Then DirCreate($b8)
+Global Const $bb = @UserProfileDir & "\Downloads"
+Global Const $bc = $bb & " alt"
+Global $bd = ""
+Global Const $be = @ComputerName
+Global $bf
+Global $bg[10][2]
+Global $bh = 0
+Global $bi = 1
 Global $bj
-Global $bk[16]
+Global $bk
 Global $bl
-Global Const $bm = '' & ' --log.format logger:eventlog?name=wmi_exporter' & ' --collectors.enabled ' & $be & ' --telemetry.addr :9182 ' & ' --collector.textfile.directory ' & $bf
-_105("akk")
+Global $bm
+Global Const $bn = @HomeDrive & "\Brauckhoff\akk\"
+Global Const $bo = $bn & "exf.exe"
+Global $bp = FileExists($bo)
+Global Const $bq = $98
+Global Const $br = $bq & "exf.exe"
+Global Const $bs = FileExists($br)
+Global Const $bt = "wmi_exporter.exe"
+Global Const $bu = @HomeDrive & "\Brauckhoff\wmi_exporter\"
+Global Const $bv = $bu & $bt
+Global $bw = FileExists($bv)
+Global Const $bx = "wmi_exporter-0.8.3-386.exe"
+Global Const $by = $98 & "wmi_exporter\"
+Global Const $bz = $by & $bx
+Global Const $c0 = FileExists($bz)
+Global Const $c1 = "wmi_exporter-0.8.3-amd64.exe"
+Global Const $c2 = $98 & "wmi_exporter\"
+Global Const $c3 = $c2 & $c1
+Global Const $c4 = FileExists($c3)
+Global Const $c5 = "cpu,cs,logical_disk,memory,net,os,process,service,system,textfile"
+Global Const $c6 = $bu & "textfile_inputs\"
+Global Const $c7 = $c6
+Global Const $c8 = $c7 & "metadata.prom"
+Global $c9 = FileExists($c8)
+Global Const $ca = $98 & "prometheus\targets\"
+Global Const $cb = $ca & ""
+Global Const $cc = FileExists($cb)
+If Not FileExists($ca) Then DirCreate($ca)
+Global $cd
+Global Const $ce = '' & ' --log.format logger:eventlog?name=wmi_exporter' & ' --collectors.enabled ' & $c5 & ' --telemetry.addr :9182 ' & ' --collector.textfile.directory ' & $c6
+Global Enum $cf, $cg, $ch, $ci, $cj, $ck, $cl
+_10w("akk")
 If @Compiled Then Sleep(5e3)
-_10q()
-_10o()
-_10k("akk.exe läuft Spawn, KPSInfo & WMI Exporter werden überwacht")
-If Not @Compiled Then _10k("$WmiExporterParams: " & $bm)
-_10m()
-_10p()
-_10l()
-_11b()
-_11a()
-_110()
+_119()
+_117()
+_113("akk.exe läuft Spawn, KPSInfo & WMI Exporter werden überwacht")
+If Not @Compiled Then _113("$WmiExporterParams: " & $ce)
 _115()
-_10r()
-_11c()
-_10v()
+_118()
+_114()
+_11v()
+_11u()
+_11i()
+_11n()
+_11a()
+_11w()
+_11x()
+_11d()
 If @Compiled Then Sleep(5e3)
 While 42
 Sleep(10)
-If(Mod($7f, 300) = 0) Then
-If _10u($7h, 15e3 * 1) Then _10x()
-If _10u($7i, 60e3 * 5) Then _10m()
-If _10u($7j, 60e3 * 5) Then _10o()
-If _10u($7k, 60e3 * 10) Then _118()
-If _10u($7l, 30e3 * 1) Then _10l()
-If _10u($7m, 30e3 * 1) Then _11c()
-If $as > 60e3 * 2 And _10u($7n, 60e3 * 15) Then _10r()
+If(Mod($88, 300) = 0) Then
+If _11c($8a, 15e3 * 1) Then _11f()
+If _11c($8b, 60e3 * 5) Then _115()
+If _11c($8c, 60e3 * 5) Then _117()
+If _11c($8d, 60e3 * 10) Then _11s()
+If _11c($8e, 30e3 * 1) Then _11w()
+If _zv() > 60e3 * 2 And _11c($8f, 60e3 * 15) Then _11a()
 EndIf
-If(Mod($7f, 500) = 0) Then _119()
-$7f += 1
+If(Mod($88, 500) = 0) Then _11t()
+$88 += 1
 WEnd
-Func _10k($bn)
-$bn = StringFormat("%10s", $7f) & " : " & $bn
-ConsoleWrite($bn & @CRLF)
-_zt($9j, $bn)
-_zt($9n, $bn)
-_zt($9r, StringFormat("%-16s", @ComputerName) & " " & StringFormat("%-16s", @UserName) & " " & $bn)
+Func _113($cm)
+$cm = StringFormat("%10s", $88) & " : " & $cm
+ConsoleWrite($cm & @CRLF)
+_sn($ab, $cm)
+_sn($af, $cm)
+_sn($aj, StringFormat("%-16s", @ComputerName) & " " & StringFormat("%-16s", @UserName) & " " & $cm)
 EndFunc
-Func _10l()
-Local $4a = _x4("", "Application")
-$at = _x1($4a)
-$au = _wo($4a)
-$av = _x3($4a)
-_wn($4a)
-EndFunc
-Func _10m()
-If $97 And Not $93 Then
-$93 = FileCopy($96, $92, 1 + 8)
-EndIf
-If $9f And Not $9b Then
-$9b = FileCopy($9e, $9a, 1 + 8)
-EndIf
-If $8w And Not $8s Then
-$8s = FileCopy($8v, $8r, 1 + 8)
-EndIf
-Local $bo = FileGetTime($92, 0, 1)
-Local $bp = FileGetTime($96, 0, 1)
-If $bo <> $bp Then
-$93 = FileCopy($96, $92, 1 + 8)
-_10k("Reload Config " & $96)
-_10p()
-EndIf
-Local $bq = FileGetTime($9a, 0, 1)
-Local $br = FileGetTime($9e, 0, 1)
-If $bq <> $br Then
-$9b = FileCopy($9e, $9a, 1 + 8)
-_10k("Reload Config Ex" & $9e)
-_10p()
-_11c()
-EndIf
-Local $bs = FileGetTime($8r, 0, 1)
-Local $bt = FileGetTime($8v, 0, 1)
-If $bs <> $bt And @Compiled Then
-$8s = FileCopy($8v, $8r, 1 + 8)
-_10k("Reload Akk Updater " & $8v)
-EndIf
-Local $bu = FileGetTime($8k, 0, 1)
-Local $bv = FileGetTime($8n, 0, 1)
-If $bu <> $bv And @Compiled Then
-_10y($8p, $8q, $8r, $8s)
-_10k("Reload Akk " & $8n)
-EndIf
-EndFunc
-Func _10n()
-Local $bw = WinList()
-Local $bx[1][8]
-$bx[0][1] = "hWnd"
-$bx[0][2] = "$WIN_STATE_EXISTS"
-$bx[0][3] = "$WIN_STATE_VISIBLE"
-$bx[0][4] = "$WIN_STATE_ENABLED"
-$bx[0][5] = "$WIN_STATE_ACTIVE"
-$bx[0][6] = "$WIN_STATE_MINIMIZED"
-$bx[0][7] = "$WIN_STATE_MAXIMIZED"
-Local $by
-For $26 = 1 To $bw[0][0]
-$by = WinGetState($bw[$26][1])
-_yf($bx, $bw[$26][0] & "|" & String($bw[$26][1]) & "|" & BitAND($by, 1) & "|" & BitAND($by, 2) & "|" & BitAND($by, 4) & "|" & BitAND($by, 8) & "|" & BitAND($by, 16) & "|" & BitAND($by, 32), 0, "|")
-Next
-$bx[0][0] = UBound($bx) - 1
-Local $bz[1][5] = [["", "hWnd", "$WIN_STATE_ACTIVE", "$WIN_STATE_MINIMIZED", "$WIN_STATE_MAXIMIZED"]]
-For $26 = 1 To $bx[0][0]
-If $bx[$26][0] <> "" And $bx[$26][3] = 2 Then
-_yf($bz, $bx[$26][0] & "|" & $bx[$26][1] & "|" & $bx[$26][5] & "|" & $bx[$26][6] & "|" & $bx[$26][7], 0, "|")
-EndIf
-Next
-$bz[0][0] = UBound($bz) - 1
-Return $bz
-EndFunc
-Func _10o()
-$9h = StringFormat("%04s", $9g) & ".log"
-$9j = $9i & $9h
-$9n = $9m & $9h
-If _zj($9j) > 1e3 Then
-$9g += 1
-IniWrite($8y, "LogFile", "ID", $9g)
-EndIf
-IniWrite($8y, "LogFile", "LogPath", $9j)
-IniWrite($8y, "LogFile", "LogNetPath", $9n)
-If FileGetSize($9r) / 1024 > 100 Then
-Local $c0 = $9u & @YEAR & @MON & @MDAY & @MIN & @SEC & @MSEC & ".log"
-FileMove($9r, $c0, 1 + 8)
-EndIf
-EndFunc
-Func _10p()
-If FileExists($92) Then
-$an = IniRead($92, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
-For $26 = 0 To 9 Step 1
-$ao[$26][0] = IniRead($92, "FreeSpaceCheck", "Mail" & $26 & "Address", "")
-$ao[$26][1] = IniRead($92, "FreeSpaceCheck", "Mail" & $26 & "Active", 0)
-Next
-$al = IniRead($92, "SmtpMail", "SmtpServer", "")
-EndIf
-If FileExists($9a) Then
-$bj = IniRead($9a, "MetaData", @ComputerName, "NULL")
-If $bj = "NULL" Then
-IniWrite($9e, "MetaData", @ComputerName, "")
-EndIf
-EndIf
-EndFunc
-Func _10q()
-$9g = IniRead($8y, "LogFile", "ID", "NULL")
-If $9g = "NULL" Then
-IniWrite($8y, "LogFile", "ID", 0)
-$9g = 0
-EndIf
-EndFunc
-Func _10r()
-Local $c1 = _10s()
-Local $18 = WinGetHandle("NetPhone Client")
-If @error Then
-If ProcessExists($89) Then _10k("Error ScreenCaptureNetPhoneClient")
-Else
-Local $by = WinGetState($18)
-If WinActivate($18) Then
-Sleep(250)
-Local $c2 = WinGetPos($18)
-$c2[0] = $c2[0] + 57
-$c2[1] = $c2[1] + $c2[3] - 54
-$c2[2] = $c2[0] + 174
-$c2[3] = $c2[1] + 15
-_10w("", "NetPhoneUser", "$NetPhoneClientPos", 0, _z6($c2))
-$7q = PixelChecksum($c2[0], $c2[1], $c2[2], $c2[3], 1, Default, 1)
-If Not FileExists($ag & $7q & ".png") And Not FileExists($ag & "del\" & $7q & ".png") And Not FileExists($ag & "ini\" & $7q & ".png") Then
-_mq($ag & $7q & ".png", $c2[0], $c2[1], $c2[2], $c2[3], 0)
-EndIf
-If BitAND($by, 16) Then WinSetState($18, Default, @SW_MINIMIZE)
-EndIf
-EndIf
-WinActivate($c1)
-$7r = IniRead($9a, "$NetPhoneUser", $7q, "NULL")
-_10w("", "NetPhoneUser", "$NetPhoneUser", 0, $7r)
-_10w("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $7q)
-EndFunc
-Func _10s()
-Local $c3 = _10n()
-Local $18
-Local $c1
-For $26 = 1 To $c3[0][0]
-If $c3[$26][0] <> "" Then
-If $c3[$26][2] = 8 Then
-$7s = $c3[$26][0]
-$c1 = $c3[$26][1]
-EndIf
-If False & StringStripWS($c3[$26][0], 1 + 2) = "NetPhone Client" Then
-$18 = HWnd($c3[$26][1])
-If WinActivate($18) Then
-_mr($ad & $26 & ".png", $18)
-EndIf
-If $c3[$26][3] = 16 Then
-WinSetState($18, Default, @SW_MINIMIZE)
-EndIf
-If $c3[$26][4] = 32 Then
-WinSetState($18, Default, @SW_MAXIMIZE)
-EndIf
-If @error Then _10k("Error ScreenCaptureWnd")
-EndIf
-EndIf
-Next
-$18 = HWnd($c1)
-$7t = WinGetProcess($18)
-WinActivate($18)
-Return $18
-EndFunc
-Func _10u(ByRef $c4, $c5)
-Local $c6 = TimerDiff($c4)
-If $c6 > $c5 Then
-$c4 = TimerInit()
-Return $c6
-EndIf
-Return 0
-EndFunc
-Func _10v()
-IniWrite($9x & "Global" & ".ini", "@ComputerName", StringReplace(StringFormat("%-16s", @IPAddress1), " ", "."), @ComputerName)
-_10w("", "Global", "@IPAddress1", 0, @IPAddress1)
-_10w("", "Global", "$AkkVersion", 0, $7p)
-_10w("", "Global", "$SpawnExists", 0, $7x)
-_10w("", "Global", "$KPSInfoExists", 0, $80)
-_10w("", "Global", "$PowerkatalogExists", 0, $84)
-_10w("", "Global", "$SHDUpdaterExists", 0, $88)
-_10w("", "Global", "$NetPhoneClientExists", 0, $8c)
-_10w("", "Global", "$ActiveWinTitle", 0, $7s)
-_10w("", "Global", "$hWndActivePid", 0, $7t)
-_10w("", "EventLog", "$EventLogFull", 0, $at)
-_10w("", "EventLog", "$EventLogCount", 0, $au)
-_10w("", "EventLog", "$EventLogOldest", 0, $av)
-_10w("", "SpawnStats", $7u & "TimeModified", 0, FileGetTime($7w, 0, 1))
-Local $c7 = _11e()
-_10w("", "Wmi", "$ComputerSystemProductName", 0, $c7[0])
-_10w("", "Wmi", "$ComputerSystemProductIdentifyingNumber", 0, $c7[1])
-_10w("", "AutoIt", "@Compiled", 0, @Compiled)
-_10w("", "AutoIt", "@ScriptName", 0, @ScriptName)
-_10w("", "AutoIt", "@ScriptDir", 0, @ScriptDir)
-_10w("", "AutoIt", "@ScriptFullPath", 0, @ScriptFullPath)
-_10w("", "AutoIt", "@WorkingDir", 0, @WorkingDir)
-_10w("", "AutoIt", "@AutoItExe", 0, @AutoItExe)
-_10w("", "AutoIt", "@AutoItPID", 0, @AutoItPID)
-_10w("", "AutoIt", "@AutoItVersion", 0, @AutoItVersion)
-_10w("", "AutoIt", "@AutoItX64", 0, @AutoItX64)
-_10w("", "Directory", "@AppDataCommonDir", 0, @AppDataCommonDir)
-_10w("", "Directory", "@DesktopCommonDir", 0, @DesktopCommonDir)
-_10w("", "Directory", "@DocumentsCommonDir", 0, @DocumentsCommonDir)
-_10w("", "Directory", "@FavoritesCommonDir", 0, @FavoritesCommonDir)
-_10w("", "Directory", "@ProgramsCommonDir", 0, @ProgramsCommonDir)
-_10w("", "Directory", "@StartMenuCommonDir", 0, @StartMenuCommonDir)
-_10w("", "Directory", "@StartupCommonDir", 0, @StartupCommonDir)
-_10w("", "Directory", "@AppDataDir", 0, @AppDataDir)
-_10w("", "Directory", "@LocalAppDataDir", 0, @LocalAppDataDir)
-_10w("", "Directory", "@DesktopDir", 0, @DesktopDir)
-_10w("", "Directory", "@MyDocumentsDir", 0, @MyDocumentsDir)
-_10w("", "Directory", "@FavoritesDir", 0, @FavoritesDir)
-_10w("", "Directory", "@ProgramsDir", 0, @ProgramsDir)
-_10w("", "Directory", "@StartMenuDir", 0, @StartMenuDir)
-_10w("", "Directory", "@UserProfileDir", 0, @UserProfileDir)
-_10w("", "Directory", "@HomeDrive", 0, @HomeDrive)
-_10w("", "Directory", "@HomePath", 0, @HomePath)
-_10w("", "Directory", "@HomeShare", 0, @HomeShare)
-_10w("", "Directory", "@LogonDNSDomain", 0, @LogonDNSDomain)
-_10w("", "Directory", "@LogonDomain", 0, @LogonDomain)
-_10w("", "Directory", "@LogonServer", 0, @LogonServer)
-_10w("", "Directory", "@ProgramFilesDir", 0, @ProgramFilesDir)
-_10w("", "Directory", "@CommonFilesDir", 0, @CommonFilesDir)
-_10w("", "Directory", "@WindowsDir", 0, @WindowsDir)
-_10w("", "Directory", "@SystemDir", 0, @SystemDir)
-_10w("", "Directory", "@TempDir", 0, @TempDir)
-_10w("", "Directory", "@ComSpec", 0, @ComSpec)
-_10w("", "SystemInfo", "@CPUArch", 0, @CPUArch)
-_10w("", "SystemInfo", "@KBLayout", 0, @KBLayout)
-_10w("", "SystemInfo", "@MUILang", 0, @MUILang)
-_10w("", "SystemInfo", "@OSArch", 0, @OSArch)
-_10w("", "SystemInfo", "@OSLang", 0, @OSLang)
-_10w("", "SystemInfo", "@OSType", 0, @OSType)
-_10w("", "SystemInfo", "@OSVersion", 0, @OSVersion)
-_10w("", "SystemInfo", "@OSBuild", 0, @OSBuild)
-_10w("", "SystemInfo", "@OSServicePack", 0, @OSServicePack)
-_10w("", "SystemInfo", "@ComputerName", 0, @ComputerName)
-_10w("", "SystemInfo", "@UserName", 0, @UserName)
-_10w("", "SystemInfo", "@IPAddress1", 0, @IPAddress1)
-_10w("", "SystemInfo", "@IPAddress2", 0, @IPAddress2)
-_10w("", "SystemInfo", "@IPAddress3", 0, @IPAddress3)
-_10w("", "SystemInfo", "@IPAddress4", 0, @IPAddress4)
-_10w("", "SystemInfo", "@DesktopHeight", 0, @DesktopHeight)
-_10w("", "SystemInfo", "@DesktopWidth", 0, @DesktopWidth)
-_10w("", "SystemInfo", "@DesktopDepth", 0, @DesktopDepth)
-_10w("", "SystemInfo", "@DesktopRefresh", 0, @DesktopRefresh)
-EndFunc
-Func _10w($c8, $c9, $ca, $cb, $cc)
-If $c8 = "" Then
-$c8 = $9x & $c9 & ".ini"
-EndIf
-IniWrite($c8,($cb ? $c9 & $ca : $ca), $7o, $cc)
-IniWrite($a5, $c9, $ca, $cc)
-EndFunc
-Func _10x()
-_10y($7u, $7v, $7w, $7x)
-_10y("KPSInfo.exe", $7y, $7z, $80)
-$ar = _10y($b2, $b3, $b4 & $bm, $b5)
-EndFunc
-Func _10y($cd, $ce, $cf, $cg, $ch = @SW_HIDE)
-If $cg And Not ProcessExists($cd) Then
-_10k($cd & " wird gestartet")
-Return Run($cf, $ce, $ch)
-EndIf
-Return 0
-EndFunc
-Func _110()
-If _111() Then
-DirRemove($ak, 1)
-_112($aj, $ak)
-FileDelete($ak & "\Downloads alt.lnk")
-FileCreateShortcut($ak, $aj & "\Downloads alt")
-IniWrite($8y, "Downloads", "LastCleaningDate", _p5(@YEAR, @MON, @MDAY))
-Local Const $ci = '' & 'Wenn Sie noch wichtige Dateien im Ordner "Downloads" aufbewahren, die Sie benötigen, kopieren Sie diese bitte an einen anderen Ort.' & @CRLF & 'Alle Dateien aus dem Ordner "Downloads" wurden bereits in den Ordner "Downloads alt" verschoben.' & @CRLF & 'Der Ordner "Downloads alt" ist über eine Verknüpfung in "Downloads" zu erreichen.' & @CRLF & 'Alle Ihre Dateien die im Ordner "Downloads alt" bleiben, werden demnächst unwiderruflich GELÖSCHT!' & @CRLF & 'Bitte sichten und sichern Sie am besten jetzt sofort Ihre weiterhin benötigten Dateien.' & @CRLF & 'Soll der Ordner "Downloads alt" jetzt geöffnet werden?' & @CRLF
-If MsgBox(4 + 48 + 4096, "ACHTUNG WICHTIG! LÖSCHUNG IHRER DOWNLOAD-DATEIEN", $ci, $7e) = 6 Then
-ShellExecute($ak)
-EndIf
-EndIf
-EndFunc
-Func _111()
-Return(_p5(@YEAR, @MON, @MDAY) - _113()) >= 14
-EndFunc
-Func _112($cj, $ck)
-If FileExists($cj) Then
-If Not FileExists($ck) Then DirCreate($ck)
-FileMove($cj & "\*.*", $ck, 1 + 8)
-Local Const $cl = _zl($cj, Default, 2, True)
-If Not @error Then
-For $cm In $cl
-DirMove($cm, $ck, 1)
-Next
-EndIf
-EndIf
-EndFunc
-Func _113()
-Return IniRead($8y, "Downloads", "LastCleaningDate", "NULL")
+Func _114()
+Local $5m = _s8("", "Application")
+$bk = _s5($5m)
+$bl = _rs($5m)
+$bm = _s7($5m)
+_rr($5m)
 EndFunc
 Func _115()
-Local Const $cn = DriveGetLabel(@HomeDrive & "\")
-Local Const $co = DriveSpaceFree(@HomeDrive & "\")
-Local Const $cp = DriveSpaceTotal(@HomeDrive & "\")
-Local Const $cq =($co / $cp) * 100
-If $cq < $an Then
-If(_p5(@YEAR, @MON, @MDAY) - IniRead($8y, "FreeSpaceCheck", "LastMailSendDate", "NULL")) >= 1 Then
-IniWrite($8y, "FreeSpaceCheck", "LastMailSendDate", _p5(@YEAR, @MON, @MDAY))
-For $26 = 0 To 9 Step 1
-If $ao[$26][0] <> "" And $ao[$26][1] = 1 Then
-_10k("Sending Mail to " & $ao[$26][0])
-_116($ao[$26][0], Round($cq, 2), $cn, $co, $cp)
+If $9z And Not $9v Then
+$9v = FileCopy($9y, $9u, 1 + 8)
+EndIf
+If $a7 And Not $a3 Then
+$a3 = FileCopy($a6, $a2, 1 + 8)
+EndIf
+If $9o And Not $9k Then
+$9k = FileCopy($9n, $9j, 1 + 8)
+EndIf
+Local $cn = FileGetTime($9u, 0, 1)
+Local $co = FileGetTime($9y, 0, 1)
+If $cn <> $co Then
+$9v = FileCopy($9y, $9u, 1 + 8)
+_113("Reload Config " & $9y)
+_118()
+EndIf
+Local $cp = FileGetTime($a2, 0, 1)
+Local $cq = FileGetTime($a6, 0, 1)
+If $cp <> $cq Then
+$a3 = FileCopy($a6, $a2, 1 + 8)
+_113("Reload Config Ex" & $a6)
+_118()
+_11w()
+EndIf
+Local $cr = FileGetTime($9j, 0, 1)
+Local $cs = FileGetTime($9n, 0, 1)
+If $cr <> $cs And @Compiled Then
+$9k = FileCopy($9n, $9j, 1 + 8)
+_113("Reload Akk Updater " & $9n)
+EndIf
+Local $ct = FileGetTime($9c, 0, 1)
+Local $cu = FileGetTime($9f, 0, 1)
+If $ct <> $cu And @Compiled Then
+_11g($9h, $9i, $9j, $9k)
+_113("Reload Akk " & $9f)
+EndIf
+EndFunc
+Func _116()
+Local $cv = WinList()
+Local $cw[1][8]
+$cw[0][1] = "hWnd"
+$cw[0][2] = "$WIN_STATE_EXISTS"
+$cw[0][3] = "$WIN_STATE_VISIBLE"
+$cw[0][4] = "$WIN_STATE_ENABLED"
+$cw[0][5] = "$WIN_STATE_ACTIVE"
+$cw[0][6] = "$WIN_STATE_MINIMIZED"
+$cw[0][7] = "$WIN_STATE_MAXIMIZED"
+Local $cx
+For $2k = 1 To $cv[0][0]
+$cx = WinGetState($cv[$2k][1])
+_nb($cw, $cv[$2k][0] & "|" & String($cv[$2k][1]) & "|" & BitAND($cx, 1) & "|" & BitAND($cx, 2) & "|" & BitAND($cx, 4) & "|" & BitAND($cx, 8) & "|" & BitAND($cx, 16) & "|" & BitAND($cx, 32), 0, "|")
+Next
+$cw[0][0] = UBound($cw) - 1
+Local $cy[1][5] = [["", "hWnd", "$WIN_STATE_ACTIVE", "$WIN_STATE_MINIMIZED", "$WIN_STATE_MAXIMIZED"]]
+For $2k = 1 To $cw[0][0]
+If $cw[$2k][0] <> "" And $cw[$2k][3] = 2 Then
+_nb($cy, $cw[$2k][0] & "|" & $cw[$2k][1] & "|" & $cw[$2k][5] & "|" & $cw[$2k][6] & "|" & $cw[$2k][7], 0, "|")
+EndIf
+Next
+$cy[0][0] = UBound($cy) - 1
+Return $cy
+EndFunc
+Func _117()
+$a9 = StringFormat("%04s", $a8) & ".log"
+$ab = $aa & $a9
+$af = $ae & $a9
+If _sd($ab) > 1e3 Then
+$a8 += 1
+IniWrite($9q, "LogFile", "ID", $a8)
+EndIf
+IniWrite($9q, "LogFile", "LogPath", $ab)
+IniWrite($9q, "LogFile", "LogNetPath", $af)
+If FileGetSize($aj) / 1024 > 100 Then
+Local $cz = $am & @YEAR & @MON & @MDAY & @MIN & @SEC & @MSEC & ".log"
+FileMove($aj, $cz, 1 + 8)
+EndIf
+EndFunc
+Func _118()
+If FileExists($9u) Then
+$bf = IniRead($9u, "FreeSpaceCheck", "LowSpaceThresholdPerc", 5)
+For $2k = 0 To 9 Step 1
+$bg[$2k][0] = IniRead($9u, "FreeSpaceCheck", "Mail" & $2k & "Address", "")
+$bg[$2k][1] = IniRead($9u, "FreeSpaceCheck", "Mail" & $2k & "Active", 0)
+Next
+$bd = IniRead($9u, "SmtpMail", "SmtpServer", "")
+EndIf
+If FileExists($a2) Then
+$cd = IniRead($a2, "MetaData", @ComputerName, "NULL")
+If $cd = "NULL" Then
+IniWrite($a6, "MetaData", @ComputerName, "")
+EndIf
+EndIf
+EndFunc
+Func _119()
+$a8 = IniRead($9q, "LogFile", "ID", "NULL")
+If $a8 = "NULL" Then
+IniWrite($9q, "LogFile", "ID", 0)
+$a8 = 0
+EndIf
+EndFunc
+Func _11a()
+Local $d0 = _11b()
+Local $d = WinGetHandle("NetPhone Client")
+If @error Then
+If ProcessExists($91) Then _113("Error ScreenCaptureNetPhoneClient")
+Else
+Local $cx = WinGetState($d)
+If False Then
+WinActivate($d)
+Sleep(250)
+EndIf
+Local $d1 = WinGetPos($d)
+$d1[0] = $d1[0] + 57
+$d1[1] = $d1[1] + $d1[3] - 54
+$d1[2] = $d1[0] + 174
+$d1[3] = $d1[1] + 15
+_11e("", "NetPhoneUser", "$NetPhoneClientPos", 0, _o2($d1))
+$8i = PixelChecksum($d1[0], $d1[1], $d1[2], $d1[3], 1, Default, 1)
+If Not FileExists($b8 & $8i & ".png") And Not FileExists($b8 & "del\" & $8i & ".png") And Not FileExists($b8 & "ini\" & $8i & ".png") Then
+_n4($b8 & $8i & ".png", $d1[0], $d1[1], $d1[2], $d1[3], 0)
+EndIf
+If BitAND($cx, 16) Then WinSetState($d, Default, @SW_MINIMIZE)
+EndIf
+If False Then WinActivate($d0)
+$8j = IniRead($a2, "$NetPhoneUser", $8i, "NULL")
+_11e("", "NetPhoneUser", "$NetPhoneUser", 0, $8j)
+_11e("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $8i)
+EndFunc
+Func _11b()
+Local $d2 = _116()
+Local $d
+Local $d0
+For $2k = 1 To $d2[0][0]
+If $d2[$2k][0] <> "" Then
+If $d2[$2k][2] = 8 Then
+$8k = $d2[$2k][0]
+$d0 = $d2[$2k][1]
+EndIf
+If False & StringStripWS($d2[$2k][0], 1 + 2) = "NetPhone Client" Then
+$d = HWnd($d2[$2k][1])
+If WinActivate($d) Then
+_n5($b5 & $2k & ".png", $d)
+EndIf
+If $d2[$2k][3] = 16 Then
+WinSetState($d, Default, @SW_MINIMIZE)
+EndIf
+If $d2[$2k][4] = 32 Then
+WinSetState($d, Default, @SW_MAXIMIZE)
+EndIf
+If @error Then _113("Error ScreenCaptureWnd")
+EndIf
+EndIf
+Next
+$d = HWnd($d0)
+$8l = WinGetProcess($d)
+WinActivate($d)
+Return $d
+EndFunc
+Func _11c(ByRef $d3, $d4)
+Local $d5 = TimerDiff($d3)
+If $d5 > $d4 Then
+$d3 = TimerInit()
+Return $d5
+EndIf
+Return 0
+EndFunc
+Func _11d()
+IniWrite($ap & "Global" & ".ini", "@ComputerName", StringReplace(StringFormat("%-16s", @IPAddress1), " ", "."), @ComputerName)
+_11e("", "Global", "@IPAddress1", 0, @IPAddress1)
+_11e("", "Global", "$AkkVersion", 0, $8h)
+_11e("", "Global", "$SpawnExists", 0, $8p)
+_11e("", "Global", "$KPSInfoExists", 0, $8s)
+_11e("", "Global", "$PowerkatalogExists", 0, $8w)
+_11e("", "Global", "$SHDUpdaterExists", 0, $90)
+_11e("", "Global", "$NetPhoneClientExists", 0, $94)
+_11e("", "Global", "$ActiveWinTitle", 0, $8k)
+_11e("", "Global", "$hWndActivePid", 0, $8l)
+_11e("", "EventLog", "$EventLogFull", 0, $bk)
+_11e("", "EventLog", "$EventLogCount", 0, $bl)
+_11e("", "EventLog", "$EventLogOldest", 0, $bm)
+_11e("", "SpawnStats", $8m & "TimeModified", 0, FileGetTime($8o, 0, 1))
+Local $d6 = IsAdmin()
+_11e("", "Misc", "$iIsAdmin", 0, $d6)
+Local $d7 = _11y()
+_11e("", "Wmi", "$ComputerSystemProductName", 0, $d7[0])
+_11e("", "Wmi", "$ComputerSystemProductIdentifyingNumber", 0, $d7[1])
+_11e("", "AutoIt", "@Compiled", 0, @Compiled)
+_11e("", "AutoIt", "@ScriptName", 0, @ScriptName)
+_11e("", "AutoIt", "@ScriptDir", 0, @ScriptDir)
+_11e("", "AutoIt", "@ScriptFullPath", 0, @ScriptFullPath)
+_11e("", "AutoIt", "@WorkingDir", 0, @WorkingDir)
+_11e("", "AutoIt", "@AutoItExe", 0, @AutoItExe)
+_11e("", "AutoIt", "@AutoItPID", 0, @AutoItPID)
+_11e("", "AutoIt", "@AutoItVersion", 0, @AutoItVersion)
+_11e("", "AutoIt", "@AutoItX64", 0, @AutoItX64)
+_11e("", "Directory", "@AppDataCommonDir", 0, @AppDataCommonDir)
+_11e("", "Directory", "@DesktopCommonDir", 0, @DesktopCommonDir)
+_11e("", "Directory", "@DocumentsCommonDir", 0, @DocumentsCommonDir)
+_11e("", "Directory", "@FavoritesCommonDir", 0, @FavoritesCommonDir)
+_11e("", "Directory", "@ProgramsCommonDir", 0, @ProgramsCommonDir)
+_11e("", "Directory", "@StartMenuCommonDir", 0, @StartMenuCommonDir)
+_11e("", "Directory", "@StartupCommonDir", 0, @StartupCommonDir)
+_11e("", "Directory", "@AppDataDir", 0, @AppDataDir)
+_11e("", "Directory", "@LocalAppDataDir", 0, @LocalAppDataDir)
+_11e("", "Directory", "@DesktopDir", 0, @DesktopDir)
+_11e("", "Directory", "@MyDocumentsDir", 0, @MyDocumentsDir)
+_11e("", "Directory", "@FavoritesDir", 0, @FavoritesDir)
+_11e("", "Directory", "@ProgramsDir", 0, @ProgramsDir)
+_11e("", "Directory", "@StartMenuDir", 0, @StartMenuDir)
+_11e("", "Directory", "@UserProfileDir", 0, @UserProfileDir)
+_11e("", "Directory", "@HomeDrive", 0, @HomeDrive)
+_11e("", "Directory", "@HomePath", 0, @HomePath)
+_11e("", "Directory", "@HomeShare", 0, @HomeShare)
+_11e("", "Directory", "@LogonDNSDomain", 0, @LogonDNSDomain)
+_11e("", "Directory", "@LogonDomain", 0, @LogonDomain)
+_11e("", "Directory", "@LogonServer", 0, @LogonServer)
+_11e("", "Directory", "@ProgramFilesDir", 0, @ProgramFilesDir)
+_11e("", "Directory", "@CommonFilesDir", 0, @CommonFilesDir)
+_11e("", "Directory", "@WindowsDir", 0, @WindowsDir)
+_11e("", "Directory", "@SystemDir", 0, @SystemDir)
+_11e("", "Directory", "@TempDir", 0, @TempDir)
+_11e("", "Directory", "@ComSpec", 0, @ComSpec)
+_11e("", "SystemInfo", "@CPUArch", 0, @CPUArch)
+_11e("", "SystemInfo", "@KBLayout", 0, @KBLayout)
+_11e("", "SystemInfo", "@MUILang", 0, @MUILang)
+_11e("", "SystemInfo", "@OSArch", 0, @OSArch)
+_11e("", "SystemInfo", "@OSLang", 0, @OSLang)
+_11e("", "SystemInfo", "@OSType", 0, @OSType)
+_11e("", "SystemInfo", "@OSVersion", 0, @OSVersion)
+_11e("", "SystemInfo", "@OSBuild", 0, @OSBuild)
+_11e("", "SystemInfo", "@OSServicePack", 0, @OSServicePack)
+_11e("", "SystemInfo", "@ComputerName", 0, @ComputerName)
+_11e("", "SystemInfo", "@UserName", 0, @UserName)
+_11e("", "SystemInfo", "@IPAddress1", 0, @IPAddress1)
+_11e("", "SystemInfo", "@IPAddress2", 0, @IPAddress2)
+_11e("", "SystemInfo", "@IPAddress3", 0, @IPAddress3)
+_11e("", "SystemInfo", "@IPAddress4", 0, @IPAddress4)
+_11e("", "SystemInfo", "@DesktopHeight", 0, @DesktopHeight)
+_11e("", "SystemInfo", "@DesktopWidth", 0, @DesktopWidth)
+_11e("", "SystemInfo", "@DesktopDepth", 0, @DesktopDepth)
+_11e("", "SystemInfo", "@DesktopRefresh", 0, @DesktopRefresh)
+EndFunc
+Func _11e($d8, $d9, $da, $db, $dc)
+If $d8 = "" Then
+$d8 = $ap & $d9 & ".ini"
+EndIf
+IniWrite($d8,($db ? $d9 & $da : $da), $8g, $dc)
+IniWrite($ax, $d9, $da, $dc)
+EndFunc
+Func _11f()
+_11g($8m, $8n, $8o, $8p)
+_11g("KPSInfo.exe", $8q, $8r, $8s)
+$bj = _11g($bt, $bu, $bv & $ce, $bw)
+EndFunc
+Func _11g($dd, $de, $df, $dg, $dh = @SW_HIDE)
+If $dg And Not ProcessExists($dd) Then
+_113($dd & " wird gestartet")
+Return Run($df, $de, $dh)
+EndIf
+Return 0
+EndFunc
+Func _11i()
+If _11j() And @Compiled Then
+DirRemove($bc, 1)
+_11k($bb, $bc)
+FileDelete($bc & "\Downloads alt.lnk")
+FileCreateShortcut($bc, $bb & "\Downloads alt")
+IniWrite($9q, "Downloads", "LastCleaningDate", _q7(@YEAR, @MON, @MDAY))
+Local Const $di = '' & 'Wenn Sie noch wichtige Dateien im Ordner "Downloads" aufbewahren, die Sie benötigen, kopieren Sie diese bitte an einen anderen Ort.' & @CRLF & 'Alle Dateien aus dem Ordner "Downloads" wurden bereits in den Ordner "Downloads alt" verschoben.' & @CRLF & 'Der Ordner "Downloads alt" ist über eine Verknüpfung in "Downloads" zu erreichen.' & @CRLF & 'Alle Ihre Dateien die im Ordner "Downloads alt" bleiben, werden demnächst unwiderruflich GELÖSCHT!' & @CRLF & 'Bitte sichten und sichern Sie am besten jetzt sofort Ihre weiterhin benötigten Dateien.' & @CRLF & 'Soll der Ordner "Downloads alt" jetzt geöffnet werden?' & @CRLF
+If MsgBox(4 + 48 + 4096, "ACHTUNG WICHTIG! LÖSCHUNG IHRER DOWNLOAD-DATEIEN", $di, $87) = 6 Then
+ShellExecute($bc)
+EndIf
+EndIf
+EndFunc
+Func _11j()
+Return(_q7(@YEAR, @MON, @MDAY) - _11l()) >= 14
+EndFunc
+Func _11k($dj, $dk)
+If FileExists($dj) Then
+If Not FileExists($dk) Then DirCreate($dk)
+FileMove($dj & "\*.*", $dk, 1 + 8)
+Local Const $dl = _sf($dj, Default, 2, True)
+If Not @error Then
+For $dm In $dl
+DirMove($dm, $dk, 1)
+Next
+EndIf
+EndIf
+EndFunc
+Func _11l()
+Return IniRead($9q, "Downloads", "LastCleaningDate", "NULL")
+EndFunc
+Func _11n()
+Local Const $dn = DriveGetLabel(@HomeDrive & "\")
+Local Const $do = DriveSpaceFree(@HomeDrive & "\")
+Local Const $dp = DriveSpaceTotal(@HomeDrive & "\")
+Local Const $dq =($do / $dp) * 100
+If $dq < $bf Then
+If(_q7(@YEAR, @MON, @MDAY) - IniRead($9q, "FreeSpaceCheck", "LastMailSendDate", "NULL")) >= 1 Then
+IniWrite($9q, "FreeSpaceCheck", "LastMailSendDate", _q7(@YEAR, @MON, @MDAY))
+For $2k = 0 To 9 Step 1
+If $bg[$2k][0] <> "" And $bg[$2k][1] = 1 Then
+_113("Sending Mail to " & $bg[$2k][0])
+_11o($bg[$2k][0], Round($dq, 2), $dn, $do, $dp)
 Sleep(3000)
 EndIf
 Next
 EndIf
 EndIf
 EndFunc
-Func _116($6r, $cq, $cn, $co, $cp)
-Local $6p = "akk.exe (Gerrit)"
-Local $6q = "akk@kuechen-brauckhoff.de"
-Local $6s = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $cq & "% !"
-Local $cr[0]
-_yf($cr, "Akk Warnung wenig Speicherplatz auf:")
-_yf($cr, @ComputerName)
-If @IPAddress1 <> "0.0.0.0" Then _yf($cr, @IPAddress1)
-If @IPAddress2 <> "0.0.0.0" Then _yf($cr, @IPAddress2)
-If @IPAddress3 <> "0.0.0.0" Then _yf($cr, @IPAddress3)
-If @IPAddress4 <> "0.0.0.0" Then _yf($cr, @IPAddress4)
-_yf($cr, $cn & " (" & @HomeDrive & ")")
-_yf($cr, Round($co / 1024, 2) & " GB frei von " & Round($cp / 1024, 2) & " GB")
-_yf($cr, $cq & "% frei")
-Local $cs = _10f($al, $6p, $6q, $6r, $6s, $cr, $am, -1, 0)
-Local $ct = @error
-If $cs = 0 Then
-Local Const $ci = '' & 'DIE FESTPLATTE IST FAST VOLL!' & @CRLF & @CRLF & 'Bitte Herrn Heger bescheid geben:' & @CRLF & 'heger@easyconnectit.de' & @CRLF & 'oder 0176 23984427' & @CRLF & @CRLF & _z6($cr, @CRLF) & @CRLF & @CRLF & 'Mail failed with error code ' & $ct & @CRLF
-MsgBox(48 + 4096, "Warnung!", $ci)
+Func _11o($7d, $dq, $dn, $do, $dp)
+Local $7b = "akk.exe (Gerrit)"
+Local $7c = "akk@kuechen-brauckhoff.de"
+Local $7e = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $dq & "% !"
+Local $dr[0]
+_nb($dr, "Akk Warnung wenig Speicherplatz auf:")
+_nb($dr, @ComputerName)
+If @IPAddress1 <> "0.0.0.0" Then _nb($dr, @IPAddress1)
+If @IPAddress2 <> "0.0.0.0" Then _nb($dr, @IPAddress2)
+If @IPAddress3 <> "0.0.0.0" Then _nb($dr, @IPAddress3)
+If @IPAddress4 <> "0.0.0.0" Then _nb($dr, @IPAddress4)
+_nb($dr, $dn & " (" & @HomeDrive & ")")
+_nb($dr, Round($do / 1024, 2) & " GB frei von " & Round($dp / 1024, 2) & " GB")
+_nb($dr, $dq & "% frei")
+Local $ds = _10n($bd, $7b, $7c, $7d, $7e, $dr, $be, -1, 0)
+Local $dt = @error
+If $ds = 0 Then
+Local Const $di = '' & 'DIE FESTPLATTE IST FAST VOLL!' & @CRLF & @CRLF & 'Bitte Herrn Heger bescheid geben:' & @CRLF & 'heger@easyconnectit.de' & @CRLF & 'oder 0176 23984427' & @CRLF & @CRLF & _o2($dr, @CRLF) & @CRLF & @CRLF & 'Mail failed with error code ' & $dt & @CRLF
+MsgBox(48 + 4096, "Warnung!", $di)
 EndIf
 EndFunc
-Func _117($cu)
-Local $cv = ProcessList($cu)
-Local $6e = "", $6f = "", $1x = "", $6g = ""
-_zy($cu, $6e, $6f, $1x, $6g)
-Local $cw = 'akk_process_count{computername="@ComputerName@",process="' & $1x & '"} ' & $cv[0][0]
-Return $cw
+Func _11p($du)
+Return Round($du / 1024 / 1024, 2)
 EndFunc
-Func _118()
-If $aq And ProcessExists($b2) Then
-$ap = InetGet("http://localhost:9182/metrics", $a8, 1, 1)
-$aq = 0
+Func _11q(ByRef $dv, $dw, $dx, $dy = 0, $dz = "")
+Local Static $e0 = 0
+$e0 += 1
+Local Const $e1 = "Metric read from C:\\Brauckhoff\\wmi_exporter\\textfile_inputs\\metadata.prom"
+Local $e2[]
+Local $e3[]
+$e2.Name = $dw & "+" & $e0
+$e2.Type = $dx
+$e2.Value = $dy
+$e2.Text =($dz = "" ? $e1 : $dz)
+$e2.Labels = $e3
+$dv[$e2.Name] = $e2
+Return $e2.Name
+EndFunc
+Func _11r($e4)
+Local $e2[]
+Local $e5 = ProcessList($e4)
+Local $6h = "", $6i = "", $2b = "", $6j = ""
+_ss($e4, $6h, $6i, $2b, $6j)
+$e2.Count = $e5[0][0]
+$e2.FileName = $2b
+Return $e2
+EndFunc
+Func _11s()
+If $bi And ProcessExists($bt) Then
+$bh = InetGet("http://localhost:9182/metrics", $b0, 1, 1)
+$bi = 0
 EndIf
 EndFunc
-Func _119()
-If Not $aq Then
-If InetGetInfo($ap, 2) Then
-If InetGetInfo($ap, 3) Then
-If FileGetSize($a8) Then FileCopy($a8, $ab, 1 + 8)
+Func _11t()
+If Not $bi Then
+If InetGetInfo($bh, 2) Then
+If InetGetInfo($bh, 3) Then
+If FileGetSize($b0) Then FileCopy($b0, $b3, 1 + 8)
 Else
-FileDelete($a8)
-_10k("Error ScrapeDownload")
+FileDelete($b0)
+_113("Error ScrapeDownload")
 EndIf
-InetClose($ap)
-$ap = 0
-$aq = 1
-EndIf
-EndIf
-EndFunc
-Func _11a()
-If Not $ay Then
-If FileCopy($b0, $ax, 1 + 8) Then
-$ay = FileExists($ax)
+InetClose($bh)
+$bh = 0
+$bi = 1
 EndIf
 EndIf
 EndFunc
-Func _11b()
-ProcessClose($b2)
-If Not $b5 Then
-Local $cx =(@OSArch = "X64") ? $bc : $b8
-If FileCopy($cx, $b4, 1 + 8) Then
-$b5 = FileExists($b4)
+Func _11u()
+If Not $bp Then
+If FileCopy($br, $bo, 1 + 8) Then
+$bp = FileExists($bo)
 EndIf
-EndIf
-If Not FileExists($bf) Then DirCreate($bf)
-EndFunc
-Func _11c()
-Local $cy = 'akk_metadata{computername="@ComputerName@",username="@UserName@"' & ',netphone_user="' &($7s = "LockScreen" ? "LockScreen" : $7r) & '"'
-If $bj <> "NULL" And StringLen($bj) And Not StringIsSpace($bj) Then
-$cy &= "," & $bj
-EndIf
-$cy &= '} 1'
-$as = _xa()
-Local $cz = 'akk_idletime_sec{computername="@ComputerName@"} ' & $as / 1e3
-Local $d0 = MemGetStats()
-Local $d1 = 'akk_memstats_load{computername="@ComputerName@"} ' & $d0[$36]
-Local $d2 = 'akk_memstats_total_physram_gb{computername="@ComputerName@"} ' & Round($d0[$37] / 1024 / 1024, 2)
-Local $d3 = 'akk_memstats_avail_physram_gb{computername="@ComputerName@"} ' & Round($d0[$38] / 1024 / 1024, 2)
-Local $d4 = 'akk_memstats_total_pagefile_gb{computername="@ComputerName@"} ' & Round($d0[$39] / 1024 / 1024, 2)
-Local $d5 = 'akk_memstats_avail_pagefile_gb{computername="@ComputerName@"} ' & Round($d0[$3a] / 1024 / 1024, 2)
-Local $d6 = 'akk_memstats_total_virtual_gb{computername="@ComputerName@"} ' & Round($d0[$3b] / 1024 / 1024, 2)
-Local $d7 = 'akk_memstats_avail_virtual_gb{computername="@ComputerName@"} ' & Round($d0[$3c] / 1024 / 1024, 2)
-Local $d8 = 'akk_eventlog_full{computername="@ComputerName@"} ' &($at ? 1 : 0)
-Local $d9 = 'akk_eventlog_count{computername="@ComputerName@"} ' & $au
-Local $da = 'akk_eventlog_oldest{computername="@ComputerName@"} ' & $av
-Local $db = _117("chrome.exe")
-Local $dc = _117("javaw.exe")
-Local $dd = _117("FusionFX.exe")
-$bk[1] = $cy
-$bk[2] = $cz
-$bk[3] = $d1
-$bk[4] = $d2
-$bk[5] = $d3
-$bk[6] = $d4
-$bk[7] = $d5
-$bk[8] = $d6
-$bk[9] = $d7
-$bk[10] = $d8
-$bk[11] = $d9
-$bk[12] = $da
-$bk[13] = $db
-$bk[14] = $dc
-$bk[15] = $dd
-$bk[0] = UBound($bk) - 1
-_zr($bh, $bl)
-If Not _11d($bk, $bl, 3) Then
-_zs($bh, $bk, 1)
 EndIf
 EndFunc
-Func _11d(Const ByRef $de, Const ByRef $df, $dg = 0)
-If Not(IsArray($de)) Or Not(IsArray($df)) Then
-Return SetError(1, 0, 0)
+Func _11v()
+ProcessClose($bt)
+Local $e6 =(@OSArch = "X64") ? $c3 : $bz
+Local $e7 = FileGetTime($bv, 0, 1)
+Local $e8 = FileGetTime($e6, 0, 1)
+If Not $bw Or $e7 <> $e8 Then
+_113("Reload WmiExporter " & $e6)
+If FileCopy($e6, $bv, 1 + 8) Then
+$bw = FileExists($bv)
+Else
+_113("ERROR Reload WmiExporter " & $e6)
 EndIf
-Local $66 = UBound($de, 0)
-If $66 <> UBound($df, 0) Then
-Return SetError(2, 0, 0)
 EndIf
-Local $dh = UBound($de, 1)
-Local $di = UBound($de, 2)
-If $dh <> UBound($df, 1) Or $di <> UBound($df, 2) Then
-Return SetError(3, 0, 0)
-EndIf
-Local $dj, $dk
-Switch $dg
-Case 0
-For $26 = 0 To $dh - 1
-For $5e = 0 To $di - 1
-If $de[$26][$5e] <> $de[$26][$5e] Then
-Return SetError(4, 0, 0)
-EndIf
-Next
-Next
-Case 1
-For $26 = 0 To $dh - 1
-For $5e = 0 To $di - 1
-$dj &= $de[$26][$5e]
-$dk &= $df[$26][$5e]
-Next
-If $dj <> $dk Then
-Return SetError(4, 0, 0)
-EndIf
-Next
-Case 2
-For $5e = 0 To $di - 1
-For $26 = 0 To $dh - 1
-$dj &= $de[$26][$5e]
-$dk &= $df[$26][$5e]
-Next
-If $dj <> $dk Then
-Return SetError(4, 0, 0)
-EndIf
-Next
-Case 3
-If _z6($de) <> _z6($df) Then
-Return SetError(4, 0, 0)
-EndIf
-EndSwitch
-Return 1
+If Not FileExists($c6) Then DirCreate($c6)
 EndFunc
-Func _11e()
-Local $dl[2] = ["(Unknown)", "(Unknown)"], $dm, $dn
-$dn = ObjGet("winmgmts:\\.\root\cimv2")
-$dm = $dn.ExecQuery("Select * From Win32_ComputerSystemProduct", "WQL", 0x30)
-If IsObj($dm) Then
-For $do In $dm
-$dl[0] = $do.Name
-$dl[1] = $do.IdentifyingNumber
-Next
-Return $dl
+Func _11w()
+_114()
+Local $e9[]
+Local $dw = _11q($e9, "akk_metadata", "gauge", _zv() / 1e3)
+$e9[$dw].Labels.username = @UserName
+$e9[$dw].Labels.ip_address = @IPAddress1
+$e9[$dw].Labels.netphone_user =($8k = "LockScreen" ? "LockScreen" : $8j)
+If $cd <> "NULL" And StringLen($cd) And Not StringIsSpace($cd) Then
+$e9[$dw].LabelsRaw = $cd
 EndIf
-Return SetError(1, 0, $dl)
+Local $ea = MemGetStats()
+_11q($e9, "akk_idletime_sec", "gauge", _zv() / 1e3, "Returns the number of seconds since last user activity (i.e. KYBD/Mouse)")
+_11q($e9, "akk_memstats_load", "gauge", $ea[$cf], "Memory Load (Percentage of memory in use)")
+_11q($e9, "akk_memstats_total_physram_gb", "gauge", _11p($ea[$cg]), "Total physical RAM")
+_11q($e9, "akk_memstats_avail_physram_gb", "gauge", _11p($ea[$ch]), "Available physical RAM")
+_11q($e9, "akk_memstats_total_pagefile_gb", "gauge", _11p($ea[$ci]), "Total Pagefile")
+_11q($e9, "akk_memstats_avail_pagefile_gb", "gauge", _11p($ea[$cj]), "Available Pagefile")
+_11q($e9, "akk_memstats_total_virtual_gb", "gauge", _11p($ea[$ck]), "Total virtual")
+_11q($e9, "akk_memstats_avail_virtual_gb", "gauge", _11p($ea[$cl]), "Available virtual")
+_11q($e9, "akk_eventlog_full", "gauge",($bk ? 1 : 0), "Retrieves whether the event log is full")
+_11q($e9, "akk_eventlog_count", "gauge", $bl, "Retrieves the number of records in the event log")
+_11q($e9, "akk_eventlog_oldest", "gauge", $bm, "Retrieves the absolute record number of the oldest record in the event log")
+Local $eb = _11r("chrome.exe")
+$dw = _11q($e9, "akk_process_count", "gauge", $eb.Count)
+$e9[$dw].Labels.process = $eb.FileName
+Local $ec = _11r("javaw.exe")
+$dw = _11q($e9, "akk_process_count", "gauge", $ec.Count)
+$e9[$dw].Labels.process = $ec.FileName
+Local $ed = _11r("FusionFX.exe")
+$dw = _11q($e9, "akk_process_count", "gauge", $ed.Count)
+$e9[$dw].Labels.process = $ed.FileName
+Local $ee[1]
+Local $ef = "", $eg = ""
+Local $eh
+For $dv In $e9
+$dw = StringSplit($dv.Name, "+")[1]
+If $ef <> $dw Then
+_nb($ee, "# HELP " & $dw & " " & $dv.Text)
+_nb($ee, "# TYPE " & $dw & " " & $dv.Type)
+EndIf
+$eh = MapKeys($dv.Labels)
+$eg = ""
+If UBound($eh) Then
+$eg &= "{"
+For $ei In $eh
+$eg &= $ei & '="' & $dv.Labels[$ei] & '",'
+Next
+If MapExists($dv, "LabelsRaw") Then
+$eg &= $dv.LabelsRaw
+EndIf
+If StringRight($eg, 1) = "," Then $eg = StringTrimRight($eg, 1)
+$eg &= "}"
+EndIf
+_nb($ee, $dw & $eg & " " & $dv.Value)
+$ef = $dw
+Next
+$ee[0] = UBound($ee) - 1
+Local $ej
+_sl($c8, $ej)
+If Not _oh($ee, $ej, 3) Then
+_sm($c8, $ee, 1)
+EndIf
+EndFunc
+Func _11x()
+Local $ek[1]
+_nb($ek, '[')
+_nb($ek, '  {')
+_nb($ek, '    "labels": {')
+_nb($ek, '      "job": "node",')
+_nb($ek, '      "instance": "@ComputerName@"')
+_nb($ek, '    },')
+_nb($ek, '    "targets": [')
+_nb($ek, '      "@IPAddress1@:9182"')
+_nb($ek, '    ]')
+_nb($ek, '  }')
+_nb($ek, ']')
+Local $el
+$ek[0] = UBound($ek) - 1
+Local $em = $ca & "@ComputerName@.json"
+_sl($em, $el)
+If Not _oh($ek, $el, 3) Then
+_sm($em, $ek, 1)
+EndIf
+EndFunc
+Func _11y()
+Local $en[2] = ["(Unknown)", "(Unknown)"], $eo, $ep
+$ep = ObjGet("winmgmts:\\.\root\cimv2")
+$eo = $ep.ExecQuery("Select * From Win32_ComputerSystemProduct", "WQL", 0x30)
+If IsObj($eo) Then
+For $eq In $eo
+$en[0] = StringStripWS($eq.Name, 1 + 2)
+$en[1] = StringStripWS($eq.IdentifyingNumber, 1 + 2)
+Next
+Return $en
+EndIf
+Return SetError(1, 0, $en)
 EndFunc
