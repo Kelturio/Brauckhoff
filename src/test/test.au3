@@ -2,6 +2,43 @@
 #include <array.au3>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+exit
+
+
 $file = @ScriptDir & '\test.ini'
 _IniSort($file)
 
