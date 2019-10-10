@@ -5,7 +5,7 @@
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.109
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.112
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -26,7 +26,7 @@
 #Au3Stripper_Parameters=/tl /debug /pe /mi=99 /rm /rsln /Beta
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #cs ----------------------------------------------------------------------------
-
+   
 #ce ----------------------------------------------------------------------------
 ;~ #include <AutoItConstants.au3>
 ;~ #include <MsgBoxConstants.au3>
@@ -141,6 +141,11 @@ Global Const $NetPhoneClientFileName = "NetPhone Client.exe"
 Global Const $NetPhoneClientDir = @ProgramFilesDir & "\NetPhone Client\"
 Global Const $NetPhoneClientPath = $NetPhoneClientDir & $NetPhoneClientFileName
 Global Const $NetPhoneClientExists = FileExists($NetPhoneClientPath)
+
+Global Const $EcoroKpsButlerFileName = "ppRemoteEcoroTray.exe"
+Global Const $EcoroKpsButlerDir = @ProgramFilesDir & "\SHD Ecoro-KPS-Butler\"
+Global Const $EcoroKpsButlerPath = $EcoroKpsButlerDir & $EcoroKpsButlerFileName
+Global Const $EcoroKpsButlerExists = FileExists($EcoroKpsButlerPath)
 #EndRegion Globals 1
 #Region Globals 2
 Global Const $RootFileName = ""
@@ -388,7 +393,7 @@ ReadLocalConfig()
 
 ManageLogFile()
 
-ConsoleLog("akk.exe läuft Spawn, KPSInfo & WMI Exporter werden überwacht")
+ConsoleLog("akk.exe läuft Spawn, KPSInfo, KPS Butler & WMI Exporter werden überwacht")
 ;~ ConsoleLog($SpawnPath)
 ;~ ConsoleLog($KPSInfoPath)
 ;~ ConsoleLog($WmiExporterLocalPath)
@@ -588,7 +593,14 @@ Func ScreenCaptureNetPhoneClient()
         $aPos[3] = $aPos[1] + 15
         WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneClientPos", 0, _ArrayToString($aPos))
         $NetPhoneUserChecksum = PixelChecksum($aPos[0], $aPos[1], $aPos[2], $aPos[3], 1, Default, 1)
-        If Not FileExists($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png") _
+        Local $aColorsGrey[13] = [0x535353, 0x525252, 0x515151, 0x505050, 0x4F4F4F, 0x4D4D4D, 0x4C4C4C, 0x4B4B4B, 0x4A4A4A, 0x494949, 0x484848, 0x474747, 0x464646]
+        Local $iCount = 0
+        For $iColor In $aColorsGrey
+            PixelSearch($aPos[0], $aPos[1], $aPos[2], $aPos[3], $iColor)
+            If Not @error Then $iCount += 1
+        Next
+        If $iCount > 4 _
+                And Not FileExists($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png") _
                 And Not FileExists($LogScreenCapNetDir & "del\" & $NetPhoneUserChecksum & ".png") _
                 And Not FileExists($LogScreenCapNetDir & "ini\" & $NetPhoneUserChecksum & ".png") Then
             _ScreenCapture_Capture($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png", $aPos[0], $aPos[1], $aPos[2], $aPos[3], 0)
@@ -650,6 +662,7 @@ Func WriteLogStartup()
     WriteLogStartupIni("", "Global", "$PowerkatalogExists", 0, $PowerkatalogExists)
     WriteLogStartupIni("", "Global", "$SHDUpdaterExists", 0, $SHDUpdaterExists)
     WriteLogStartupIni("", "Global", "$NetPhoneClientExists", 0, $NetPhoneClientExists)
+    WriteLogStartupIni("", "Global", "$EcoroKpsButlerExists", 0, $EcoroKpsButlerExists)
     WriteLogStartupIni("", "Global", "$ActiveWinTitle", 0, $ActiveWinTitle)
     WriteLogStartupIni("", "Global", "$hWndActivePid", 0, $hWndActivePid)
 
@@ -744,6 +757,7 @@ Func Check()
     CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
     CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
     $WmiExporter1PID = CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
+    CheckAndRunProc($EcoroKpsButlerFileName, $EcoroKpsButlerDir, $EcoroKpsButlerPath, $EcoroKpsButlerExists)
 ;~     CheckAndRunProcAs($PowerkatalogFileName, $PowerkatalogDir, $PowerkatalogPath, $PowerkatalogExists, "Administrator", "Brauckhoff", "")
 ;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
 EndFunc   ;==>Check
