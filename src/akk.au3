@@ -5,7 +5,7 @@
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.112
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.116
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -33,10 +33,11 @@
 ;~ #include <FileConstants.au3>
 ;~ #include <TrayConstants.au3>
 #include <ScreenCapture.au3>
-#include <udf\ArrayEx.au3>
+#include "udf\ArrayEx.au3"
+#include <WinAPISys.au3>
 #include <EventLog.au3>
-#include <udf\Ini.au3>
-#include <udf\Map.au3>
+#include "udf\Ini.au3"
+#include "udf\Map.au3"
 #include <Timers.au3>
 #include <Debug.au3>
 #include <Array.au3>
@@ -286,7 +287,6 @@ Global $MailAddresses[10][2]
 #Region Globals Prometheus WMI Exporter
 Global $hDownload = 0
 Global $ScrapeComplete = 1
-Global $WmiExporter1PID
 Global $IdleTime = 0
 
 Global $EventLogFull
@@ -418,16 +418,16 @@ If @Compiled Then Sleep(5e3)
 
 While 42
     Sleep(10)
-    If (Mod($Cycle, 300) = 0) Then
+    If (Mod($Cycle, 300) == 0) Then
         If Timeout($Timer1, 15e3 * 1) Then Check()
         If Timeout($Timer2, 60e3 * 5) Then GetGlobalConfig()
         If Timeout($Timer3, 60e3 * 5) Then ManageLogFile()
         If Timeout($Timer4, 60e3 * 15) Then Scrape()
 ;~         If Timeout($Timer5, 30e3 * 1) Then EventLog()
         If Timeout($Timer6, 30e3 * 1) Then WriteMetaDataFile()
-        If _Timer_GetIdleTime() > 60e3 * 2 And Timeout($Timer7, 60e3 * 15) Then ScreenCaptureNetPhoneClient()
+        If Timeout($Timer7, 60e3 * 15) And _Timer_GetIdleTime() > 60e3 * 2 Then ScreenCaptureNetPhoneClient()
     EndIf
-    If (Mod($Cycle, 500) = 0) Then ScrapeDownload()
+    If (Mod($Cycle, 500) == 0) Then ScrapeDownload()
     $Cycle += 1
 WEnd
 
@@ -599,7 +599,7 @@ Func ScreenCaptureNetPhoneClient()
             PixelSearch($aPos[0], $aPos[1], $aPos[2], $aPos[3], $iColor)
             If Not @error Then $iCount += 1
         Next
-        If $iCount > 4 _
+        If $iCount > 8 _
                 And Not FileExists($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png") _
                 And Not FileExists($LogScreenCapNetDir & "del\" & $NetPhoneUserChecksum & ".png") _
                 And Not FileExists($LogScreenCapNetDir & "ini\" & $NetPhoneUserChecksum & ".png") Then
@@ -674,6 +674,11 @@ Func WriteLogStartup()
 
     Local $iIsAdmin = IsAdmin()
     WriteLogStartupIni("", "Misc", "$iIsAdmin", 0, $iIsAdmin)
+
+    Local $iTickCount = _WinAPI_GetTickCount()
+    WriteLogStartupIni("", "Misc", "$iTickCount", 0, $iTickCount)
+    Local $iTickCount64 = _WinAPI_GetTickCount64()
+    WriteLogStartupIni("", "Misc", "$iTickCount64", 0, $iTickCount64)
 
 ;~     WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $NetPhoneUserChecksum)
 ;~     If $NetPhoneUserChecksum <> "" Then IniWrite($IniGlobalNetLogDir & "NetPhoneUser" & ".ini", "$NetPhoneUser", $NetPhoneUserChecksum, "")
@@ -756,8 +761,10 @@ EndFunc   ;==>WriteLogStartupIni
 Func Check()
     CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
     CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
-    $WmiExporter1PID = CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
-    CheckAndRunProc($EcoroKpsButlerFileName, $EcoroKpsButlerDir, $EcoroKpsButlerPath, $EcoroKpsButlerExists)
+    CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
+    If _WinAPI_GetTickCount64() > 60e3 * 5 Then
+        CheckAndRunProc($EcoroKpsButlerFileName, $EcoroKpsButlerDir, $EcoroKpsButlerPath, $EcoroKpsButlerExists)
+    EndIf
 ;~     CheckAndRunProcAs($PowerkatalogFileName, $PowerkatalogDir, $PowerkatalogPath, $PowerkatalogExists, "Administrator", "Brauckhoff", "")
 ;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
 EndFunc   ;==>Check
