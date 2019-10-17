@@ -5,7 +5,7 @@
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.116
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.118
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -579,8 +579,10 @@ Func ScreenCaptureNetPhoneClient()
     Local $hWndActive = ScreenCaptureWnd()
     Local $hWnd = WinGetHandle("NetPhone Client")
     If @error Then
-        If ProcessExists($NetPhoneClientFileName) Then ConsoleLog("Error ScreenCaptureNetPhoneClient")
-    Else
+        $hWnd = WinGetHandle("NetPhone Client (CTI)")
+        If @error And ProcessExists($NetPhoneClientFileName) Then ConsoleLog("Error ScreenCaptureNetPhoneClient")
+    EndIf
+    If $hWnd Then
         Local $iState = WinGetState($hWnd)
         If $ScreenCaptureWinActivate Then
             WinActivate($hWnd)
@@ -617,13 +619,15 @@ Func ScreenCaptureWnd()
     Local $List = GetWinList()
     Local $hWnd
     Local $hWndActive
+    Local $sTitle
     For $i = 1 To $List[0][0]
         If $List[$i][0] <> "" Then
             If $List[$i][2] = $WIN_STATE_ACTIVE Then
                 $ActiveWinTitle = $List[$i][0]
                 $hWndActive = $List[$i][1]
             EndIf
-            If $ScreenCaptureWnd & StringStripWS($List[$i][0], $STR_STRIPLEADING + $STR_STRIPTRAILING) = "NetPhone Client" Then
+            $sTitle = StringStripWS($List[$i][0], $STR_STRIPLEADING + $STR_STRIPTRAILING)
+            If $ScreenCaptureWnd And ($sTitle == "NetPhone Client" Or $sTitle == "NetPhone Client (CTI)") Then
                 $hWnd = HWnd($List[$i][1])
                 If WinActivate($hWnd) Then
                     _ScreenCapture_CaptureWnd($LogScreenCapDir & $i & ".png", $hWnd)
@@ -750,9 +754,8 @@ Func WriteLogStartup()
 EndFunc   ;==>WriteLogStartup
 
 Func WriteLogStartupIni($FileName, $Section, $Key, $IsSectionAddedToKey, $Value)
-    If $FileName = "" Then
-        $FileName = $IniGlobalNetLogDir & $Section & ".ini"
-    EndIf
+    $FileName = (StringIsSpace($FileName) ? $IniGlobalNetLogDir & $Section & ".ini" : $FileName)
+    $Value = StringStripWS($Value, $STR_STRIPLEADING + $STR_STRIPTRAILING + $STR_STRIPSPACES)
     IniWrite($FileName, ($IsSectionAddedToKey ? $Section & $Key : $Key), $ComputerName, $Value)
     IniWrite($IniGlobalNetLogInstancePath, $Section, $Key, $Value)
 EndFunc   ;==>WriteLogStartupIni

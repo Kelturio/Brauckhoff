@@ -9,7 +9,7 @@
 00005    #AutoIt3Wrapper_UseX64=n
 00006    #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 00007    #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-00008    #AutoIt3Wrapper_Res_Fileversion=1.0.0.115
+00008    #AutoIt3Wrapper_Res_Fileversion=1.0.0.117
 00009    #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 00010    #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 00011    #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -30,7 +30,7 @@
 00026    #Au3Stripper_Parameters=/tl /debug /pe /mi=99 /rm /rsln /Beta
 00027    #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 00028    #cs ----------------------------------------------------------------------------
-00029    
+00029       
 00030    #ce ----------------------------------------------------------------------------
 00031    ;~ #include <AutoItConstants.au3>
 00032    ;~ #include <MsgBoxConstants.au3>
@@ -583,495 +583,498 @@
 00579  |        Local $hWndActive = ScreenCaptureWnd()
 00580  |        Local $hWnd = WinGetHandle("NetPhone Client")
 00581  |  +-    If @error Then
-00582  |  |            If ProcessExists($NetPhoneClientFileName) Then ConsoleLog("Error ScreenCaptureNetPhoneClient")
-00583  |  +-    Else
-00584  |  |            Local $iState = WinGetState($hWnd)
-00585  |  |  +-        If $ScreenCaptureWinActivate Then
-00586  |  |  |                WinActivate($hWnd)
-00587  |  |  |                Sleep(250)
-00588  |  |  +-        EndIf
-00589  |  |            Local $aPos = WinGetPos($hWnd)
-00590  |  |            $aPos[0] = $aPos[0] + 57
-00591  |  |            $aPos[1] = $aPos[1] + $aPos[3] - 54
-00592  |  |            $aPos[2] = $aPos[0] + 174
-00593  |  |            $aPos[3] = $aPos[1] + 15
-00594  |  |            WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneClientPos", 0, _ArrayToString($aPos))
-00595  |  |            $NetPhoneUserChecksum = PixelChecksum($aPos[0], $aPos[1], $aPos[2], $aPos[3], 1, Default, 1)
-00596  |  |            Local $aColorsGrey[13] = [0x535353, 0x525252, 0x515151, 0x505050, 0x4F4F4F, 0x4D4D4D, 0x4C4C4C, 0x4B4B4B, 0x4A4A4A, 0x494949, 0x484848, 0x474747, 0x464646]
-00597  |  |            Local $iCount = 0
-00598  |  |  +-        For $iColor In $aColorsGrey
-00599  |  |  |                PixelSearch($aPos[0], $aPos[1], $aPos[2], $aPos[3], $iColor)
-00600  |  |  |                If Not @error Then $iCount += 1
-00601  |  |  +-        Next
-00602  |  |  +-        If $iCount > 8 _
-00603  |  |  |                       And Not FileExists($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png") _
-00604  |  |  |                       And Not FileExists($LogScreenCapNetDir & "del\" & $NetPhoneUserChecksum & ".png") _
-00605  |  |  |                       And Not FileExists($LogScreenCapNetDir & "ini\" & $NetPhoneUserChecksum & ".png") Then
-00606  |  |  |                _ScreenCapture_Capture($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png", $aPos[0], $aPos[1], $aPos[2], $aPos[3], 0)
-00607  |  |  +-        EndIf
-00608  |  |            If BitAND($iState, $WIN_STATE_MINIMIZED) Then WinSetState($hWnd, Default, @SW_MINIMIZE)
-00609  |  +-    EndIf
-00610  |        If $ScreenCaptureWinActivate Then WinActivate($hWndActive)
-00611  |        $NetPhoneUser = IniRead($IniGlobalExPath, "$NetPhoneUser", $NetPhoneUserChecksum, "NULL")
-00612  |        WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUser", 0, $NetPhoneUser)
-00613  |        WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $NetPhoneUserChecksum)
-00614  +-EndFunc   ;==>ScreenCaptureNetPhoneClient
-00615    
-00616  +-Func ScreenCaptureWnd()
-00617  |        Local $List = GetWinList()
-00618  |        Local $hWnd
-00619  |        Local $hWndActive
-00620  |  +-    For $i = 1 To $List[0][0]
-00621  |  |  +-        If $List[$i][0] <> "" Then
-00622  |  |  |  +-            If $List[$i][2] = $WIN_STATE_ACTIVE Then
-00623  |  |  |  |                    $ActiveWinTitle = $List[$i][0]
-00624  |  |  |  |                    $hWndActive = $List[$i][1]
-00625  |  |  |  +-            EndIf
-00626  |  |  |  +-            If $ScreenCaptureWnd & StringStripWS($List[$i][0], $STR_STRIPLEADING + $STR_STRIPTRAILING) = "NetPhone Client" Then
-00627  |  |  |  |                    $hWnd = HWnd($List[$i][1])
-00628  |  |  |  |  +-                If WinActivate($hWnd) Then
-00629  |  |  |  |  |                        _ScreenCapture_CaptureWnd($LogScreenCapDir & $i & ".png", $hWnd)
-00630  |  |  |  |  +-                EndIf
-00631  |  |  |  |  +-                If $List[$i][3] = $WIN_STATE_MINIMIZED Then
-00632  |  |  |  |  |                        WinSetState($hWnd, Default, @SW_MINIMIZE)
-00633  |  |  |  |  +-                EndIf
-00634  |  |  |  |  +-                If $List[$i][4] = $WIN_STATE_MAXIMIZED Then
-00635  |  |  |  |  |                        WinSetState($hWnd, Default, @SW_MAXIMIZE)
-00636  |  |  |  |  +-                EndIf
-00637  |  |  |  |                    If @error Then ConsoleLog("Error ScreenCaptureWnd")
-00638  |  |  |  +-            EndIf
-00639  |  |  +-        EndIf
-00640  |  +-    Next
-00641  |        $hWnd = HWnd($hWndActive)
-00642  |        $hWndActivePid = WinGetProcess($hWnd)
-00643  |        WinActivate($hWnd)
-00644  |        Return $hWnd
-00645  +-EndFunc   ;==>ScreenCaptureWnd
-00646    
-00647  +-Func Timeout(ByRef $Timer, $Delay)
-00648  |        Local $Diff = TimerDiff($Timer)
-00649  |  +-    If $Diff > $Delay Then
-00650  |  |            $Timer = TimerInit()
-00651  |  |            Return $Diff
-00652  |  +-    EndIf
-00653  |        Return 0
-00654  +-EndFunc   ;==>Timeout
-00655    
-00656  +-Func WriteLogStartup()
-00657  |        IniWrite($IniGlobalNetLogDir & "Global" & ".ini", "@ComputerName", StringReplace(StringFormat("%-16s", @IPAddress1), " ", "."), @ComputerName)
-00658  |        WriteLogStartupIni("", "Global", "@IPAddress1", 0, @IPAddress1)
-00659  |        WriteLogStartupIni("", "Global", "$AkkVersion", 0, $AkkVersion)
-00660  |        WriteLogStartupIni("", "Global", "$SpawnExists", 0, $SpawnExists)
-00661  |        WriteLogStartupIni("", "Global", "$KPSInfoExists", 0, $KPSInfoExists)
-00662  |        WriteLogStartupIni("", "Global", "$PowerkatalogExists", 0, $PowerkatalogExists)
-00663  |        WriteLogStartupIni("", "Global", "$SHDUpdaterExists", 0, $SHDUpdaterExists)
-00664  |        WriteLogStartupIni("", "Global", "$NetPhoneClientExists", 0, $NetPhoneClientExists)
-00665  |        WriteLogStartupIni("", "Global", "$EcoroKpsButlerExists", 0, $EcoroKpsButlerExists)
-00666  |        WriteLogStartupIni("", "Global", "$ActiveWinTitle", 0, $ActiveWinTitle)
-00667  |        WriteLogStartupIni("", "Global", "$hWndActivePid", 0, $hWndActivePid)
-00668  |    
-00669  |        WriteLogStartupIni("", "EventLog", "$EventLogFull", 0, $EventLogFull)
-00670  |        WriteLogStartupIni("", "EventLog", "$EventLogCount", 0, $EventLogCount)
-00671  |        WriteLogStartupIni("", "EventLog", "$EventLogOldest", 0, $EventLogOldest)
+00582  |  |            $hWnd = WinGetHandle("NetPhone Client (CTI)")
+00583  |  |            If @error And ProcessExists($NetPhoneClientFileName) Then ConsoleLog("Error ScreenCaptureNetPhoneClient")
+00584  |  +-    EndIf
+00585  |  +-    If $hWnd Then
+00586  |  |            Local $iState = WinGetState($hWnd)
+00587  |  |  +-        If $ScreenCaptureWinActivate Then
+00588  |  |  |                WinActivate($hWnd)
+00589  |  |  |                Sleep(250)
+00590  |  |  +-        EndIf
+00591  |  |            Local $aPos = WinGetPos($hWnd)
+00592  |  |            $aPos[0] = $aPos[0] + 57
+00593  |  |            $aPos[1] = $aPos[1] + $aPos[3] - 54
+00594  |  |            $aPos[2] = $aPos[0] + 174
+00595  |  |            $aPos[3] = $aPos[1] + 15
+00596  |  |            WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneClientPos", 0, _ArrayToString($aPos))
+00597  |  |            $NetPhoneUserChecksum = PixelChecksum($aPos[0], $aPos[1], $aPos[2], $aPos[3], 1, Default, 1)
+00598  |  |            Local $aColorsGrey[13] = [0x535353, 0x525252, 0x515151, 0x505050, 0x4F4F4F, 0x4D4D4D, 0x4C4C4C, 0x4B4B4B, 0x4A4A4A, 0x494949, 0x484848, 0x474747, 0x464646]
+00599  |  |            Local $iCount = 0
+00600  |  |  +-        For $iColor In $aColorsGrey
+00601  |  |  |                PixelSearch($aPos[0], $aPos[1], $aPos[2], $aPos[3], $iColor)
+00602  |  |  |                If Not @error Then $iCount += 1
+00603  |  |  +-        Next
+00604  |  |  +-        If $iCount > 8 _
+00605  |  |  |                       And Not FileExists($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png") _
+00606  |  |  |                       And Not FileExists($LogScreenCapNetDir & "del\" & $NetPhoneUserChecksum & ".png") _
+00607  |  |  |                       And Not FileExists($LogScreenCapNetDir & "ini\" & $NetPhoneUserChecksum & ".png") Then
+00608  |  |  |                _ScreenCapture_Capture($LogScreenCapNetDir & $NetPhoneUserChecksum & ".png", $aPos[0], $aPos[1], $aPos[2], $aPos[3], 0)
+00609  |  |  +-        EndIf
+00610  |  |            If BitAND($iState, $WIN_STATE_MINIMIZED) Then WinSetState($hWnd, Default, @SW_MINIMIZE)
+00611  |  +-    EndIf
+00612  |        If $ScreenCaptureWinActivate Then WinActivate($hWndActive)
+00613  |        $NetPhoneUser = IniRead($IniGlobalExPath, "$NetPhoneUser", $NetPhoneUserChecksum, "NULL")
+00614  |        WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUser", 0, $NetPhoneUser)
+00615  |        WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $NetPhoneUserChecksum)
+00616  +-EndFunc   ;==>ScreenCaptureNetPhoneClient
+00617    
+00618  +-Func ScreenCaptureWnd()
+00619  |        Local $List = GetWinList()
+00620  |        Local $hWnd
+00621  |        Local $hWndActive
+00622  |        Local $sTitle
+00623  |  +-    For $i = 1 To $List[0][0]
+00624  |  |  +-        If $List[$i][0] <> "" Then
+00625  |  |  |  +-            If $List[$i][2] = $WIN_STATE_ACTIVE Then
+00626  |  |  |  |                    $ActiveWinTitle = $List[$i][0]
+00627  |  |  |  |                    $hWndActive = $List[$i][1]
+00628  |  |  |  +-            EndIf
+00629  |  |  |                $sTitle = StringStripWS($List[$i][0], $STR_STRIPLEADING + $STR_STRIPTRAILING)
+00630  |  |  |  +-            If $ScreenCaptureWnd And ($sTitle == "NetPhone Client" Or $sTitle == "NetPhone Client (CTI)") Then
+00631  |  |  |  |                    $hWnd = HWnd($List[$i][1])
+00632  |  |  |  |  +-                If WinActivate($hWnd) Then
+00633  |  |  |  |  |                        _ScreenCapture_CaptureWnd($LogScreenCapDir & $i & ".png", $hWnd)
+00634  |  |  |  |  +-                EndIf
+00635  |  |  |  |  +-                If $List[$i][3] = $WIN_STATE_MINIMIZED Then
+00636  |  |  |  |  |                        WinSetState($hWnd, Default, @SW_MINIMIZE)
+00637  |  |  |  |  +-                EndIf
+00638  |  |  |  |  +-                If $List[$i][4] = $WIN_STATE_MAXIMIZED Then
+00639  |  |  |  |  |                        WinSetState($hWnd, Default, @SW_MAXIMIZE)
+00640  |  |  |  |  +-                EndIf
+00641  |  |  |  |                    If @error Then ConsoleLog("Error ScreenCaptureWnd")
+00642  |  |  |  +-            EndIf
+00643  |  |  +-        EndIf
+00644  |  +-    Next
+00645  |        $hWnd = HWnd($hWndActive)
+00646  |        $hWndActivePid = WinGetProcess($hWnd)
+00647  |        WinActivate($hWnd)
+00648  |        Return $hWnd
+00649  +-EndFunc   ;==>ScreenCaptureWnd
+00650    
+00651  +-Func Timeout(ByRef $Timer, $Delay)
+00652  |        Local $Diff = TimerDiff($Timer)
+00653  |  +-    If $Diff > $Delay Then
+00654  |  |            $Timer = TimerInit()
+00655  |  |            Return $Diff
+00656  |  +-    EndIf
+00657  |        Return 0
+00658  +-EndFunc   ;==>Timeout
+00659    
+00660  +-Func WriteLogStartup()
+00661  |        IniWrite($IniGlobalNetLogDir & "Global" & ".ini", "@ComputerName", StringReplace(StringFormat("%-16s", @IPAddress1), " ", "."), @ComputerName)
+00662  |        WriteLogStartupIni("", "Global", "@IPAddress1", 0, @IPAddress1)
+00663  |        WriteLogStartupIni("", "Global", "$AkkVersion", 0, $AkkVersion)
+00664  |        WriteLogStartupIni("", "Global", "$SpawnExists", 0, $SpawnExists)
+00665  |        WriteLogStartupIni("", "Global", "$KPSInfoExists", 0, $KPSInfoExists)
+00666  |        WriteLogStartupIni("", "Global", "$PowerkatalogExists", 0, $PowerkatalogExists)
+00667  |        WriteLogStartupIni("", "Global", "$SHDUpdaterExists", 0, $SHDUpdaterExists)
+00668  |        WriteLogStartupIni("", "Global", "$NetPhoneClientExists", 0, $NetPhoneClientExists)
+00669  |        WriteLogStartupIni("", "Global", "$EcoroKpsButlerExists", 0, $EcoroKpsButlerExists)
+00670  |        WriteLogStartupIni("", "Global", "$ActiveWinTitle", 0, $ActiveWinTitle)
+00671  |        WriteLogStartupIni("", "Global", "$hWndActivePid", 0, $hWndActivePid)
 00672  |    
-00673  |        WriteLogStartupIni("", "SpawnStats", $SpawnFileName & "TimeModified", 0, FileGetTime($SpawnPath, $FT_MODIFIED, $FT_STRING))
-00674  |    
-00675  |        Local $iIsAdmin = IsAdmin()
-00676  |        WriteLogStartupIni("", "Misc", "$iIsAdmin", 0, $iIsAdmin)
-00677  |    
-00678  |        Local $iTickCount = _WinAPI_GetTickCount()
-00679  |        WriteLogStartupIni("", "Misc", "$iTickCount", 0, $iTickCount)
-00680  |        Local $iTickCount64 = _WinAPI_GetTickCount64()
-00681  |        WriteLogStartupIni("", "Misc", "$iTickCount64", 0, $iTickCount64)
-00682  |    
-00683  |    ;~     WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $NetPhoneUserChecksum)
-00684  |    ;~     If $NetPhoneUserChecksum <> "" Then IniWrite($IniGlobalNetLogDir & "NetPhoneUser" & ".ini", "$NetPhoneUser", $NetPhoneUserChecksum, "")
-00685  |    
-00686  |        Local $aComputerSystemProduct = _ComputerNameAndModel()
-00687  |        WriteLogStartupIni("", "Wmi", "$ComputerSystemProductName", 0, $aComputerSystemProduct[0])
-00688  |        WriteLogStartupIni("", "Wmi", "$ComputerSystemProductIdentifyingNumber", 0, $aComputerSystemProduct[1])
+00673  |        WriteLogStartupIni("", "EventLog", "$EventLogFull", 0, $EventLogFull)
+00674  |        WriteLogStartupIni("", "EventLog", "$EventLogCount", 0, $EventLogCount)
+00675  |        WriteLogStartupIni("", "EventLog", "$EventLogOldest", 0, $EventLogOldest)
+00676  |    
+00677  |        WriteLogStartupIni("", "SpawnStats", $SpawnFileName & "TimeModified", 0, FileGetTime($SpawnPath, $FT_MODIFIED, $FT_STRING))
+00678  |    
+00679  |        Local $iIsAdmin = IsAdmin()
+00680  |        WriteLogStartupIni("", "Misc", "$iIsAdmin", 0, $iIsAdmin)
+00681  |    
+00682  |        Local $iTickCount = _WinAPI_GetTickCount()
+00683  |        WriteLogStartupIni("", "Misc", "$iTickCount", 0, $iTickCount)
+00684  |        Local $iTickCount64 = _WinAPI_GetTickCount64()
+00685  |        WriteLogStartupIni("", "Misc", "$iTickCount64", 0, $iTickCount64)
+00686  |    
+00687  |    ;~     WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $NetPhoneUserChecksum)
+00688  |    ;~     If $NetPhoneUserChecksum <> "" Then IniWrite($IniGlobalNetLogDir & "NetPhoneUser" & ".ini", "$NetPhoneUser", $NetPhoneUserChecksum, "")
 00689  |    
-00690  |        WriteLogStartupIni("", "AutoIt", "@Compiled", 0, @Compiled)
-00691  |        WriteLogStartupIni("", "AutoIt", "@ScriptName", 0, @ScriptName)
-00692  |        WriteLogStartupIni("", "AutoIt", "@ScriptDir", 0, @ScriptDir)
-00693  |        WriteLogStartupIni("", "AutoIt", "@ScriptFullPath", 0, @ScriptFullPath)
-00694  |        WriteLogStartupIni("", "AutoIt", "@WorkingDir", 0, @WorkingDir)
-00695  |        WriteLogStartupIni("", "AutoIt", "@AutoItExe", 0, @AutoItExe)
-00696  |        WriteLogStartupIni("", "AutoIt", "@AutoItPID", 0, @AutoItPID)
-00697  |        WriteLogStartupIni("", "AutoIt", "@AutoItVersion", 0, @AutoItVersion)
-00698  |        WriteLogStartupIni("", "AutoIt", "@AutoItX64", 0, @AutoItX64)
-00699  |    
-00700  |        WriteLogStartupIni("", "Directory", "@AppDataCommonDir", 0, @AppDataCommonDir)
-00701  |        WriteLogStartupIni("", "Directory", "@DesktopCommonDir", 0, @DesktopCommonDir)
-00702  |        WriteLogStartupIni("", "Directory", "@DocumentsCommonDir", 0, @DocumentsCommonDir)
-00703  |        WriteLogStartupIni("", "Directory", "@FavoritesCommonDir", 0, @FavoritesCommonDir)
-00704  |        WriteLogStartupIni("", "Directory", "@ProgramsCommonDir", 0, @ProgramsCommonDir)
-00705  |        WriteLogStartupIni("", "Directory", "@StartMenuCommonDir", 0, @StartMenuCommonDir)
-00706  |        WriteLogStartupIni("", "Directory", "@StartupCommonDir", 0, @StartupCommonDir)
-00707  |    
-00708  |        WriteLogStartupIni("", "Directory", "@AppDataDir", 0, @AppDataDir)
-00709  |        WriteLogStartupIni("", "Directory", "@LocalAppDataDir", 0, @LocalAppDataDir)
-00710  |        WriteLogStartupIni("", "Directory", "@DesktopDir", 0, @DesktopDir)
-00711  |        WriteLogStartupIni("", "Directory", "@MyDocumentsDir", 0, @MyDocumentsDir)
-00712  |        WriteLogStartupIni("", "Directory", "@FavoritesDir", 0, @FavoritesDir)
-00713  |        WriteLogStartupIni("", "Directory", "@ProgramsDir", 0, @ProgramsDir)
-00714  |        WriteLogStartupIni("", "Directory", "@StartMenuDir", 0, @StartMenuDir)
-00715  |        WriteLogStartupIni("", "Directory", "@UserProfileDir", 0, @UserProfileDir)
-00716  |    
-00717  |        WriteLogStartupIni("", "Directory", "@HomeDrive", 0, @HomeDrive)
-00718  |        WriteLogStartupIni("", "Directory", "@HomePath", 0, @HomePath)
-00719  |        WriteLogStartupIni("", "Directory", "@HomeShare", 0, @HomeShare)
-00720  |        WriteLogStartupIni("", "Directory", "@LogonDNSDomain", 0, @LogonDNSDomain)
-00721  |        WriteLogStartupIni("", "Directory", "@LogonDomain", 0, @LogonDomain)
-00722  |        WriteLogStartupIni("", "Directory", "@LogonServer", 0, @LogonServer)
-00723  |        WriteLogStartupIni("", "Directory", "@ProgramFilesDir", 0, @ProgramFilesDir)
-00724  |        WriteLogStartupIni("", "Directory", "@CommonFilesDir", 0, @CommonFilesDir)
-00725  |        WriteLogStartupIni("", "Directory", "@WindowsDir", 0, @WindowsDir)
-00726  |        WriteLogStartupIni("", "Directory", "@SystemDir", 0, @SystemDir)
-00727  |        WriteLogStartupIni("", "Directory", "@TempDir", 0, @TempDir)
-00728  |        WriteLogStartupIni("", "Directory", "@ComSpec", 0, @ComSpec)
-00729  |    
-00730  |        WriteLogStartupIni("", "SystemInfo", "@CPUArch", 0, @CPUArch)
-00731  |        WriteLogStartupIni("", "SystemInfo", "@KBLayout", 0, @KBLayout)
-00732  |        WriteLogStartupIni("", "SystemInfo", "@MUILang", 0, @MUILang)
-00733  |        WriteLogStartupIni("", "SystemInfo", "@OSArch", 0, @OSArch)
-00734  |        WriteLogStartupIni("", "SystemInfo", "@OSLang", 0, @OSLang)
-00735  |        WriteLogStartupIni("", "SystemInfo", "@OSType", 0, @OSType)
-00736  |        WriteLogStartupIni("", "SystemInfo", "@OSVersion", 0, @OSVersion)
-00737  |        WriteLogStartupIni("", "SystemInfo", "@OSBuild", 0, @OSBuild)
-00738  |        WriteLogStartupIni("", "SystemInfo", "@OSServicePack", 0, @OSServicePack)
-00739  |        WriteLogStartupIni("", "SystemInfo", "@ComputerName", 0, @ComputerName)
-00740  |        WriteLogStartupIni("", "SystemInfo", "@UserName", 0, @UserName)
-00741  |        WriteLogStartupIni("", "SystemInfo", "@IPAddress1", 0, @IPAddress1)
-00742  |        WriteLogStartupIni("", "SystemInfo", "@IPAddress2", 0, @IPAddress2)
-00743  |        WriteLogStartupIni("", "SystemInfo", "@IPAddress3", 0, @IPAddress3)
-00744  |        WriteLogStartupIni("", "SystemInfo", "@IPAddress4", 0, @IPAddress4)
-00745  |    
-00746  |        WriteLogStartupIni("", "SystemInfo", "@DesktopHeight", 0, @DesktopHeight)
-00747  |        WriteLogStartupIni("", "SystemInfo", "@DesktopWidth", 0, @DesktopWidth)
-00748  |        WriteLogStartupIni("", "SystemInfo", "@DesktopDepth", 0, @DesktopDepth)
-00749  |        WriteLogStartupIni("", "SystemInfo", "@DesktopRefresh", 0, @DesktopRefresh)
-00750  +-EndFunc   ;==>WriteLogStartup
-00751    
-00752  +-Func WriteLogStartupIni($FileName, $Section, $Key, $IsSectionAddedToKey, $Value)
-00753  |  +-    If $FileName = "" Then
-00754  |  |            $FileName = $IniGlobalNetLogDir & $Section & ".ini"
-00755  |  +-    EndIf
-00756  |        IniWrite($FileName, ($IsSectionAddedToKey ? $Section & $Key : $Key), $ComputerName, $Value)
-00757  |        IniWrite($IniGlobalNetLogInstancePath, $Section, $Key, $Value)
-00758  +-EndFunc   ;==>WriteLogStartupIni
-00759    #EndRegion
-00760    #Region CheckAndRunProc
-00761  +-Func Check()
-00762  |        CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
-00763  |        CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
-00764  |        CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
-00765  |  +-	If _WinAPI_GetTickCount64() > 60e3 * 5 Then
-00766  |  |    		CheckAndRunProc($EcoroKpsButlerFileName, $EcoroKpsButlerDir, $EcoroKpsButlerPath, $EcoroKpsButlerExists)
-00767  |  +-	EndIf
-00768  |    ;~     CheckAndRunProcAs($PowerkatalogFileName, $PowerkatalogDir, $PowerkatalogPath, $PowerkatalogExists, "Administrator", "Brauckhoff", "")
-00769  |    ;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
-00770  +-EndFunc   ;==>Check
-00771    
-00772  +-Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
-00773  |  +-    If $Exists And Not ProcessExists($Name) Then
-00774  |  |            ConsoleLog($Name & " wird gestartet")
-00775  |  |            Return Run($Path, $Dir, $ShowFlag)
-00776  |  +-    EndIf
-00777  |        Return 0
-00778  +-EndFunc   ;==>CheckAndRunProc
-00779    
-00780  +-Func CheckAndRunProcAs($Name, $Dir, $Path, $Exists, $UserName, $Domain, $Password)
-00781  |  +-    If $Exists And Not ProcessExists($Name) Then
-00782  |  |            ConsoleLog($Name & " wird gestartet als " & $UserName & " in " & $Domain & " mit Network credentials only")
-00783  |  |            RunAs($UserName, $Domain, $Password, $RUN_LOGON_NETWORK, $Path, $Dir)
-00784  |  +-    EndIf
-00785  +-EndFunc   ;==>CheckAndRunProcAs
-00786    #EndRegion CheckAndRunProc
-00787    #Region CleaningDownloads
-00788  +-Func CleaningDownloads()
-00789  |  +-    If DownloadsNeedCleaning() And @Compiled Then
-00790  |  |            DirRemove($DownloadsOldDir, $DIR_REMOVE)
-00791  |  |            FileDirMoveRec($DownloadsDir, $DownloadsOldDir)
-00792  |  |            FileDelete($DownloadsOldDir & "\Downloads alt.lnk")
-00793  |  |            FileCreateShortcut($DownloadsOldDir, $DownloadsDir & "\Downloads alt")
-00794  |  |            IniWrite($IniLocalPath, "Downloads", "LastCleaningDate", _DateToDayValue(@YEAR, @MON, @MDAY))
-00795  |  |            Local Const $Warning = '' _
-00796  |  |  |                        & 'Wenn Sie noch wichtige Dateien im Ordner "Downloads" aufbewahren, die Sie benötigen, kopieren Sie diese bitte an einen anderen Ort.' & @CRLF _
-00797  |  |  |                        & 'Alle Dateien aus dem Ordner "Downloads" wurden bereits in den Ordner "Downloads alt" verschoben.' & @CRLF _
-00798  |  |  |                        & 'Der Ordner "Downloads alt" ist über eine Verknüpfung in "Downloads" zu erreichen.' & @CRLF _
-00799  |  |  |                        & 'Alle Ihre Dateien die im Ordner "Downloads alt" bleiben, werden demnächst unwiderruflich GELÖSCHT!' & @CRLF _
-00800  |  |  |                        & 'Bitte sichten und sichern Sie am besten jetzt sofort Ihre weiterhin benötigten Dateien.' & @CRLF _
-00801  |  |  |                        & 'Soll der Ordner "Downloads alt" jetzt geöffnet werden?' & @CRLF
-00802  |  |  +-        If MsgBox($MB_YESNO + $MB_ICONWARNING + $MB_SYSTEMMODAL, "ACHTUNG WICHTIG! LÖSCHUNG IHRER DOWNLOAD-DATEIEN", $Warning, $MsgBoxTimeout) = $IDYES Then
-00803  |  |  |                ShellExecute($DownloadsOldDir)
-00804  |  |  +-        EndIf
-00805  |  +-    EndIf
-00806  +-EndFunc   ;==>CleaningDownloads
-00807    
-00808  +-Func DownloadsNeedCleaning()
-00809  |        Return (_DateToDayValue(@YEAR, @MON, @MDAY) - GetDownloadsLastCleaningDate()) >= 14
-00810  +-EndFunc   ;==>DownloadsNeedCleaning
-00811  +-Func FileDirMoveRec($SourceDir, $DestDir)
-00812  |  +-    If FileExists($SourceDir) Then
-00813  |  |            If Not FileExists($DestDir) Then DirCreate($DestDir)
-00814  |  |            FileMove($SourceDir & "\*.*", $DestDir, $FC_OVERWRITE + $FC_CREATEPATH)
-00815  |  |            Local Const $FolderList = _FileListToArray($SourceDir, Default, $FLTA_FOLDERS, True)
-00816  |  |  +-        If Not @error Then
-00817  |  |  |  +-            For $Folder In $FolderList
-00818  |  |  |  |                    DirMove($Folder, $DestDir, $FC_OVERWRITE)
-00819  |  |  |  +-            Next
-00820  |  |  +-        EndIf
-00821  |  +-    EndIf
-00822  +-EndFunc   ;==>FileDirMoveRec
-00823    
-00824  +-Func GetDownloadsLastCleaningDate()
-00825  |        Return IniRead($IniLocalPath, "Downloads", "LastCleaningDate", "NULL")
-00826  +-EndFunc   ;==>GetDownloadsLastCleaningDate
-00827    #EndRegion CleaningDownloads
-00828    #Region FreeSpaceCheck
-00829  +-Func ByteSuffix($iBytes)
-00830  |        Local $iIndex = 0, $aArray = [' bytes', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB']
-00831  |  +-    While $iBytes > 1023
-00832  |  |            $iIndex += 1
-00833  |  |            $iBytes /= 1024
-00834  |  +-    WEnd
-00835  |        Return Round($iBytes) & $aArray[$iIndex]
-00836  +-EndFunc   ;==>ByteSuffix
-00837    
-00838  +-Func CheckHomeDriveSpaceFree()
-00839  |        Local Const $sLabel = DriveGetLabel(@HomeDrive & "\")
-00840  |    ;~     Local Const $sSerial = DriveGetSerial(@HomeDrive & "\")
-00841  |        Local Const $iFreeSpace = DriveSpaceFree(@HomeDrive & "\")
-00842  |        Local Const $iTotalSpace = DriveSpaceTotal(@HomeDrive & "\")
-00843  |        Local Const $iFreeSpacePerc = ($iFreeSpace / $iTotalSpace) * 100
-00844  |  +-    If $iFreeSpacePerc < $LowSpaceThresholdPerc Then
-00845  |  |  +-        If (_DateToDayValue(@YEAR, @MON, @MDAY) - IniRead($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", "NULL")) >= 1 Then
-00846  |  |  |                IniWrite($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", _DateToDayValue(@YEAR, @MON, @MDAY))
-00847  |  |  |  +-            For $i = 0 To 9 Step 1
-00848  |  |  |  |  +-                If $MailAddresses[$i][0] <> "" And $MailAddresses[$i][1] = 1 Then
-00849  |  |  |  |  |                        ConsoleLog("Sending Mail to " & $MailAddresses[$i][0])
-00850  |  |  |  |  |                        SendMailLowSpace($MailAddresses[$i][0], Round($iFreeSpacePerc, 2), $sLabel, $iFreeSpace, $iTotalSpace)
-00851  |  |  |  |  |                        Sleep(3000)
-00852  |  |  |  |  +-                EndIf
-00853  |  |  |  +-            Next
-00854  |  |  +-        EndIf
-00855  |  +-    EndIf
-00856  +-EndFunc   ;==>CheckHomeDriveSpaceFree
-00857    
-00858  +-Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $iFreeSpace, $iTotalSpace)
-00859  |        Local $sFromName = "akk.exe (Gerrit)"
-00860  |        Local $sFromAddress = "akk@kuechen-brauckhoff.de"
-00861  |        Local $sSubject = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $iFreeSpacePerc & "% !"
-00862  |        Local $asBody[0]
-00863  |        _ArrayAdd($asBody, "Akk Warnung wenig Speicherplatz auf:")
-00864  |        _ArrayAdd($asBody, @ComputerName)
-00865  |        If @IPAddress1 <> "0.0.0.0" Then _ArrayAdd($asBody, @IPAddress1)
-00866  |        If @IPAddress2 <> "0.0.0.0" Then _ArrayAdd($asBody, @IPAddress2)
-00867  |        If @IPAddress3 <> "0.0.0.0" Then _ArrayAdd($asBody, @IPAddress3)
-00868  |        If @IPAddress4 <> "0.0.0.0" Then _ArrayAdd($asBody, @IPAddress4)
-00869  |        _ArrayAdd($asBody, $sLabel & " (" & @HomeDrive & ")")
-00870  |        _ArrayAdd($asBody, Round($iFreeSpace / 1024, 2) & " GB frei von " & Round($iTotalSpace / 1024, 2) & " GB")
-00871  |        _ArrayAdd($asBody, $iFreeSpacePerc & "% frei")
-00872  |        Local $iResponse = _INetSmtpMail($SmtpMailSmtpServer, $sFromName, $sFromAddress, $sToAddress, $sSubject, $asBody, $SmtpMailEHLO, $SmtpMailFirst, $SmtpMailTrace)
-00873  |        Local $iErr = @error
-00874  |  +-    If $iResponse = 0 Then
-00875  |  |            Local Const $Warning = '' _
-00876  |  |  |                        & 'DIE FESTPLATTE IST FAST VOLL!' & @CRLF & @CRLF _
-00877  |  |  |                        & 'Bitte Herrn Heger bescheid geben:' & @CRLF _
-00878  |  |  |                        & 'heger@easyconnectit.de' & @CRLF _
-00879  |  |  |                        & 'oder 0176 23984427' & @CRLF & @CRLF _
-00880  |  |  |                        & _ArrayToString($asBody, @CRLF) & @CRLF & @CRLF _
-00881  |  |  |                        & 'Mail failed with error code ' & $iErr & @CRLF
-00882  |  |            MsgBox($MB_ICONWARNING + $MB_SYSTEMMODAL, "Warnung!", $Warning)
-00883  |  +-    EndIf
-00884  +-EndFunc   ;==>SendMailLowSpace
-00885    #EndRegion FreeSpaceCheck
-00886    #Region WMI Exporter
-00887  +-Func _FormatKbToGb($iKb)
-00888  |        Return Round($iKb / 1024 / 1024, 2)
-00889  +-EndFunc   ;==>_FormatKbToGb
-00890    
-00891  +-Func _PrometheusNewDesc(ByRef $mMap, $sName, $sType, $nValue = 0, $sText = "")
-00892  |        Local Static $iDx = 0
-00893  |        $iDx += 1
-00894  |        Local Const $sTextDefault = "Metric read from " & StringReplace($WmiExporterMetadataPath, "\", "\\")
-00895  |        Local $mResult[]
-00896  |        Local $mLabels[]
-00897  |        $mResult.Name = $sName & "+" & $iDx
-00898  |        $mResult.Type = $sType
-00899  |        $mResult.Value = $nValue
-00900  |        $mResult.Text = ($sText = "" ? $sTextDefault : $sText)
-00901  |        $mResult.Labels = $mLabels
-00902  |        $mMap[$mResult.Name] = $mResult
-00903  |        Return $mResult.Name
-00904  +-EndFunc   ;==>_PrometheusNewDesc
-00905    
-00906  +-Func MetaProcessCount($ProcessName)
-00907  |        Local $mResult[]
-00908  |        Local $aProcessList = ProcessList($ProcessName)
-00909  |        Local $sDrive = "", $sDir = "", $sFileName = "", $sExtension = ""
-00910  |        _PathSplit($ProcessName, $sDrive, $sDir, $sFileName, $sExtension)
-00911  |        $mResult.Count = $aProcessList[0][0]
-00912  |        $mResult.FileName = $sFileName
-00913  |        Return $mResult
-00914  +-EndFunc   ;==>MetaProcessCount
-00915    
-00916  +-Func Scrape()
-00917  |  +-    If $ScrapeComplete And ProcessExists($WmiExporterLocalFileName) Then
-00918  |  |            $hDownload = InetGet("http://localhost:9182/metrics", $LogScrapePath, $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
-00919  |  |            $ScrapeComplete = 0
-00920  |  +-    EndIf
-00921  +-EndFunc   ;==>Scrape
-00922    
-00923  +-Func ScrapeDownload()
-00924  |  +-    If Not $ScrapeComplete Then
-00925  |  |  +-        If InetGetInfo($hDownload, $INET_DOWNLOADCOMPLETE) Then
-00926  |  |  |  +-            If InetGetInfo($hDownload, $INET_DOWNLOADSUCCESS) Then
-00927  |  |  |  |                    If FileGetSize($LogScrapePath) Then FileCopy($LogScrapePath, $LogScrapeNetPath, $FC_OVERWRITE + $FC_CREATEPATH)
-00928  |  |  |  +-            Else
-00929  |  |  |  |                    FileDelete($LogScrapePath)
-00930  |  |  |  |                    ConsoleLog("Error ScrapeDownload")
-00931  |  |  |  +-            EndIf
-00932  |  |  |                InetClose($hDownload)
-00933  |  |  |                $hDownload = 0
-00934  |  |  |                $ScrapeComplete = 1
-00935  |  |  +-        EndIf
-00936  |  +-    EndIf
-00937  +-EndFunc   ;==>ScrapeDownload
-00938    
-00939  +-Func SetupExactFile()
-00940  |  +-    If Not $ExactFileExists Then
-00941  |  |  +-        If FileCopy($ExactFileNetPath, $ExactFilePath, $FC_OVERWRITE + $FC_CREATEPATH) Then
-00942  |  |  |                $ExactFileExists = FileExists($ExactFilePath)
-00943  |  |  +-        EndIf
-00944  |  +-    EndIf
-00945  +-EndFunc   ;==>SetupExactFile
-00946    
-00947  +-Func SetupWmiExporter()
-00948  |        ProcessClose($WmiExporterLocalFileName)
-00949  |        Local $SourcePath = (@OSArch = "X64") ? $WmiExporterX64GlobalNetSetupPath : $WmiExporterX32GlobalNetSetupPath
-00950  |        Local $WmiExporterLocalTime = FileGetTime($WmiExporterLocalPath, $FT_MODIFIED, $FT_STRING)
-00951  |        Local $WmiExporterGlobalNetSetupTime = FileGetTime($SourcePath, $FT_MODIFIED, $FT_STRING)
-00952  |  +-    If Not $WmiExporterLocalExists Or $WmiExporterLocalTime <> $WmiExporterGlobalNetSetupTime Then
-00953  |  |            ConsoleLog("Reload WmiExporter " & $SourcePath)
-00954  |  |  +-        If FileCopy($SourcePath, $WmiExporterLocalPath, $FC_OVERWRITE + $FC_CREATEPATH) Then
-00955  |  |  |                $WmiExporterLocalExists = FileExists($WmiExporterLocalPath)
-00956  |  |  +-        Else
-00957  |  |  |                ConsoleLog("ERROR Reload WmiExporter " & $SourcePath)
-00958  |  |  +-        EndIf
-00959  |  +-    EndIf
-00960  |        If Not FileExists($WmiExporterCollectorTextfileDir) Then DirCreate($WmiExporterCollectorTextfileDir)
-00961  +-EndFunc   ;==>SetupWmiExporter
-00962    
-00963  +-Func WriteMetaDataFile()
-00964  |        EventLog()
-00965  |        Local $mMetrics[]
-00966  |        Local $sName = _PrometheusNewDesc($mMetrics, "akk_metadata", "gauge", _Timer_GetIdleTime() / 1e3)
-00967  |        $mMetrics[$sName].Labels.username = @UserName
-00968  |        $mMetrics[$sName].Labels.ip_address = @IPAddress1
-00969  |        $mMetrics[$sName].Labels.netphone_user = ($ActiveWinTitle = "LockScreen" ? "LockScreen" : $NetPhoneUser)
-00970  |  +-    If $WmiExporterMetadataString <> "NULL" And StringLen($WmiExporterMetadataString) And Not StringIsSpace($WmiExporterMetadataString) Then
-00971  |  |            $mMetrics[$sName].LabelsRaw = $WmiExporterMetadataString
-00972  |  +-    EndIf
-00973  |    
-00974  |        Local $aMemStats = MemGetStats()
-00975  |        _PrometheusNewDesc($mMetrics, "akk_idletime_sec", "gauge", _Timer_GetIdleTime() / 1e3, "Returns the number of seconds since last user activity (i.e. KYBD/Mouse)")
-00976  |        _PrometheusNewDesc($mMetrics, "akk_memstats_load", "gauge", $aMemStats[$MEM_LOAD], "Memory Load (Percentage of memory in use)")
-00977  |        _PrometheusNewDesc($mMetrics, "akk_memstats_total_physram_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_TOTALPHYSRAM]), "Total physical RAM")
-00978  |        _PrometheusNewDesc($mMetrics, "akk_memstats_avail_physram_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_AVAILPHYSRAM]), "Available physical RAM")
-00979  |        _PrometheusNewDesc($mMetrics, "akk_memstats_total_pagefile_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_TOTALPAGEFILE]), "Total Pagefile")
-00980  |        _PrometheusNewDesc($mMetrics, "akk_memstats_avail_pagefile_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_AVAILPAGEFILE]), "Available Pagefile")
-00981  |        _PrometheusNewDesc($mMetrics, "akk_memstats_total_virtual_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_TOTALVIRTUAL]), "Total virtual")
-00982  |        _PrometheusNewDesc($mMetrics, "akk_memstats_avail_virtual_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_AVAILVIRTUAL]), "Available virtual")
-00983  |    
-00984  |        _PrometheusNewDesc($mMetrics, "akk_eventlog_full", "gauge", ($EventLogFull ? 1 : 0), "Retrieves whether the event log is full")
-00985  |        _PrometheusNewDesc($mMetrics, "akk_eventlog_count", "gauge", $EventLogCount, "Retrieves the number of records in the event log")
-00986  |        _PrometheusNewDesc($mMetrics, "akk_eventlog_oldest", "gauge", $EventLogOldest, "Retrieves the absolute record number of the oldest record in the event log")
-00987  |    
-00988  |        Local $MetaProcessCountChrome = MetaProcessCount("chrome.exe")
-00989  |        $sName = _PrometheusNewDesc($mMetrics, "akk_process_count", "gauge", $MetaProcessCountChrome.Count)
-00990  |        $mMetrics[$sName].Labels.process = $MetaProcessCountChrome.FileName
-00991  |    
-00992  |        Local $MetaProcessCountJavaw = MetaProcessCount("javaw.exe")
-00993  |        $sName = _PrometheusNewDesc($mMetrics, "akk_process_count", "gauge", $MetaProcessCountJavaw.Count)
-00994  |        $mMetrics[$sName].Labels.process = $MetaProcessCountJavaw.FileName
-00995  |    
-00996  |        Local $MetaProcessCountFusionFX = MetaProcessCount("FusionFX.exe")
-00997  |        $sName = _PrometheusNewDesc($mMetrics, "akk_process_count", "gauge", $MetaProcessCountFusionFX.Count)
-00998  |        $mMetrics[$sName].Labels.process = $MetaProcessCountFusionFX.FileName
-00999  |    
-01000  |        Local $WmiExporterMetadataArray[1]
-01001  |        Local $sLastName = "", $sLabels = ""
-01002  |        Local $aMapKeys
-01003  |  +-    For $mMap In $mMetrics
-01004  |  |            $sName = StringSplit($mMap.Name, "+")[1]
-01005  |  |  +-        If $sLastName <> $sName Then
-01006  |  |  |                _ArrayAdd($WmiExporterMetadataArray, "# HELP " & $sName & " " & $mMap.Text)
-01007  |  |  |                _ArrayAdd($WmiExporterMetadataArray, "# TYPE " & $sName & " " & $mMap.Type)
-01008  |  |  +-        EndIf
-01009  |  |            $aMapKeys = MapKeys($mMap.Labels)
-01010  |  |            $sLabels = ""
-01011  |  |  +-        If UBound($aMapKeys) Then
-01012  |  |  |                $sLabels &= "{"
-01013  |  |  |  +-            For $vLabel In $aMapKeys
-01014  |  |  |  |                    $sLabels &= $vLabel & '="' & $mMap.Labels[$vLabel] & '",'
-01015  |  |  |  +-            Next
-01016  |  |  |  +-            If MapExists($mMap, "LabelsRaw") Then
-01017  |  |  |  |                    $sLabels &= $mMap.LabelsRaw
-01018  |  |  |  +-            EndIf
-01019  |  |  |                If StringRight($sLabels, 1) = "," Then $sLabels = StringTrimRight($sLabels, 1)
-01020  |  |  |                $sLabels &= "}"
-01021  |  |  +-        EndIf
-01022  |  |            _ArrayAdd($WmiExporterMetadataArray, $sName & $sLabels & " " & $mMap.Value)
-01023  |  |            $sLastName = $sName
-01024  |  +-    Next
-01025  |        $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
-01026  |        Local $WmiExporterMetadataArrayRet
-01027  |        _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
-01028  |  +-    If Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet, 3) Then
-01029  |  |            _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
-01030  |  +-    EndIf
-01031  +-EndFunc   ;==>WriteMetaDataFile
-01032    
-01033  +-Func WriteScrapeTargetFile()
-01034  |        Local $Lines[1]
-01035  |        _ArrayAdd($Lines, '[')
-01036  |        _ArrayAdd($Lines, '  {')
-01037  |        _ArrayAdd($Lines, '    "labels": {')
-01038  |        _ArrayAdd($Lines, '      "job": "node",')
-01039  |        _ArrayAdd($Lines, '      "instance": "@ComputerName@"')
-01040  |        _ArrayAdd($Lines, '    },')
-01041  |        _ArrayAdd($Lines, '    "targets": [')
-01042  |        _ArrayAdd($Lines, '      "@IPAddress1@:9182"')
-01043  |        _ArrayAdd($Lines, '    ]')
-01044  |        _ArrayAdd($Lines, '  }')
-01045  |        _ArrayAdd($Lines, ']')
-01046  |        Local $CurrentFile
-01047  |        $Lines[0] = UBound($Lines) - 1
-01048  |        Local $FilePath = $PromScrapeTargetsDir & "@ComputerName@.json"
-01049  |        _FileReadToArray($FilePath, $CurrentFile)
-01050  |  +-    If Not _ArrayCompare($Lines, $CurrentFile, 3) Then
-01051  |  |            _FileWriteFromArray($FilePath, $Lines, 1)
-01052  |  +-    EndIf
-01053  +-EndFunc   ;==>WriteScrapeTargetFile
-01054    #EndRegion WMI Exporter
-01055    #Region UDF
-01056  +-Func _ComputerNameAndModel()
-01057  |        Local $aReturn[2] = ["(Unknown)", "(Unknown)"], $oColItems, $oWMIService
-01058  |    
-01059  |        $oWMIService = ObjGet("winmgmts:\\.\root\cimv2")
-01060  |        $oColItems = $oWMIService.ExecQuery("Select * From Win32_ComputerSystemProduct", "WQL", 0x30)
-01061  |  +-    If IsObj($oColItems) Then
-01062  |  |  +-        For $oObjectItem In $oColItems
-01063  |  |  |                $aReturn[0] = StringStripWS($oObjectItem.Name, $STR_STRIPLEADING + $STR_STRIPTRAILING)
-01064  |  |  |                $aReturn[1] = StringStripWS($oObjectItem.IdentifyingNumber, $STR_STRIPLEADING + $STR_STRIPTRAILING)
-01065  |  |  +-        Next
-01066  |  |            Return $aReturn
-01067  |  +-    EndIf
-01068  |        Return SetError(1, 0, $aReturn)
-01069  +-EndFunc   ;==>_ComputerNameAndModel
-01070    #EndRegion UDF
+00690  |        Local $aComputerSystemProduct = _ComputerNameAndModel()
+00691  |        WriteLogStartupIni("", "Wmi", "$ComputerSystemProductName", 0, $aComputerSystemProduct[0])
+00692  |        WriteLogStartupIni("", "Wmi", "$ComputerSystemProductIdentifyingNumber", 0, $aComputerSystemProduct[1])
+00693  |    
+00694  |        WriteLogStartupIni("", "AutoIt", "@Compiled", 0, @Compiled)
+00695  |        WriteLogStartupIni("", "AutoIt", "@ScriptName", 0, @ScriptName)
+00696  |        WriteLogStartupIni("", "AutoIt", "@ScriptDir", 0, @ScriptDir)
+00697  |        WriteLogStartupIni("", "AutoIt", "@ScriptFullPath", 0, @ScriptFullPath)
+00698  |        WriteLogStartupIni("", "AutoIt", "@WorkingDir", 0, @WorkingDir)
+00699  |        WriteLogStartupIni("", "AutoIt", "@AutoItExe", 0, @AutoItExe)
+00700  |        WriteLogStartupIni("", "AutoIt", "@AutoItPID", 0, @AutoItPID)
+00701  |        WriteLogStartupIni("", "AutoIt", "@AutoItVersion", 0, @AutoItVersion)
+00702  |        WriteLogStartupIni("", "AutoIt", "@AutoItX64", 0, @AutoItX64)
+00703  |    
+00704  |        WriteLogStartupIni("", "Directory", "@AppDataCommonDir", 0, @AppDataCommonDir)
+00705  |        WriteLogStartupIni("", "Directory", "@DesktopCommonDir", 0, @DesktopCommonDir)
+00706  |        WriteLogStartupIni("", "Directory", "@DocumentsCommonDir", 0, @DocumentsCommonDir)
+00707  |        WriteLogStartupIni("", "Directory", "@FavoritesCommonDir", 0, @FavoritesCommonDir)
+00708  |        WriteLogStartupIni("", "Directory", "@ProgramsCommonDir", 0, @ProgramsCommonDir)
+00709  |        WriteLogStartupIni("", "Directory", "@StartMenuCommonDir", 0, @StartMenuCommonDir)
+00710  |        WriteLogStartupIni("", "Directory", "@StartupCommonDir", 0, @StartupCommonDir)
+00711  |    
+00712  |        WriteLogStartupIni("", "Directory", "@AppDataDir", 0, @AppDataDir)
+00713  |        WriteLogStartupIni("", "Directory", "@LocalAppDataDir", 0, @LocalAppDataDir)
+00714  |        WriteLogStartupIni("", "Directory", "@DesktopDir", 0, @DesktopDir)
+00715  |        WriteLogStartupIni("", "Directory", "@MyDocumentsDir", 0, @MyDocumentsDir)
+00716  |        WriteLogStartupIni("", "Directory", "@FavoritesDir", 0, @FavoritesDir)
+00717  |        WriteLogStartupIni("", "Directory", "@ProgramsDir", 0, @ProgramsDir)
+00718  |        WriteLogStartupIni("", "Directory", "@StartMenuDir", 0, @StartMenuDir)
+00719  |        WriteLogStartupIni("", "Directory", "@UserProfileDir", 0, @UserProfileDir)
+00720  |    
+00721  |        WriteLogStartupIni("", "Directory", "@HomeDrive", 0, @HomeDrive)
+00722  |        WriteLogStartupIni("", "Directory", "@HomePath", 0, @HomePath)
+00723  |        WriteLogStartupIni("", "Directory", "@HomeShare", 0, @HomeShare)
+00724  |        WriteLogStartupIni("", "Directory", "@LogonDNSDomain", 0, @LogonDNSDomain)
+00725  |        WriteLogStartupIni("", "Directory", "@LogonDomain", 0, @LogonDomain)
+00726  |        WriteLogStartupIni("", "Directory", "@LogonServer", 0, @LogonServer)
+00727  |        WriteLogStartupIni("", "Directory", "@ProgramFilesDir", 0, @ProgramFilesDir)
+00728  |        WriteLogStartupIni("", "Directory", "@CommonFilesDir", 0, @CommonFilesDir)
+00729  |        WriteLogStartupIni("", "Directory", "@WindowsDir", 0, @WindowsDir)
+00730  |        WriteLogStartupIni("", "Directory", "@SystemDir", 0, @SystemDir)
+00731  |        WriteLogStartupIni("", "Directory", "@TempDir", 0, @TempDir)
+00732  |        WriteLogStartupIni("", "Directory", "@ComSpec", 0, @ComSpec)
+00733  |    
+00734  |        WriteLogStartupIni("", "SystemInfo", "@CPUArch", 0, @CPUArch)
+00735  |        WriteLogStartupIni("", "SystemInfo", "@KBLayout", 0, @KBLayout)
+00736  |        WriteLogStartupIni("", "SystemInfo", "@MUILang", 0, @MUILang)
+00737  |        WriteLogStartupIni("", "SystemInfo", "@OSArch", 0, @OSArch)
+00738  |        WriteLogStartupIni("", "SystemInfo", "@OSLang", 0, @OSLang)
+00739  |        WriteLogStartupIni("", "SystemInfo", "@OSType", 0, @OSType)
+00740  |        WriteLogStartupIni("", "SystemInfo", "@OSVersion", 0, @OSVersion)
+00741  |        WriteLogStartupIni("", "SystemInfo", "@OSBuild", 0, @OSBuild)
+00742  |        WriteLogStartupIni("", "SystemInfo", "@OSServicePack", 0, @OSServicePack)
+00743  |        WriteLogStartupIni("", "SystemInfo", "@ComputerName", 0, @ComputerName)
+00744  |        WriteLogStartupIni("", "SystemInfo", "@UserName", 0, @UserName)
+00745  |        WriteLogStartupIni("", "SystemInfo", "@IPAddress1", 0, @IPAddress1)
+00746  |        WriteLogStartupIni("", "SystemInfo", "@IPAddress2", 0, @IPAddress2)
+00747  |        WriteLogStartupIni("", "SystemInfo", "@IPAddress3", 0, @IPAddress3)
+00748  |        WriteLogStartupIni("", "SystemInfo", "@IPAddress4", 0, @IPAddress4)
+00749  |    
+00750  |        WriteLogStartupIni("", "SystemInfo", "@DesktopHeight", 0, @DesktopHeight)
+00751  |        WriteLogStartupIni("", "SystemInfo", "@DesktopWidth", 0, @DesktopWidth)
+00752  |        WriteLogStartupIni("", "SystemInfo", "@DesktopDepth", 0, @DesktopDepth)
+00753  |        WriteLogStartupIni("", "SystemInfo", "@DesktopRefresh", 0, @DesktopRefresh)
+00754  +-EndFunc   ;==>WriteLogStartup
+00755    
+00756  +-Func WriteLogStartupIni($FileName, $Section, $Key, $IsSectionAddedToKey, $Value)
+00757  |        $FileName = (StringIsSpace($FileName) ? $IniGlobalNetLogDir & $Section & ".ini" : $FileName)
+00758  |        $Value = StringStripWS($Value, $STR_STRIPLEADING + $STR_STRIPTRAILING + $STR_STRIPSPACES)
+00759  |        IniWrite($FileName, ($IsSectionAddedToKey ? $Section & $Key : $Key), $ComputerName, $Value)
+00760  |        IniWrite($IniGlobalNetLogInstancePath, $Section, $Key, $Value)
+00761  +-EndFunc   ;==>WriteLogStartupIni
+00762    #EndRegion
+00763    #Region CheckAndRunProc
+00764  +-Func Check()
+00765  |        CheckAndRunProc($SpawnFileName, $SpawnDir, $SpawnPath, $SpawnExists)
+00766  |        CheckAndRunProc($KPSInfoFileName, $KPSInfoDir, $KPSInfoPath, $KPSInfoExists)
+00767  |        CheckAndRunProc($WmiExporterLocalFileName, $WmiExporterLocalDir, $WmiExporterLocalPath & $WmiExporterParams, $WmiExporterLocalExists)
+00768  |  +-    If _WinAPI_GetTickCount64() > 60e3 * 5 Then
+00769  |  |            CheckAndRunProc($EcoroKpsButlerFileName, $EcoroKpsButlerDir, $EcoroKpsButlerPath, $EcoroKpsButlerExists)
+00770  |  +-    EndIf
+00771  |    ;~     CheckAndRunProcAs($PowerkatalogFileName, $PowerkatalogDir, $PowerkatalogPath, $PowerkatalogExists, "Administrator", "Brauckhoff", "")
+00772  |    ;~     CheckAndRunProc($SHDUpdaterFileName, $SHDUpdaterDir, $SHDUpdaterPath, $SHDUpdaterExists)
+00773  +-EndFunc   ;==>Check
+00774    
+00775  +-Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
+00776  |  +-    If $Exists And Not ProcessExists($Name) Then
+00777  |  |            ConsoleLog($Name & " wird gestartet")
+00778  |  |            Return Run($Path, $Dir, $ShowFlag)
+00779  |  +-    EndIf
+00780  |        Return 0
+00781  +-EndFunc   ;==>CheckAndRunProc
+00782    
+00783  +-Func CheckAndRunProcAs($Name, $Dir, $Path, $Exists, $UserName, $Domain, $Password)
+00784  |  +-    If $Exists And Not ProcessExists($Name) Then
+00785  |  |            ConsoleLog($Name & " wird gestartet als " & $UserName & " in " & $Domain & " mit Network credentials only")
+00786  |  |            RunAs($UserName, $Domain, $Password, $RUN_LOGON_NETWORK, $Path, $Dir)
+00787  |  +-    EndIf
+00788  +-EndFunc   ;==>CheckAndRunProcAs
+00789    #EndRegion CheckAndRunProc
+00790    #Region CleaningDownloads
+00791  +-Func CleaningDownloads()
+00792  |  +-    If DownloadsNeedCleaning() And @Compiled Then
+00793  |  |            DirRemove($DownloadsOldDir, $DIR_REMOVE)
+00794  |  |            FileDirMoveRec($DownloadsDir, $DownloadsOldDir)
+00795  |  |            FileDelete($DownloadsOldDir & "\Downloads alt.lnk")
+00796  |  |            FileCreateShortcut($DownloadsOldDir, $DownloadsDir & "\Downloads alt")
+00797  |  |            IniWrite($IniLocalPath, "Downloads", "LastCleaningDate", _DateToDayValue(@YEAR, @MON, @MDAY))
+00798  |  |            Local Const $Warning = '' _
+00799  |  |  |                        & 'Wenn Sie noch wichtige Dateien im Ordner "Downloads" aufbewahren, die Sie benötigen, kopieren Sie diese bitte an einen anderen Ort.' & @CRLF _
+00800  |  |  |                        & 'Alle Dateien aus dem Ordner "Downloads" wurden bereits in den Ordner "Downloads alt" verschoben.' & @CRLF _
+00801  |  |  |                        & 'Der Ordner "Downloads alt" ist über eine Verknüpfung in "Downloads" zu erreichen.' & @CRLF _
+00802  |  |  |                        & 'Alle Ihre Dateien die im Ordner "Downloads alt" bleiben, werden demnächst unwiderruflich GELÖSCHT!' & @CRLF _
+00803  |  |  |                        & 'Bitte sichten und sichern Sie am besten jetzt sofort Ihre weiterhin benötigten Dateien.' & @CRLF _
+00804  |  |  |                        & 'Soll der Ordner "Downloads alt" jetzt geöffnet werden?' & @CRLF
+00805  |  |  +-        If MsgBox($MB_YESNO + $MB_ICONWARNING + $MB_SYSTEMMODAL, "ACHTUNG WICHTIG! LÖSCHUNG IHRER DOWNLOAD-DATEIEN", $Warning, $MsgBoxTimeout) = $IDYES Then
+00806  |  |  |                ShellExecute($DownloadsOldDir)
+00807  |  |  +-        EndIf
+00808  |  +-    EndIf
+00809  +-EndFunc   ;==>CleaningDownloads
+00810    
+00811  +-Func DownloadsNeedCleaning()
+00812  |        Return (_DateToDayValue(@YEAR, @MON, @MDAY) - GetDownloadsLastCleaningDate()) >= 14
+00813  +-EndFunc   ;==>DownloadsNeedCleaning
+00814  +-Func FileDirMoveRec($SourceDir, $DestDir)
+00815  |  +-    If FileExists($SourceDir) Then
+00816  |  |            If Not FileExists($DestDir) Then DirCreate($DestDir)
+00817  |  |            FileMove($SourceDir & "\*.*", $DestDir, $FC_OVERWRITE + $FC_CREATEPATH)
+00818  |  |            Local Const $FolderList = _FileListToArray($SourceDir, Default, $FLTA_FOLDERS, True)
+00819  |  |  +-        If Not @error Then
+00820  |  |  |  +-            For $Folder In $FolderList
+00821  |  |  |  |                    DirMove($Folder, $DestDir, $FC_OVERWRITE)
+00822  |  |  |  +-            Next
+00823  |  |  +-        EndIf
+00824  |  +-    EndIf
+00825  +-EndFunc   ;==>FileDirMoveRec
+00826    
+00827  +-Func GetDownloadsLastCleaningDate()
+00828  |        Return IniRead($IniLocalPath, "Downloads", "LastCleaningDate", "NULL")
+00829  +-EndFunc   ;==>GetDownloadsLastCleaningDate
+00830    #EndRegion CleaningDownloads
+00831    #Region FreeSpaceCheck
+00832  +-Func ByteSuffix($iBytes)
+00833  |        Local $iIndex = 0, $aArray = [' bytes', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB']
+00834  |  +-    While $iBytes > 1023
+00835  |  |            $iIndex += 1
+00836  |  |            $iBytes /= 1024
+00837  |  +-    WEnd
+00838  |        Return Round($iBytes) & $aArray[$iIndex]
+00839  +-EndFunc   ;==>ByteSuffix
+00840    
+00841  +-Func CheckHomeDriveSpaceFree()
+00842  |        Local Const $sLabel = DriveGetLabel(@HomeDrive & "\")
+00843  |    ;~     Local Const $sSerial = DriveGetSerial(@HomeDrive & "\")
+00844  |        Local Const $iFreeSpace = DriveSpaceFree(@HomeDrive & "\")
+00845  |        Local Const $iTotalSpace = DriveSpaceTotal(@HomeDrive & "\")
+00846  |        Local Const $iFreeSpacePerc = ($iFreeSpace / $iTotalSpace) * 100
+00847  |  +-    If $iFreeSpacePerc < $LowSpaceThresholdPerc Then
+00848  |  |  +-        If (_DateToDayValue(@YEAR, @MON, @MDAY) - IniRead($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", "NULL")) >= 1 Then
+00849  |  |  |                IniWrite($IniLocalPath, "FreeSpaceCheck", "LastMailSendDate", _DateToDayValue(@YEAR, @MON, @MDAY))
+00850  |  |  |  +-            For $i = 0 To 9 Step 1
+00851  |  |  |  |  +-                If $MailAddresses[$i][0] <> "" And $MailAddresses[$i][1] = 1 Then
+00852  |  |  |  |  |                        ConsoleLog("Sending Mail to " & $MailAddresses[$i][0])
+00853  |  |  |  |  |                        SendMailLowSpace($MailAddresses[$i][0], Round($iFreeSpacePerc, 2), $sLabel, $iFreeSpace, $iTotalSpace)
+00854  |  |  |  |  |                        Sleep(3000)
+00855  |  |  |  |  +-                EndIf
+00856  |  |  |  +-            Next
+00857  |  |  +-        EndIf
+00858  |  +-    EndIf
+00859  +-EndFunc   ;==>CheckHomeDriveSpaceFree
+00860    
+00861  +-Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $iFreeSpace, $iTotalSpace)
+00862  |        Local $sFromName = "akk.exe (Gerrit)"
+00863  |        Local $sFromAddress = "akk@kuechen-brauckhoff.de"
+00864  |        Local $sSubject = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $iFreeSpacePerc & "% !"
+00865  |        Local $asBody[0]
+00866  |        _ArrayAdd($asBody, "Akk Warnung wenig Speicherplatz auf:")
+00867  |        _ArrayAdd($asBody, @ComputerName)
+00868  |        If @IPAddress1 <> "0.0.0.0" Then _ArrayAdd($asBody, @IPAddress1)
+00869  |        If @IPAddress2 <> "0.0.0.0" Then _ArrayAdd($asBody, @IPAddress2)
+00870  |        If @IPAddress3 <> "0.0.0.0" Then _ArrayAdd($asBody, @IPAddress3)
+00871  |        If @IPAddress4 <> "0.0.0.0" Then _ArrayAdd($asBody, @IPAddress4)
+00872  |        _ArrayAdd($asBody, $sLabel & " (" & @HomeDrive & ")")
+00873  |        _ArrayAdd($asBody, Round($iFreeSpace / 1024, 2) & " GB frei von " & Round($iTotalSpace / 1024, 2) & " GB")
+00874  |        _ArrayAdd($asBody, $iFreeSpacePerc & "% frei")
+00875  |        Local $iResponse = _INetSmtpMail($SmtpMailSmtpServer, $sFromName, $sFromAddress, $sToAddress, $sSubject, $asBody, $SmtpMailEHLO, $SmtpMailFirst, $SmtpMailTrace)
+00876  |        Local $iErr = @error
+00877  |  +-    If $iResponse = 0 Then
+00878  |  |            Local Const $Warning = '' _
+00879  |  |  |                        & 'DIE FESTPLATTE IST FAST VOLL!' & @CRLF & @CRLF _
+00880  |  |  |                        & 'Bitte Herrn Heger bescheid geben:' & @CRLF _
+00881  |  |  |                        & 'heger@easyconnectit.de' & @CRLF _
+00882  |  |  |                        & 'oder 0176 23984427' & @CRLF & @CRLF _
+00883  |  |  |                        & _ArrayToString($asBody, @CRLF) & @CRLF & @CRLF _
+00884  |  |  |                        & 'Mail failed with error code ' & $iErr & @CRLF
+00885  |  |            MsgBox($MB_ICONWARNING + $MB_SYSTEMMODAL, "Warnung!", $Warning)
+00886  |  +-    EndIf
+00887  +-EndFunc   ;==>SendMailLowSpace
+00888    #EndRegion FreeSpaceCheck
+00889    #Region WMI Exporter
+00890  +-Func _FormatKbToGb($iKb)
+00891  |        Return Round($iKb / 1024 / 1024, 2)
+00892  +-EndFunc   ;==>_FormatKbToGb
+00893    
+00894  +-Func _PrometheusNewDesc(ByRef $mMap, $sName, $sType, $nValue = 0, $sText = "")
+00895  |        Local Static $iDx = 0
+00896  |        $iDx += 1
+00897  |        Local Const $sTextDefault = "Metric read from " & StringReplace($WmiExporterMetadataPath, "\", "\\")
+00898  |        Local $mResult[]
+00899  |        Local $mLabels[]
+00900  |        $mResult.Name = $sName & "+" & $iDx
+00901  |        $mResult.Type = $sType
+00902  |        $mResult.Value = $nValue
+00903  |        $mResult.Text = ($sText = "" ? $sTextDefault : $sText)
+00904  |        $mResult.Labels = $mLabels
+00905  |        $mMap[$mResult.Name] = $mResult
+00906  |        Return $mResult.Name
+00907  +-EndFunc   ;==>_PrometheusNewDesc
+00908    
+00909  +-Func MetaProcessCount($ProcessName)
+00910  |        Local $mResult[]
+00911  |        Local $aProcessList = ProcessList($ProcessName)
+00912  |        Local $sDrive = "", $sDir = "", $sFileName = "", $sExtension = ""
+00913  |        _PathSplit($ProcessName, $sDrive, $sDir, $sFileName, $sExtension)
+00914  |        $mResult.Count = $aProcessList[0][0]
+00915  |        $mResult.FileName = $sFileName
+00916  |        Return $mResult
+00917  +-EndFunc   ;==>MetaProcessCount
+00918    
+00919  +-Func Scrape()
+00920  |  +-    If $ScrapeComplete And ProcessExists($WmiExporterLocalFileName) Then
+00921  |  |            $hDownload = InetGet("http://localhost:9182/metrics", $LogScrapePath, $INET_FORCERELOAD, $INET_DOWNLOADBACKGROUND)
+00922  |  |            $ScrapeComplete = 0
+00923  |  +-    EndIf
+00924  +-EndFunc   ;==>Scrape
+00925    
+00926  +-Func ScrapeDownload()
+00927  |  +-    If Not $ScrapeComplete Then
+00928  |  |  +-        If InetGetInfo($hDownload, $INET_DOWNLOADCOMPLETE) Then
+00929  |  |  |  +-            If InetGetInfo($hDownload, $INET_DOWNLOADSUCCESS) Then
+00930  |  |  |  |                    If FileGetSize($LogScrapePath) Then FileCopy($LogScrapePath, $LogScrapeNetPath, $FC_OVERWRITE + $FC_CREATEPATH)
+00931  |  |  |  +-            Else
+00932  |  |  |  |                    FileDelete($LogScrapePath)
+00933  |  |  |  |                    ConsoleLog("Error ScrapeDownload")
+00934  |  |  |  +-            EndIf
+00935  |  |  |                InetClose($hDownload)
+00936  |  |  |                $hDownload = 0
+00937  |  |  |                $ScrapeComplete = 1
+00938  |  |  +-        EndIf
+00939  |  +-    EndIf
+00940  +-EndFunc   ;==>ScrapeDownload
+00941    
+00942  +-Func SetupExactFile()
+00943  |  +-    If Not $ExactFileExists Then
+00944  |  |  +-        If FileCopy($ExactFileNetPath, $ExactFilePath, $FC_OVERWRITE + $FC_CREATEPATH) Then
+00945  |  |  |                $ExactFileExists = FileExists($ExactFilePath)
+00946  |  |  +-        EndIf
+00947  |  +-    EndIf
+00948  +-EndFunc   ;==>SetupExactFile
+00949    
+00950  +-Func SetupWmiExporter()
+00951  |        ProcessClose($WmiExporterLocalFileName)
+00952  |        Local $SourcePath = (@OSArch = "X64") ? $WmiExporterX64GlobalNetSetupPath : $WmiExporterX32GlobalNetSetupPath
+00953  |        Local $WmiExporterLocalTime = FileGetTime($WmiExporterLocalPath, $FT_MODIFIED, $FT_STRING)
+00954  |        Local $WmiExporterGlobalNetSetupTime = FileGetTime($SourcePath, $FT_MODIFIED, $FT_STRING)
+00955  |  +-    If Not $WmiExporterLocalExists Or $WmiExporterLocalTime <> $WmiExporterGlobalNetSetupTime Then
+00956  |  |            ConsoleLog("Reload WmiExporter " & $SourcePath)
+00957  |  |  +-        If FileCopy($SourcePath, $WmiExporterLocalPath, $FC_OVERWRITE + $FC_CREATEPATH) Then
+00958  |  |  |                $WmiExporterLocalExists = FileExists($WmiExporterLocalPath)
+00959  |  |  +-        Else
+00960  |  |  |                ConsoleLog("ERROR Reload WmiExporter " & $SourcePath)
+00961  |  |  +-        EndIf
+00962  |  +-    EndIf
+00963  |        If Not FileExists($WmiExporterCollectorTextfileDir) Then DirCreate($WmiExporterCollectorTextfileDir)
+00964  +-EndFunc   ;==>SetupWmiExporter
+00965    
+00966  +-Func WriteMetaDataFile()
+00967  |        EventLog()
+00968  |        Local $mMetrics[]
+00969  |        Local $sName = _PrometheusNewDesc($mMetrics, "akk_metadata", "gauge", _Timer_GetIdleTime() / 1e3)
+00970  |        $mMetrics[$sName].Labels.username = @UserName
+00971  |        $mMetrics[$sName].Labels.ip_address = @IPAddress1
+00972  |        $mMetrics[$sName].Labels.netphone_user = ($ActiveWinTitle = "LockScreen" ? "LockScreen" : $NetPhoneUser)
+00973  |  +-    If $WmiExporterMetadataString <> "NULL" And StringLen($WmiExporterMetadataString) And Not StringIsSpace($WmiExporterMetadataString) Then
+00974  |  |            $mMetrics[$sName].LabelsRaw = $WmiExporterMetadataString
+00975  |  +-    EndIf
+00976  |    
+00977  |        Local $aMemStats = MemGetStats()
+00978  |        _PrometheusNewDesc($mMetrics, "akk_idletime_sec", "gauge", _Timer_GetIdleTime() / 1e3, "Returns the number of seconds since last user activity (i.e. KYBD/Mouse)")
+00979  |        _PrometheusNewDesc($mMetrics, "akk_memstats_load", "gauge", $aMemStats[$MEM_LOAD], "Memory Load (Percentage of memory in use)")
+00980  |        _PrometheusNewDesc($mMetrics, "akk_memstats_total_physram_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_TOTALPHYSRAM]), "Total physical RAM")
+00981  |        _PrometheusNewDesc($mMetrics, "akk_memstats_avail_physram_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_AVAILPHYSRAM]), "Available physical RAM")
+00982  |        _PrometheusNewDesc($mMetrics, "akk_memstats_total_pagefile_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_TOTALPAGEFILE]), "Total Pagefile")
+00983  |        _PrometheusNewDesc($mMetrics, "akk_memstats_avail_pagefile_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_AVAILPAGEFILE]), "Available Pagefile")
+00984  |        _PrometheusNewDesc($mMetrics, "akk_memstats_total_virtual_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_TOTALVIRTUAL]), "Total virtual")
+00985  |        _PrometheusNewDesc($mMetrics, "akk_memstats_avail_virtual_gb", "gauge", _FormatKbToGb($aMemStats[$MEM_AVAILVIRTUAL]), "Available virtual")
+00986  |    
+00987  |        _PrometheusNewDesc($mMetrics, "akk_eventlog_full", "gauge", ($EventLogFull ? 1 : 0), "Retrieves whether the event log is full")
+00988  |        _PrometheusNewDesc($mMetrics, "akk_eventlog_count", "gauge", $EventLogCount, "Retrieves the number of records in the event log")
+00989  |        _PrometheusNewDesc($mMetrics, "akk_eventlog_oldest", "gauge", $EventLogOldest, "Retrieves the absolute record number of the oldest record in the event log")
+00990  |    
+00991  |        Local $MetaProcessCountChrome = MetaProcessCount("chrome.exe")
+00992  |        $sName = _PrometheusNewDesc($mMetrics, "akk_process_count", "gauge", $MetaProcessCountChrome.Count)
+00993  |        $mMetrics[$sName].Labels.process = $MetaProcessCountChrome.FileName
+00994  |    
+00995  |        Local $MetaProcessCountJavaw = MetaProcessCount("javaw.exe")
+00996  |        $sName = _PrometheusNewDesc($mMetrics, "akk_process_count", "gauge", $MetaProcessCountJavaw.Count)
+00997  |        $mMetrics[$sName].Labels.process = $MetaProcessCountJavaw.FileName
+00998  |    
+00999  |        Local $MetaProcessCountFusionFX = MetaProcessCount("FusionFX.exe")
+01000  |        $sName = _PrometheusNewDesc($mMetrics, "akk_process_count", "gauge", $MetaProcessCountFusionFX.Count)
+01001  |        $mMetrics[$sName].Labels.process = $MetaProcessCountFusionFX.FileName
+01002  |    
+01003  |        Local $WmiExporterMetadataArray[1]
+01004  |        Local $sLastName = "", $sLabels = ""
+01005  |        Local $aMapKeys
+01006  |  +-    For $mMap In $mMetrics
+01007  |  |            $sName = StringSplit($mMap.Name, "+")[1]
+01008  |  |  +-        If $sLastName <> $sName Then
+01009  |  |  |                _ArrayAdd($WmiExporterMetadataArray, "# HELP " & $sName & " " & $mMap.Text)
+01010  |  |  |                _ArrayAdd($WmiExporterMetadataArray, "# TYPE " & $sName & " " & $mMap.Type)
+01011  |  |  +-        EndIf
+01012  |  |            $aMapKeys = MapKeys($mMap.Labels)
+01013  |  |            $sLabels = ""
+01014  |  |  +-        If UBound($aMapKeys) Then
+01015  |  |  |                $sLabels &= "{"
+01016  |  |  |  +-            For $vLabel In $aMapKeys
+01017  |  |  |  |                    $sLabels &= $vLabel & '="' & $mMap.Labels[$vLabel] & '",'
+01018  |  |  |  +-            Next
+01019  |  |  |  +-            If MapExists($mMap, "LabelsRaw") Then
+01020  |  |  |  |                    $sLabels &= $mMap.LabelsRaw
+01021  |  |  |  +-            EndIf
+01022  |  |  |                If StringRight($sLabels, 1) = "," Then $sLabels = StringTrimRight($sLabels, 1)
+01023  |  |  |                $sLabels &= "}"
+01024  |  |  +-        EndIf
+01025  |  |            _ArrayAdd($WmiExporterMetadataArray, $sName & $sLabels & " " & $mMap.Value)
+01026  |  |            $sLastName = $sName
+01027  |  +-    Next
+01028  |        $WmiExporterMetadataArray[0] = UBound($WmiExporterMetadataArray) - 1
+01029  |        Local $WmiExporterMetadataArrayRet
+01030  |        _FileReadToArray($WmiExporterMetadataPath, $WmiExporterMetadataArrayRet)
+01031  |  +-    If Not _ArrayCompare($WmiExporterMetadataArray, $WmiExporterMetadataArrayRet, 3) Then
+01032  |  |            _FileWriteFromArray($WmiExporterMetadataPath, $WmiExporterMetadataArray, 1)
+01033  |  +-    EndIf
+01034  +-EndFunc   ;==>WriteMetaDataFile
+01035    
+01036  +-Func WriteScrapeTargetFile()
+01037  |        Local $Lines[1]
+01038  |        _ArrayAdd($Lines, '[')
+01039  |        _ArrayAdd($Lines, '  {')
+01040  |        _ArrayAdd($Lines, '    "labels": {')
+01041  |        _ArrayAdd($Lines, '      "job": "node",')
+01042  |        _ArrayAdd($Lines, '      "instance": "@ComputerName@"')
+01043  |        _ArrayAdd($Lines, '    },')
+01044  |        _ArrayAdd($Lines, '    "targets": [')
+01045  |        _ArrayAdd($Lines, '      "@IPAddress1@:9182"')
+01046  |        _ArrayAdd($Lines, '    ]')
+01047  |        _ArrayAdd($Lines, '  }')
+01048  |        _ArrayAdd($Lines, ']')
+01049  |        Local $CurrentFile
+01050  |        $Lines[0] = UBound($Lines) - 1
+01051  |        Local $FilePath = $PromScrapeTargetsDir & "@ComputerName@.json"
+01052  |        _FileReadToArray($FilePath, $CurrentFile)
+01053  |  +-    If Not _ArrayCompare($Lines, $CurrentFile, 3) Then
+01054  |  |            _FileWriteFromArray($FilePath, $Lines, 1)
+01055  |  +-    EndIf
+01056  +-EndFunc   ;==>WriteScrapeTargetFile
+01057    #EndRegion WMI Exporter
+01058    #Region UDF
+01059  +-Func _ComputerNameAndModel()
+01060  |        Local $aReturn[2] = ["(Unknown)", "(Unknown)"], $oColItems, $oWMIService
+01061  |    
+01062  |        $oWMIService = ObjGet("winmgmts:\\.\root\cimv2")
+01063  |        $oColItems = $oWMIService.ExecQuery("Select * From Win32_ComputerSystemProduct", "WQL", 0x30)
+01064  |  +-    If IsObj($oColItems) Then
+01065  |  |  +-        For $oObjectItem In $oColItems
+01066  |  |  |                $aReturn[0] = StringStripWS($oObjectItem.Name, $STR_STRIPLEADING + $STR_STRIPTRAILING)
+01067  |  |  |                $aReturn[1] = StringStripWS($oObjectItem.IdentifyingNumber, $STR_STRIPLEADING + $STR_STRIPTRAILING)
+01068  |  |  +-        Next
+01069  |  |            Return $aReturn
+01070  |  +-    EndIf
+01071  |        Return SetError(1, 0, $aReturn)
+01072  +-EndFunc   ;==>_ComputerNameAndModel
+01073    #EndRegion UDF
 
 ======================
 === xref reports =====
@@ -1081,38 +1084,38 @@
                           Func
 Function name             Row     Referenced at Row(s)
 ========================= ====== ==================================================================================
-ByteSuffix                00829 
-Check                     00761 
-CheckAndRunProc           00772 
-CheckAndRunProcAs         00780 
-CheckHomeDriveSpaceFree   00838 
-CleaningDownloads         00788 
+ByteSuffix                00832 
+Check                     00764 
+CheckAndRunProc           00775 
+CheckAndRunProcAs         00783 
+CheckHomeDriveSpaceFree   00841 
+CleaningDownloads         00791 
 ConsoleLog                00439 
-DownloadsNeedCleaning     00808 
+DownloadsNeedCleaning     00811 
 EventLog                  00448 
-FileDirMoveRec            00811 
-GetDownloadsLastCleaningDate  00824 
+FileDirMoveRec            00814 
+GetDownloadsLastCleaningDate  00827 
 GetGlobalConfig           00456 
 GetWinList                00499 
 ManageLogFile             00537 
-MetaProcessCount          00906 
+MetaProcessCount          00909 
 ReadGlobalConfig          00553 
 ReadLocalConfig           00570 
-Scrape                    00916 
-ScrapeDownload            00923 
+Scrape                    00919 
+ScrapeDownload            00926 
 ScreenCaptureNetPhoneClient  00578 
-ScreenCaptureWnd          00616 
-SendMailLowSpace          00858 
-SetupExactFile            00939 
-SetupWmiExporter          00947 
-Timeout                   00647 
-WriteLogStartup           00656 
-WriteLogStartupIni        00752 
-WriteMetaDataFile         00963 
-WriteScrapeTargetFile     01033 
-_ComputerNameAndModel     01056 
-_FormatKbToGb             00887 
-_PrometheusNewDesc        00891 
+ScreenCaptureWnd          00618 
+SendMailLowSpace          00861 
+SetupExactFile            00942 
+SetupWmiExporter          00950 
+Timeout                   00651 
+WriteLogStartup           00660 
+WriteLogStartupIni        00756 
+WriteMetaDataFile         00966 
+WriteScrapeTargetFile     01036 
+_ComputerNameAndModel     01059 
+_FormatKbToGb             00890 
+_PrometheusNewDesc        00894 
 _SetVar                   00434 
 
 #### indicates that this specific variable only occurs one time in the script.
@@ -1145,11 +1148,11 @@ Variable name             Dim   Used in Row(s)
 #AutoIt3Wrapper_UseX64    ----- 00005
 #AutoIt3Wrapper_Version   ----- 00002
 #Autoit3wrapper_Jump_to_First_Error  ----- 00019
-#EndRegion                ----- 00027 00093 00150 00277 00286 00369 00380 00386 00759 00786 00827 00885 01054 01070
-#Region                   ----- 00001 00048 00095 00151 00278 00287 00370 00381 00387 00760 00787 00828 00886 01055
+#EndRegion                ----- 00027 00093 00150 00277 00286 00369 00380 00386 00762 00789 00830 00888 01057 01073
+#Region                   ----- 00001 00048 00095 00151 00278 00287 00370 00381 00387 00763 00790 00831 00889 01058
 #Tidy_Parameters          ----- 00024
 #include                  ----- 00035 00036 00037 00038 00039 00040 00041 00042 00043 00044 00045 00046 00047
-$ActiveWinTitle           ----- 00118 00623 00666 00969
+$ActiveWinTitle           ----- 00118 00626 00670 00972
 $AkkDir                   ----- 00164 00165 00174 00184 00189 00211 00249 00259
 $AkkExists                ----- 00166
 $AkkFileName              ----- 00163 00165 00168
@@ -1174,50 +1177,50 @@ $AkkUpdaterNetPath        ----- 00180 00181 00464 00485 00487 00488
 $AkkUpdaterNetTime        ----- 00485 00486
 $AkkUpdaterPath           ----- 00175 00176 00464 00484 00487 00494
 $AkkUpdaterTime           ----- 00484 00486
-$AkkVersion               ----- 00113 00659
+$AkkVersion               ----- 00113 00663
 $ArrayDelimItem           ----- 00273 00513 00526
-$ComputerName             ----- 00112 00756
-$CurrentFile              ----- 01046 01049 01050
+$ComputerName             ----- 00112 00759
+$CurrentFile              ----- 01049 01052 01053
 $Cycle                    ----- 00100 00421 00430 00431 00440
-$DIR_REMOVE               ----- 00790
-$Delay                    ----- 00647 00649
+$DIR_REMOVE               ----- 00793
+$Delay                    ----- 00651 00653
 $Dest                     ----- 00548 00549
-$DestDir                  ----- 00811 00813 00814 00818
-$Diff                     ----- 00648 00649 00651
-$Dir                      ----- 00772 00775 00780 00783
-$Domain                   ----- 00780 00782 00783
-$DownloadsDir             ----- 00270 00271 00791 00793
-$DownloadsOldDir          ----- 00271 00790 00791 00792 00793 00803
-$EcoroKpsButlerDir        ----- 00147 00148 00766
-$EcoroKpsButlerExists     ----- 00149 00665 00766
-$EcoroKpsButlerFileName   ----- 00146 00148 00766
-$EcoroKpsButlerPath       ----- 00148 00149 00766
-$EventLogCount            ----- 00293 00451 00670 00985
-$EventLogFull             ----- 00292 00450 00669 00984
-$EventLogOldest           ----- 00294 00452 00671 00986
+$DestDir                  ----- 00814 00816 00817 00821
+$Diff                     ----- 00652 00653 00655
+$Dir                      ----- 00775 00778 00783 00786
+$Domain                   ----- 00783 00785 00786
+$DownloadsDir             ----- 00270 00271 00794 00796
+$DownloadsOldDir          ----- 00271 00793 00794 00795 00796 00806
+$EcoroKpsButlerDir        ----- 00147 00148 00769
+$EcoroKpsButlerExists     ----- 00149 00669 00769
+$EcoroKpsButlerFileName   ----- 00146 00148 00769
+$EcoroKpsButlerPath       ----- 00148 00149 00769
+$EventLogCount            ----- 00293 00451 00674 00988
+$EventLogFull             ----- 00292 00450 00673 00987
+$EventLogOldest           ----- 00294 00452 00675 00989
 $ExactFileDir             ----- 00297 00298
-$ExactFileExists          ----- 00299 00940 00942
+$ExactFileExists          ----- 00299 00943 00945
 $ExactFileFileName        ----- 00296 00298 00301
 $ExactFileNetDir          ----- 00302 00303
 $ExactFileNetExists       ----- 00304
 $ExactFileNetFileName     ----- 00301 00303
-$ExactFileNetPath         ----- 00303 00304 00941
-$ExactFilePath            ----- 00298 00299 00941 00942
-$Exists                   ----- 00772 00773 00780 00781
-$FC_CREATEPATH            ----- 00458 00461 00464 00470 00478 00487 00549 00814 00927 00941 00954
-$FC_OVERWRITE             ----- 00458 00461 00464 00470 00478 00487 00549 00814 00818 00927 00941 00954
-$FLTA_FOLDERS             ----- 00815
-$FT_MODIFIED              ----- 00467 00468 00475 00476 00484 00485 00491 00492 00673 00950 00951
-$FT_STRING                ----- 00467 00468 00475 00476 00484 00485 00491 00492 00673 00950 00951
-$FileName                 ----- 00752 00753 00754 00756
-$FilePath                 ----- 01048 01049 01051
-$Folder                   ----- 00817 00818
-$FolderList               ----- 00815 00817
-$IDYES                    ----- 00802
-$INET_DOWNLOADBACKGROUND  ----- 00918
-$INET_DOWNLOADCOMPLETE    ----- 00925
-$INET_DOWNLOADSUCCESS     ----- 00926
-$INET_FORCERELOAD         ----- 00918
+$ExactFileNetPath         ----- 00303 00304 00944
+$ExactFilePath            ----- 00298 00299 00944 00945
+$Exists                   ----- 00775 00776 00783 00784
+$FC_CREATEPATH            ----- 00458 00461 00464 00470 00478 00487 00549 00817 00930 00944 00957
+$FC_OVERWRITE             ----- 00458 00461 00464 00470 00478 00487 00549 00817 00821 00930 00944 00957
+$FLTA_FOLDERS             ----- 00818
+$FT_MODIFIED              ----- 00467 00468 00475 00476 00484 00485 00491 00492 00677 00953 00954
+$FT_STRING                ----- 00467 00468 00475 00476 00484 00485 00491 00492 00677 00953 00954
+$FileName                 ----- 00756 00757 00759
+$FilePath                 ----- 01051 01052 01054
+$Folder                   ----- 00820 00821
+$FolderList               ----- 00818 00820
+$IDYES                    ----- 00805
+$INET_DOWNLOADBACKGROUND  ----- 00921
+$INET_DOWNLOADCOMPLETE    ----- 00928
+$INET_DOWNLOADSUCCESS     ----- 00929
+$INET_FORCERELOAD         ----- 00921
 $IdleTime                 ----- 00290
 $IniGlobalDir             ----- 00189 00190 00199
 $IniGlobalExDir           ----- 00199 00200
@@ -1228,20 +1231,20 @@ $IniGlobalExNetExists     ----- 00206 00460
 $IniGlobalExNetFileName   ----- 00203 00205
 $IniGlobalExNetPath       ----- 00205 00206 00461 00476 00478 00479 00565
 $IniGlobalExNetTime       ----- 00476 00477
-$IniGlobalExPath          ----- 00200 00201 00461 00475 00478 00562 00563 00611
+$IniGlobalExPath          ----- 00200 00201 00461 00475 00478 00562 00563 00613
 $IniGlobalExTime          ----- 00475 00477
 $IniGlobalExists          ----- 00191 00457 00458 00470
 $IniGlobalFileName        ----- 00188 00190 00193
 $IniGlobalNetDir          ----- 00194 00195
 $IniGlobalNetExists       ----- 00196 00457
 $IniGlobalNetFileName     ----- 00193 00195
-$IniGlobalNetLogDir       ----- 00234 00235 00657 00754
+$IniGlobalNetLogDir       ----- 00234 00235 00661 00757
 $IniGlobalNetLogExists    ----- 00236
 $IniGlobalNetLogFileName  ----- 00233 00235
 $IniGlobalNetLogInstanceDir  ----- 00244 00245
 $IniGlobalNetLogInstanceExists  ----- 00246
 $IniGlobalNetLogInstanceFileName  ----- 00243 00245
-$IniGlobalNetLogInstancePath  ----- 00245 00246 00757
+$IniGlobalNetLogInstancePath  ----- 00245 00246 00760
 $IniGlobalNetLogPath      ----- 00235 00236
 $IniGlobalNetPath         ----- 00195 00196 00458 00468 00470 00471
 $IniGlobalNetTime         ----- 00468 00469
@@ -1250,18 +1253,18 @@ $IniGlobalTime            ----- 00467 00469
 $IniLocalDir              ----- 00184 00185
 $IniLocalExists           ----- 00186
 $IniLocalFileName         ----- 00183 00185
-$IniLocalPath             ----- 00185 00186 00543 00545 00546 00571 00573 00794 00825 00845 00846
+$IniLocalPath             ----- 00185 00186 00543 00545 00546 00571 00573 00797 00828 00848 00849
 $IntMax                   ----- 00111
 $IntMin                   ----- 00110
-$IsSectionAddedToKey      ----- 00752 00756
-$KPSInfoDir               ----- 00127 00128 00763
-$KPSInfoExists            ----- 00129 00661 00763
-$KPSInfoFileName          ----- 00126 00128 00763
-$KPSInfoPath              ----- 00128 00129 00763
-$Key                      ----- 00752 00756 00757
-$Lines                    ----- 01034 01035 01036 01037 01038 01039 01040 01041 01042 01043 01044 01045 01047 01050 
-                                01051
-$List                     ----- 00617 00620 00621 00622 00623 00624 00626 00627 00631 00634
+$IsSectionAddedToKey      ----- 00756 00759
+$KPSInfoDir               ----- 00127 00128 00766
+$KPSInfoExists            ----- 00129 00665 00766
+$KPSInfoFileName          ----- 00126 00128 00766
+$KPSInfoPath              ----- 00128 00129 00766
+$Key                      ----- 00756 00759 00760
+$Lines                    ----- 01037 01038 01039 01040 01041 01042 01043 01044 01045 01046 01047 01048 01050 01053 
+                                01054
+$List                     ----- 00619 00623 00624 00625 00626 00627 00629 00631 00635 00638
 $ListStates               ----- 00501 00503 00504 00505 00506 00507 00508 00509 00513 00522 00524 00525 00526
 $ListVisble               ----- 00523 00526 00533 00534
 $LogArchiveNetDir         ----- 00228 00229 00231 00548
@@ -1287,12 +1290,12 @@ $LogScrapeFileName        ----- 00248 00250
 $LogScrapeNetDir          ----- 00254 00255
 $LogScrapeNetExists       ----- 00256
 $LogScrapeNetFileName     ----- 00253 00255
-$LogScrapeNetPath         ----- 00255 00256 00927
-$LogScrapePath            ----- 00250 00251 00918 00927 00929
-$LogScreenCapDir          ----- 00259 00260 00262 00629
+$LogScrapeNetPath         ----- 00255 00256 00930
+$LogScrapePath            ----- 00250 00251 00921 00930 00932
+$LogScreenCapDir          ----- 00259 00260 00262 00633
 $LogScreenCapExists       ----- 00261
 $LogScreenCapFileName     ----- 00258 00260
-$LogScreenCapNetDir       ----- 00265 00266 00268 00602 00606
+$LogScreenCapNetDir       ----- 00265 00266 00268 00604 00608
 $LogScreenCapNetExists    ----- 00267
 $LogScreenCapNetFileName  ----- 00264 00266
 $LogScreenCapNetPath      ----- 00266 00267
@@ -1301,74 +1304,75 @@ $LogSpawnStatsNetDir      ----- 00239 00240
 $LogSpawnStatsNetExists   ----- 00241
 $LogSpawnStatsNetFileName  ----- 00238 00240
 $LogSpawnStatsNetPath     ----- 00240 00241
-$LowSpaceThresholdPerc    ----- 00284 00555 00844
-$MB_ICONWARNING           ----- 00802 00882
-$MB_SYSTEMMODAL           ----- 00802 00882
-$MB_YESNO                 ----- 00802
-$MEM_AVAILPAGEFILE        ----- 00384 00980
-$MEM_AVAILPHYSRAM         ----- 00384 00978
-$MEM_AVAILVIRTUAL         ----- 00384 00982
-$MEM_LOAD                 ----- 00384 00976
-$MEM_TOTALPAGEFILE        ----- 00384 00979
-$MEM_TOTALPHYSRAM         ----- 00384 00977
-$MEM_TOTALVIRTUAL         ----- 00384 00981
+$LowSpaceThresholdPerc    ----- 00284 00555 00847
+$MB_ICONWARNING           ----- 00805 00885
+$MB_SYSTEMMODAL           ----- 00805 00885
+$MB_YESNO                 ----- 00805
+$MEM_AVAILPAGEFILE        ----- 00384 00983
+$MEM_AVAILPHYSRAM         ----- 00384 00981
+$MEM_AVAILVIRTUAL         ----- 00384 00985
+$MEM_LOAD                 ----- 00384 00979
+$MEM_TOTALPAGEFILE        ----- 00384 00982
+$MEM_TOTALPHYSRAM         ----- 00384 00980
+$MEM_TOTALVIRTUAL         ----- 00384 00984
 $MacroAutoIt              ----- 00274
 $MacroDirectory           ----- 00275
 $MacroSystemInfo          ----- 00276
-$MailAddresses            ----- 00285 00557 00558 00848 00849 00850
-$MetaProcessCountChrome   ----- 00988 00989 00990
-$MetaProcessCountFusionFX  ----- 00996 00997 00998
-$MetaProcessCountJavaw    ----- 00992 00993 00994
-$MsgBoxTimeout            ----- 00098 00802
-$Name                     ----- 00772 00773 00774 00780 00781 00782
+$MailAddresses            ----- 00285 00557 00558 00851 00852 00853
+$MetaProcessCountChrome   ----- 00991 00992 00993
+$MetaProcessCountFusionFX  ----- 00999 01000 01001
+$MetaProcessCountJavaw    ----- 00995 00996 00997
+$MsgBoxTimeout            ----- 00098 00805
+$Name                     ----- 00775 00776 00777 00783 00784 00785
 $NetPhoneClientDir        ----- 00142 00143
-$NetPhoneClientExists     ----- 00144 00664
-$NetPhoneClientFileName   ----- 00141 00143 00582
+$NetPhoneClientExists     ----- 00144 00668
+$NetPhoneClientFileName   ----- 00141 00143 00583
 $NetPhoneClientPath       ----- 00143 00144
-$NetPhoneUser             ----- 00117 00611 00612 00969
-$NetPhoneUserChecksum     ----- 00116 00595 00602 00606 00611 00613
-$Password                 ----- 00780 00783
-$Path                     ----- 00772 00775 00780 00783
+$NetPhoneUser             ----- 00117 00613 00614 00972
+$NetPhoneUserChecksum     ----- 00116 00597 00604 00608 00613 00615
+$Password                 ----- 00783 00786
+$Path                     ----- 00775 00778 00783 00786
 $PowerkatalogDir          ----- 00132 00133
-$PowerkatalogExists       ----- 00134 00662
+$PowerkatalogExists       ----- 00134 00666
 $PowerkatalogFileName     ----- 00131 00133
 $PowerkatalogPath         ----- 00133 00134
-$ProcessName              ----- 00906 00908 00910
-$PromScrapeTargetsDir     ----- 00357 00358 00360 01048
+$ProcessName              ----- 00909 00911 00913
+$PromScrapeTargetsDir     ----- 00357 00358 00360 01051
 $PromScrapeTargetsExists  ----- 00359
 $PromScrapeTargetsFileName  ----- 00356 00358
 $PromScrapeTargetsPath    ----- 00358 00359
-$RUN_LOGON_NETWORK        ----- 00783
+$RUN_LOGON_NETWORK        ----- 00786
 $RootDir                  ----- 00153 00155 00159 00169 00179
 $RootExists               ----- 00156
 $RootFileName             ----- 00152 00155
 $RootPath                 ----- 00155 00156
 $SHDUpdaterDir            ----- 00137 00138
-$SHDUpdaterExists         ----- 00139 00663
+$SHDUpdaterExists         ----- 00139 00667
 $SHDUpdaterFileName       ----- 00136 00138
 $SHDUpdaterPath           ----- 00138 00139
-$STR_STRIPLEADING         ----- 00626 01063 01064
-$STR_STRIPTRAILING        ----- 00626 01063 01064
-$ScrapeComplete           ----- 00289 00917 00919 00924 00934
-$ScreenCaptureWinActivate  ----- 00115 00585 00610
-$ScreenCaptureWnd         ----- 00114 00626
-$Section                  ----- 00752 00754 00756 00757
-$ShowFlag                 ----- 00772 00775
-$SmtpMailEHLO             ----- 00280 00872
-$SmtpMailFirst            ----- 00281 00872
-$SmtpMailSmtpServer       ----- 00279 00560 00872
-$SmtpMailTrace            ----- 00282 00872
-$SourceDir                ----- 00811 00812 00814 00815
-$SourcePath               ----- 00949 00951 00953 00954 00957
-$SpawnDir                 ----- 00122 00123 00762
-$SpawnExists              ----- 00124 00660 00762
-$SpawnFileName            ----- 00121 00123 00673 00762
-$SpawnPath                ----- 00123 00124 00673 00762
+$STR_STRIPLEADING         ----- 00629 00758 01066 01067
+$STR_STRIPSPACES          ----- 00758
+$STR_STRIPTRAILING        ----- 00629 00758 01066 01067
+$ScrapeComplete           ----- 00289 00920 00922 00927 00937
+$ScreenCaptureWinActivate  ----- 00115 00587 00612
+$ScreenCaptureWnd         ----- 00114 00630
+$Section                  ----- 00756 00757 00759 00760
+$ShowFlag                 ----- 00775 00778
+$SmtpMailEHLO             ----- 00280 00875
+$SmtpMailFirst            ----- 00281 00875
+$SmtpMailSmtpServer       ----- 00279 00560 00875
+$SmtpMailTrace            ----- 00282 00875
+$SourceDir                ----- 00814 00815 00817 00818
+$SourcePath               ----- 00952 00954 00956 00957 00960
+$SpawnDir                 ----- 00122 00123 00765
+$SpawnExists              ----- 00124 00664 00765
+$SpawnFileName            ----- 00121 00123 00677 00765
+$SpawnPath                ----- 00123 00124 00677 00765
 $StartTimer               ----- 00101 00102 00103 00104 00105 00106 00107 00108 00109
 $T1                       ----- 00096
 $T2                       ----- 00097
 $Text                     ----- 00439 00440 00441 00443 00444 00445
-$Timer                    ----- 00647 00648 00650
+$Timer                    ----- 00651 00652 00654
 $Timer1                   ----- 00102 00422
 $Timer2                   ----- 00103 00423
 $Timer3                   ----- 00104 00424
@@ -1378,230 +1382,231 @@ $Timer6                   ----- 00107 00427
 $Timer7                   ----- 00108 00428
 $Timer8                   ----- 00109
 $TrayTipTimeout           ----- 00099
-$UserName                 ----- 00780 00782 00783
-$Value                    ----- 00752 00756 00757
-$WIN_STATE_ACTIVE         ----- 00376 00513 00622
+$UserName                 ----- 00783 00785 00786
+$Value                    ----- 00756 00758 00759 00760
+$WIN_STATE_ACTIVE         ----- 00376 00513 00625
 $WIN_STATE_ENABLED        ----- 00375 00513
 $WIN_STATE_EXISTS         ----- 00373 00513
-$WIN_STATE_MAXIMIZED      ----- 00378 00513 00634
-$WIN_STATE_MINIMIZED      ----- 00377 00513 00608 00631
+$WIN_STATE_MAXIMIZED      ----- 00378 00513 00638
+$WIN_STATE_MINIMIZED      ----- 00377 00513 00610 00635
 $WIN_STATE_VISIBLE        ----- 00374 00513 00525
-$Warning                  ----- 00795 00802 00875 00882
-$WmiExporterCollectorTextfileDir  ----- 00349 00352 00364 00960
+$Warning                  ----- 00798 00805 00878 00885
+$WmiExporterCollectorTextfileDir  ----- 00349 00352 00364 00963
 $WmiExporterCollectorsEnabled  ----- 00321 00364
-$WmiExporterGlobalNetSetupTime  ----- 00951 00952
-$WmiExporterLocalDir      ----- 00307 00308 00349 00764
-$WmiExporterLocalExists   ----- 00309 00764 00952 00955
-$WmiExporterLocalFileName  ----- 00306 00308 00764 00917 00948
-$WmiExporterLocalPath     ----- 00308 00309 00764 00950 00954 00955
-$WmiExporterLocalTime     ----- 00950 00952
-$WmiExporterMetadataArray  ----- 01000 01006 01007 01022 01025 01028 01029
-$WmiExporterMetadataArrayRet  ----- 01026 01027 01028
+$WmiExporterGlobalNetSetupTime  ----- 00954 00955
+$WmiExporterLocalDir      ----- 00307 00308 00349 00767
+$WmiExporterLocalExists   ----- 00309 00767 00955 00958
+$WmiExporterLocalFileName  ----- 00306 00308 00767 00920 00951
+$WmiExporterLocalPath     ----- 00308 00309 00767 00953 00957 00958
+$WmiExporterLocalTime     ----- 00953 00955
+$WmiExporterMetadataArray  ----- 01003 01009 01010 01025 01028 01031 01032
+$WmiExporterMetadataArrayRet  ----- 01029 01030 01031
 $WmiExporterMetadataDir   ----- 00352 00353
 $WmiExporterMetadataExists  ----- 00354
 $WmiExporterMetadataFileName  ----- 00351 00353
-$WmiExporterMetadataPath  ----- 00353 00354 00894 01027 01029
-$WmiExporterMetadataString  ----- 00362 00563 00564 00970 00971
-$WmiExporterParams        ----- 00364 00401 00764
+$WmiExporterMetadataPath  ----- 00353 00354 00897 01030 01032
+$WmiExporterMetadataString  ----- 00362 00563 00564 00973 00974
+$WmiExporterParams        ----- 00364 00401 00767
 $WmiExporterX32GlobalNetSetupDir  ----- 00312 00313
 $WmiExporterX32GlobalNetSetupExists  ----- 00314
 $WmiExporterX32GlobalNetSetupFileName  ----- 00311 00313
-$WmiExporterX32GlobalNetSetupPath  ----- 00313 00314 00949
+$WmiExporterX32GlobalNetSetupPath  ----- 00313 00314 00952
 $WmiExporterX64GlobalNetSetupDir  ----- 00317 00318
 $WmiExporterX64GlobalNetSetupExists  ----- 00319
 $WmiExporterX64GlobalNetSetupFileName  ----- 00316 00318
-$WmiExporterX64GlobalNetSetupPath  ----- 00318 00319 00949
-$aArray                   ----- 00830 00835
-$aColorsGrey              ----- 00596 00598
-$aComputerSystemProduct   ----- 00686 00687 00688
+$WmiExporterX64GlobalNetSetupPath  ----- 00318 00319 00952
+$aArray                   ----- 00833 00838
+$aColorsGrey              ----- 00598 00600
+$aComputerSystemProduct   ----- 00690 00691 00692
 $aList                    ----- 00500 00511 00512 00513
-$aMapKeys                 ----- 01002 01009 01011 01013
-$aMemStats                ----- 00974 00976 00977 00978 00979 00980 00981 00982
-$aPos                     ----- 00589 00590 00591 00592 00593 00594 00595 00599 00606
-$aProcessList             ----- 00908 00911
-$aReturn                  ----- 01057 01063 01064 01066 01068
-$asBody                   ----- 00862 00863 00864 00865 00866 00867 00868 00869 00870 00871 00872 00875
-$hDownload                ----- 00288 00918 00925 00926 00932 00933
+$aMapKeys                 ----- 01005 01012 01014 01016
+$aMemStats                ----- 00977 00979 00980 00981 00982 00983 00984 00985
+$aPos                     ----- 00591 00592 00593 00594 00595 00596 00597 00601 00608
+$aProcessList             ----- 00911 00914
+$aReturn                  ----- 01060 01066 01067 01069 01071
+$asBody                   ----- 00865 00866 00867 00868 00869 00870 00871 00872 00873 00874 00875 00878
+$hDownload                ----- 00288 00921 00928 00929 00935 00936
 $hEventLog                ----- 00449 00450 00451 00452 00453
-$hWnd                     ----- 00580 00584 00586 00589 00608 00618 00627 00628 00629 00632 00635 00641 00642 00643 
-                                00644
-$hWndActive               ----- 00579 00610 00619 00624 00641
-$hWndActivePid            ----- 00119 00642 00667
-$i                        ----- 00511 00512 00513 00524 00525 00526 00556 00557 00558 00620 00621 00622 00623 00624 
-                                00626 00627 00629 00631 00634 00847 00848 00849 00850
-$iBytes                   ----- 00829 00831 00833 00835
-$iColor                   ----- 00598 00599
-$iCount                   ----- 00597 00600 00602
-$iDx                      ----- 00892 00893 00897
-$iErr                     ----- 00873 00875
+$hWnd                     ----- 00580 00582 00585 00586 00588 00591 00610 00620 00631 00632 00633 00636 00639 00645 
+                                00646 00647 00648
+$hWndActive               ----- 00579 00612 00621 00627 00645
+$hWndActivePid            ----- 00119 00646 00671
+$i                        ----- 00511 00512 00513 00524 00525 00526 00556 00557 00558 00623 00624 00625 00626 00627 
+                                00629 00631 00633 00635 00638 00850 00851 00852 00853
+$iBytes                   ----- 00832 00834 00836 00838
+$iColor                   ----- 00600 00601
+$iCount                   ----- 00599 00602 00604
+$iDx                      ----- 00895 00896 00900
+$iErr                     ----- 00876 00878
 $iError                   ----- 00434 00436
 $iExtended                ----- 00434 00436
-$iFreeSpace               ----- 00841 00843 00850 00858 00870
-$iFreeSpacePerc           ----- 00843 00844 00850 00858 00861 00871
-$iIndex                   ----- 00830 00832 00835
-$iIsAdmin                 ----- 00675 00676
-$iKb                      ----- 00887 00888
-$iResponse                ----- 00872 00874
-$iState                   ----- 00510 00512 00513 00584 00608
-$iTickCount               ----- 00678 00679
-$iTickCount64             ----- 00680 00681
-$iTotalSpace              ----- 00842 00843 00850 00858 00870
-$mLabels                  ----- 00896 00901
-$mMap                     ----- 00891 00902 01003 01004 01006 01007 01009 01014 01016 01017 01022
-$mMetrics                 ----- 00965 00966 00967 00968 00969 00971 00975 00976 00977 00978 00979 00980 00981 00982 
-                                00984 00985 00986 00989 00990 00993 00994 00997 00998 01003
-$mResult                  ----- 00895 00897 00898 00899 00900 00901 00902 00903 00907 00911 00912 00913
-$nValue                   ----- 00891 00899
-$oColItems                ----- 01057 01060 01061 01062
-$oObjectItem              ----- 01062 01063 01064
-$oWMIService              ----- 01057 01059 01060
-$sDir                     ----- 00909 00910
-$sDrive                   ----- 00909 00910
-$sExtension               ----- 00909 00910
-$sFileName                ----- 00909 00910 00912
-$sFromAddress             ----- 00860 00872
-$sFromName                ----- 00859 00872
-$sLabel                   ----- 00839 00850 00858 00869
-$sLabels                  ----- 01001 01010 01012 01014 01017 01019 01020 01022
-$sLastName                ----- 01001 01005 01023
-$sName                    ----- 00891 00897 00966 00967 00968 00969 00971 00989 00990 00993 00994 00997 00998 01004 
-                                01005 01006 01007 01022 01023
-$sSubject                 ----- 00861 00872
-$sText                    ----- 00891 00900
-$sTextDefault             ----- 00894 00900
-$sToAddress               ----- 00858 00872
-$sType                    ----- 00891 00898
-$vLabel                   ----- 01013 01014
+$iFreeSpace               ----- 00844 00846 00853 00861 00873
+$iFreeSpacePerc           ----- 00846 00847 00853 00861 00864 00874
+$iIndex                   ----- 00833 00835 00838
+$iIsAdmin                 ----- 00679 00680
+$iKb                      ----- 00890 00891
+$iResponse                ----- 00875 00877
+$iState                   ----- 00510 00512 00513 00586 00610
+$iTickCount               ----- 00682 00683
+$iTickCount64             ----- 00684 00685
+$iTotalSpace              ----- 00845 00846 00853 00861 00873
+$mLabels                  ----- 00899 00904
+$mMap                     ----- 00894 00905 01006 01007 01009 01010 01012 01017 01019 01020 01025
+$mMetrics                 ----- 00968 00969 00970 00971 00972 00974 00978 00979 00980 00981 00982 00983 00984 00985 
+                                00987 00988 00989 00992 00993 00996 00997 01000 01001 01006
+$mResult                  ----- 00898 00900 00901 00902 00903 00904 00905 00906 00910 00914 00915 00916
+$nValue                   ----- 00894 00902
+$oColItems                ----- 01060 01063 01064 01065
+$oObjectItem              ----- 01065 01066 01067
+$oWMIService              ----- 01060 01062 01063
+$sDir                     ----- 00912 00913
+$sDrive                   ----- 00912 00913
+$sExtension               ----- 00912 00913
+$sFileName                ----- 00912 00913 00915
+$sFromAddress             ----- 00863 00875
+$sFromName                ----- 00862 00875
+$sLabel                   ----- 00842 00853 00861 00872
+$sLabels                  ----- 01004 01013 01015 01017 01020 01022 01023 01025
+$sLastName                ----- 01004 01008 01026
+$sName                    ----- 00894 00900 00969 00970 00971 00972 00974 00992 00993 00996 00997 01000 01001 01007 
+                                01008 01009 01010 01025 01026
+$sSubject                 ----- 00864 00875
+$sText                    ----- 00894 00903
+$sTextDefault             ----- 00897 00903
+$sTitle                   ----- 00622 00629 00630
+$sToAddress               ----- 00861 00875
+$sType                    ----- 00894 00901
+$vLabel                   ----- 01016 01017
 $vValue                   ----- 00434 00435
 $vVar                     ----- 00434 00435 00436
 0                         ----- 00077 00100 00282 00288 00290 00421 00430 00503 00504 00505 00506 00507 00508 00509 
-                                00511 00513 00522 00524 00525 00526 00533 00556 00557 00558 00573 00574 00590 00592 
-                                00594 00595 00597 00599 00606 00612 00613 00620 00621 00623 00626 00653 00658 00659 
-                                00660 00661 00662 00663 00664 00665 00666 00667 00669 00670 00671 00673 00676 00679 
-                                00681 00687 00688 00690 00691 00692 00693 00694 00695 00696 00697 00698 00700 00701 
-                                00702 00703 00704 00705 00706 00708 00709 00710 00711 00712 00713 00714 00715 00717 
-                                00718 00719 00720 00721 00722 00723 00724 00725 00726 00727 00728 00730 00731 00732 
-                                00733 00734 00735 00736 00737 00738 00739 00740 00741 00742 00743 00744 00746 00747 
-                                00748 00749 00777 00830 00847 00848 00849 00850 00862 00874 00891 00892 00911 00919 
-                                00933 00984 01025 01047 01063 01068
-0x30                      ----- 01060
-0x464646                  ----- 00596
-0x474747                  ----- 00596
-0x484848                  ----- 00596
-0x494949                  ----- 00596
-0x4A4A4A                  ----- 00596
-0x4B4B4B                  ----- 00596
-0x4C4C4C                  ----- 00596
-0x4D4D4D                  ----- 00596
-0x4F4F4F                  ----- 00596
-0x505050                  ----- 00596
-0x515151                  ----- 00596
-0x525252                  ----- 00596
-0x535353                  ----- 00596
+                                00511 00513 00522 00524 00525 00526 00533 00556 00557 00558 00573 00574 00592 00594 
+                                00596 00597 00599 00601 00608 00614 00615 00623 00624 00626 00629 00657 00662 00663 
+                                00664 00665 00666 00667 00668 00669 00670 00671 00673 00674 00675 00677 00680 00683 
+                                00685 00691 00692 00694 00695 00696 00697 00698 00699 00700 00701 00702 00704 00705 
+                                00706 00707 00708 00709 00710 00712 00713 00714 00715 00716 00717 00718 00719 00721 
+                                00722 00723 00724 00725 00726 00727 00728 00729 00730 00731 00732 00734 00735 00736 
+                                00737 00738 00739 00740 00741 00742 00743 00744 00745 00746 00747 00748 00750 00751 
+                                00752 00753 00780 00833 00850 00851 00852 00853 00865 00877 00894 00895 00914 00922 
+                                00936 00987 01028 01050 01066 01071
+0x30                      ----- 01063
+0x464646                  ----- 00598
+0x474747                  ----- 00598
+0x484848                  ----- 00598
+0x494949                  ----- 00598
+0x4A4A4A                  ----- 00598
+0x4B4B4B                  ----- 00598
+0x4C4C4C                  ----- 00598
+0x4D4D4D                  ----- 00598
+0x4F4F4F                  ----- 00598
+0x505050                  ----- 00598
+0x515151                  ----- 00598
+0x525252                  ----- 00598
+0x535353                  ----- 00598
 0x7FFFFFFFFFFFFFFF        ----- 00111
 0x8000000000000000        ----- 00110
 1                         ----- 00051 00069 00274 00275 00276 00281 00289 00373 00422 00427 00431 00501 00503 00511 
-                                00512 00513 00522 00523 00524 00526 00533 00542 00556 00558 00591 00593 00595 00599 
-                                00600 00606 00620 00624 00627 00688 00832 00845 00847 00848 00893 00934 00984 01000 
-                                01004 01019 01025 01029 01034 01047 01051 01064 01068
+                                00512 00513 00522 00523 00524 00526 00533 00542 00556 00558 00593 00595 00597 00601 
+                                00602 00608 00623 00627 00631 00692 00835 00848 00850 00851 00896 00937 00987 01003 
+                                01007 01022 01028 01032 01037 01050 01054 01067 01071
 10                        ----- 00285 00420
-100                       ----- 00547 00843
-1023                      ----- 00831
-1024                      ----- 00547 00833 00870 00888
-13                        ----- 00596
-14                        ----- 00809
-15                        ----- 00099 00425 00428 00593
+100                       ----- 00547 00846
+1023                      ----- 00834
+1024                      ----- 00547 00836 00873 00891
+13                        ----- 00598
+14                        ----- 00812
+15                        ----- 00099 00425 00428 00595
 15e3                      ----- 00096 00097 00422
 16                        ----- 00377
-174                       ----- 00592
-1e3                       ----- 00541 00966 00975
-2                         ----- 00274 00275 00276 00285 00374 00428 00504 00592 00595 00599 00606 00622 00850 00870 
-                                00888 01057
-250                       ----- 00587
-3                         ----- 00505 00525 00591 00593 00595 00599 00606 00631 01028 01050
+174                       ----- 00594
+1e3                       ----- 00541 00969 00978
+2                         ----- 00274 00275 00276 00285 00374 00428 00504 00594 00597 00601 00608 00625 00853 00873 
+                                00891 01060
+250                       ----- 00589
+3                         ----- 00505 00525 00593 00595 00597 00601 00608 00635 01031 01053
 300                       ----- 00421
-3000                      ----- 00851
+3000                      ----- 00854
 30e3                      ----- 00427
 32                        ----- 00378
-4                         ----- 00375 00506 00634
+4                         ----- 00375 00506 00638
 42                        ----- 00419
-5                         ----- 00098 00423 00424 00507 00523 00526 00555 00765
+5                         ----- 00098 00423 00424 00507 00523 00526 00555 00768
 500                       ----- 00430
-54                        ----- 00591
-57                        ----- 00590
+54                        ----- 00593
+57                        ----- 00592
 5e3                       ----- 00390 00417
 6                         ----- 00508 00526
 60                        ----- 00098
-60e3                      ----- 00423 00424 00425 00428 00765
+60e3                      ----- 00423 00424 00425 00428 00768
 7                         ----- 00509 00526
-8                         ----- 00376 00501 00602
-9                         ----- 00556 00847
-@AppDataCommonDir         ----- 00700
-@AppDataDir               ----- 00708
-@AutoItExe                ----- 00695
-@AutoItPID                ----- 00696
-@AutoItVersion            ----- 00697
-@AutoItX64                ----- 00698
-@CPUArch                  ----- 00730
-@CRLF                     ----- 00094 00441 00795 00875
-@ComSpec                  ----- 00728
-@CommonFilesDir           ----- 00724
-@Compiled                 ----- 00390 00401 00417 00486 00493 00690 00789
-@ComputerName             ----- 00112 00217 00280 00445 00563 00565 00657 00739 00861 00864
-@DesktopCommonDir         ----- 00701
-@DesktopDepth             ----- 00748
-@DesktopDir               ----- 00710
-@DesktopHeight            ----- 00746
-@DesktopRefresh           ----- 00749
-@DesktopWidth             ----- 00747
-@DocumentsCommonDir       ----- 00702
-@FavoritesCommonDir       ----- 00703
-@FavoritesDir             ----- 00712
-@HomeDrive                ----- 00297 00307 00717 00839 00841 00842 00869
-@HomePath                 ----- 00718
-@HomeShare                ----- 00719
-@IPAddress1               ----- 00657 00658 00741 00865 00968
-@IPAddress2               ----- 00742 00866
-@IPAddress3               ----- 00743 00867
-@IPAddress4               ----- 00744 00868
-@KBLayout                 ----- 00731
-@LocalAppDataDir          ----- 00709
-@LogonDNSDomain           ----- 00720
-@LogonDomain              ----- 00721
-@LogonServer              ----- 00722
-@MDAY                     ----- 00548 00794 00809 00845 00846
+8                         ----- 00376 00501 00604
+9                         ----- 00556 00850
+@AppDataCommonDir         ----- 00704
+@AppDataDir               ----- 00712
+@AutoItExe                ----- 00699
+@AutoItPID                ----- 00700
+@AutoItVersion            ----- 00701
+@AutoItX64                ----- 00702
+@CPUArch                  ----- 00734
+@CRLF                     ----- 00094 00441 00798 00878
+@ComSpec                  ----- 00732
+@CommonFilesDir           ----- 00728
+@Compiled                 ----- 00390 00401 00417 00486 00493 00694 00792
+@ComputerName             ----- 00112 00217 00280 00445 00563 00565 00661 00743 00864 00867
+@DesktopCommonDir         ----- 00705
+@DesktopDepth             ----- 00752
+@DesktopDir               ----- 00714
+@DesktopHeight            ----- 00750
+@DesktopRefresh           ----- 00753
+@DesktopWidth             ----- 00751
+@DocumentsCommonDir       ----- 00706
+@FavoritesCommonDir       ----- 00707
+@FavoritesDir             ----- 00716
+@HomeDrive                ----- 00297 00307 00721 00842 00844 00845 00872
+@HomePath                 ----- 00722
+@HomeShare                ----- 00723
+@IPAddress1               ----- 00661 00662 00745 00868 00971
+@IPAddress2               ----- 00746 00869
+@IPAddress3               ----- 00747 00870
+@IPAddress4               ----- 00748 00871
+@KBLayout                 ----- 00735
+@LocalAppDataDir          ----- 00713
+@LogonDNSDomain           ----- 00724
+@LogonDomain              ----- 00725
+@LogonServer              ----- 00726
+@MDAY                     ----- 00548 00797 00812 00848 00849
 @MIN                      ----- 00548
-@MON                      ----- 00548 00794 00809 00845 00846
+@MON                      ----- 00548 00797 00812 00848 00849
 @MSEC                     ----- 00548
-@MUILang                  ----- 00732
-@MyDocumentsDir           ----- 00122 00711
-@OSArch                   ----- 00733 00949
-@OSBuild                  ----- 00737
-@OSLang                   ----- 00734
-@OSServicePack            ----- 00738
-@OSType                   ----- 00735
-@OSVersion                ----- 00736
-@ProgramFilesDir          ----- 00127 00132 00137 00142 00147 00723
-@ProgramsCommonDir        ----- 00704
-@ProgramsDir              ----- 00713
+@MUILang                  ----- 00736
+@MyDocumentsDir           ----- 00122 00715
+@OSArch                   ----- 00737 00952
+@OSBuild                  ----- 00741
+@OSLang                   ----- 00738
+@OSServicePack            ----- 00742
+@OSType                   ----- 00739
+@OSVersion                ----- 00740
+@ProgramFilesDir          ----- 00127 00132 00137 00142 00147 00727
+@ProgramsCommonDir        ----- 00708
+@ProgramsDir              ----- 00717
 @SEC                      ----- 00548
-@SW_HIDE                  ----- 00772
-@SW_MAXIMIZE              ----- 00635
-@SW_MINIMIZE              ----- 00608 00632
-@ScriptDir                ----- 00164 00692
-@ScriptFullPath           ----- 00113 00693
-@ScriptName               ----- 00691
-@StartMenuCommonDir       ----- 00705
-@StartMenuDir             ----- 00714
-@StartupCommonDir         ----- 00706
-@SystemDir                ----- 00726
-@TempDir                  ----- 00727
-@UserName                 ----- 00445 00740 00967
-@UserProfileDir           ----- 00270 00715
-@WindowsDir               ----- 00725
-@WorkingDir               ----- 00694
-@YEAR                     ----- 00548 00794 00809 00845 00846
-@error                    ----- 00434 00581 00600 00637 00816 00873
+@SW_HIDE                  ----- 00775
+@SW_MAXIMIZE              ----- 00639
+@SW_MINIMIZE              ----- 00610 00636
+@ScriptDir                ----- 00164 00696
+@ScriptFullPath           ----- 00113 00697
+@ScriptName               ----- 00695
+@StartMenuCommonDir       ----- 00709
+@StartMenuDir             ----- 00718
+@StartupCommonDir         ----- 00710
+@SystemDir                ----- 00730
+@TempDir                  ----- 00731
+@UserName                 ----- 00445 00744 00970
+@UserProfileDir           ----- 00270 00719
+@WindowsDir               ----- 00729
+@WorkingDir               ----- 00698
+@YEAR                     ----- 00548 00797 00812 00848 00849
+@error                    ----- 00434 00581 00583 00602 00641 00819 00876
 @extended                 ----- 00434
 #### ActiveWinTitle       00118
 #### AkkDir               00164
@@ -1629,10 +1634,11 @@ $vVar                     ----- 00434 00435 00436
 #### AkkUpdaterPath       00175
 #### AkkUpdaterTime       00484
 #### AkkVersion           00113
-And                       ----- 00428 00457 00460 00463 00486 00493 00525 00602 00773 00781 00789 00848 00917 00970
+And                       ----- 00428 00457 00460 00463 00486 00493 00525 00583 00604 00776 00784 00792 00851 00920 
+                                00973
 Array                     ----- 00043
 #### ArrayDelimItem       00273
-ByRef                     ----- 00434 00647 00891
+ByRef                     ----- 00434 00651 00894
 #### ComputerName         00112
 Const                     ----- 00096 00097 00098 00099 00110 00111 00112 00113 00114 00115 00121 00122 00123 00124 
                                 00126 00127 00128 00129 00131 00132 00133 00134 00136 00137 00138 00139 00141 00142 
@@ -1644,34 +1650,34 @@ Const                     ----- 00096 00097 00098 00099 00110 00111 00112 00113 
                                 00256 00258 00259 00260 00261 00264 00265 00266 00267 00270 00271 00273 00280 00281 
                                 00282 00296 00297 00298 00301 00302 00303 00304 00306 00307 00308 00311 00312 00313 
                                 00314 00316 00317 00318 00319 00321 00349 00351 00352 00353 00356 00357 00358 00359 
-                                00364 00373 00374 00375 00376 00377 00378 00795 00815 00839 00841 00842 00843 00875 
-                                00894
-Count                     ----- 00911 00989 00993 00997
-#### CurrentFile          01046
+                                00364 00373 00374 00375 00376 00377 00378 00798 00818 00842 00844 00845 00846 00878 
+                                00897
+Count                     ----- 00914 00992 00996 01000
+#### CurrentFile          01049
 #### Cycle                00100
 Date                      ----- 00044
 Debug                     ----- 00042
-Default                   ----- 00595 00608 00632 00635 00815
-#### Delay                00647
+Default                   ----- 00597 00610 00636 00639 00818
+#### Delay                00651
 #### Dest                 00548
-#### DestDir              00811
-#### Diff                 00648
-Dir                       00772 00780
-#### Domain               00780
+#### DestDir              00814
+#### Diff                 00652
+Dir                       00775 00783
+#### Domain               00783
 #### DownloadsDir         00270
 #### DownloadsOldDir      00271
 #### EcoroKpsButlerDir    00147
 #### EcoroKpsButlerExists  00149
 #### EcoroKpsButlerFileName  00146
 #### EcoroKpsButlerPath   00148
-Else                      ----- 00583 00928 00956
-EndFunc                   ----- 00437 00446 00454 00497 00535 00551 00568 00576 00614 00645 00654 00750 00758 00770 
-                                00778 00785 00806 00810 00822 00826 00836 00856 00884 00889 00904 00914 00921 00937 
-                                00945 00961 01031 01053 01069
+Else                      ----- 00931 00959
+EndFunc                   ----- 00437 00446 00454 00497 00535 00551 00568 00576 00616 00649 00658 00754 00761 00773 
+                                00781 00788 00809 00813 00825 00829 00839 00859 00887 00892 00907 00917 00924 00940 
+                                00948 00964 01034 01056 01072
 EndIf                     ----- 00429 00459 00462 00465 00473 00482 00489 00496 00531 00544 00550 00561 00566 00567 
-                                00575 00588 00607 00609 00625 00630 00633 00636 00638 00639 00652 00755 00767 00776 
-                                00784 00804 00805 00820 00821 00852 00854 00855 00883 00920 00931 00935 00936 00943 
-                                00944 00958 00959 00972 01008 01018 01021 01030 01052 01067
+                                00575 00584 00590 00609 00611 00628 00634 00637 00640 00642 00643 00656 00770 00779 
+                                00787 00807 00808 00823 00824 00855 00857 00858 00886 00923 00934 00938 00939 00946 
+                                00947 00961 00962 00975 01011 01021 01024 01033 01055 01070
 Enum                      ----- 00384
 EventLog                  ----- 00038
 #### EventLogCount        00293
@@ -1685,16 +1691,16 @@ EventLog                  ----- 00038
 #### ExactFileNetFileName  00301
 #### ExactFileNetPath     00303
 #### ExactFilePath        00298
-Exists                    00772 00780
+Exists                    00775 00783
 False                     ----- 00114 00115
 File                      ----- 00045
-FileName                  00752 00912 00990 00994 00998
-#### FilePath             01048
-#### FolderList           00815
-For                       ----- 00511 00524 00556 00598 00620 00817 00847 01003 01013 01062
-Func                      ----- 00434 00439 00448 00456 00499 00537 00553 00570 00578 00616 00647 00656 00752 00761 
-                                00772 00780 00788 00808 00811 00824 00829 00838 00858 00887 00891 00906 00916 00923 
-                                00939 00947 00963 01033 01056
+FileName                  00756 00915 00993 00997 01001
+#### FilePath             01051
+#### FolderList           00818
+For                       ----- 00511 00524 00556 00600 00623 00820 00850 01006 01016 01065
+Func                      ----- 00434 00439 00448 00456 00499 00537 00553 00570 00578 00618 00651 00660 00756 00764 
+                                00775 00783 00791 00811 00814 00827 00832 00841 00861 00890 00894 00909 00919 00926 
+                                00942 00950 00966 01036 01059
 Global                    ----- 00096 00097 00098 00099 00100 00101 00102 00103 00104 00105 00106 00107 00108 00109 
                                 00110 00111 00112 00113 00114 00115 00116 00117 00118 00119 00121 00122 00123 00124 
                                 00126 00127 00128 00129 00131 00132 00133 00134 00136 00137 00138 00139 00141 00142 
@@ -1709,15 +1715,15 @@ Global                    ----- 00096 00097 00098 00099 00100 00101 00102 00103 
                                 00294 00296 00297 00298 00299 00301 00302 00303 00304 00306 00307 00308 00309 00311 
                                 00312 00313 00314 00316 00317 00318 00319 00321 00349 00351 00352 00353 00354 00356 
                                 00357 00358 00359 00362 00364 00373 00374 00375 00376 00377 00378 00384
-IdentifyingNumber         ----- 01064
+IdentifyingNumber         ----- 01067
 #### IdleTime             00290
 If                        ----- 00214 00220 00231 00262 00268 00360 00390 00401 00417 00422 00423 00424 00425 00427 
                                 00428 00457 00460 00463 00469 00477 00486 00493 00525 00541 00547 00554 00562 00564 
-                                00572 00581 00582 00585 00600 00602 00608 00610 00621 00622 00626 00628 00631 00634 
-                                00637 00649 00753 00765 00773 00781 00789 00802 00812 00813 00816 00844 00848 00865 
-                                00866 00867 00868 00874 00917 00924 00925 00926 00927 00940 00941 00952 00954 00960 
-                                00970 01005 01011 01016 01019 01028 01050 01061
-In                        ----- 00598 00817 01003 01013 01062
+                                00572 00581 00583 00585 00587 00602 00604 00610 00612 00624 00625 00630 00632 00635 
+                                00638 00641 00653 00768 00776 00784 00792 00805 00815 00816 00819 00847 00851 00868 
+                                00869 00870 00871 00877 00920 00927 00928 00929 00930 00943 00944 00955 00957 00963 
+                                00973 01008 01014 01019 01022 01031 01053 01064
+In                        ----- 00600 00820 01006 01016 01065
 Inet                      ----- 00046
 #### IniGlobalDir         00189
 #### IniGlobalExDir       00199
@@ -1753,23 +1759,23 @@ Inet                      ----- 00046
 #### IniLocalPath         00185
 #### IntMax               00111
 #### IntMin               00110
-#### IsSectionAddedToKey  00752
+#### IsSectionAddedToKey  00756
 #### KPSInfoDir           00127
 #### KPSInfoExists        00129
 #### KPSInfoFileName      00126
 #### KPSInfoPath          00128
-#### Key                  00752
-Labels                    ----- 00901 00967 00968 00969 00990 00994 00998 01009 01014
-LabelsRaw                 ----- 00971 01017
-#### Lines                01034
-#### List                 00617
+#### Key                  00756
+Labels                    ----- 00904 00970 00971 00972 00993 00997 01001 01012 01017
+LabelsRaw                 ----- 00974 01020
+#### Lines                01037
+#### List                 00619
 #### ListStates           00501
 #### ListVisble           00523
 Local                     ----- 00449 00467 00468 00475 00476 00484 00485 00491 00492 00500 00501 00510 00523 00548 
-                                00579 00580 00584 00589 00596 00597 00617 00618 00619 00648 00675 00678 00680 00686 
-                                00795 00815 00830 00839 00841 00842 00843 00859 00860 00861 00862 00872 00873 00875 
-                                00892 00894 00895 00896 00907 00908 00909 00949 00950 00951 00965 00966 00974 00988 
-                                00992 00996 01000 01001 01002 01026 01034 01046 01048 01057
+                                00579 00580 00586 00591 00598 00599 00619 00620 00621 00622 00652 00679 00682 00684 
+                                00690 00798 00818 00833 00842 00844 00845 00846 00862 00863 00864 00865 00875 00876 
+                                00878 00895 00897 00898 00899 00910 00911 00912 00952 00953 00954 00968 00969 00977 
+                                00991 00995 00999 01003 01004 01005 01029 01037 01049 01051 01060
 #### LogArchiveNetDir     00228
 #### LogArchiveNetExists  00230
 #### LogArchiveNetFileName  00227
@@ -1819,34 +1825,34 @@ Local                     ----- 00449 00467 00468 00475 00476 00484 00485 00491 
 #### MacroDirectory       00275
 #### MacroSystemInfo      00276
 #### MailAddresses        00285
-#### MetaProcessCountChrome  00988
-#### MetaProcessCountFusionFX  00996
-#### MetaProcessCountJavaw  00992
+#### MetaProcessCountChrome  00991
+#### MetaProcessCountFusionFX  00999
+#### MetaProcessCountJavaw  00995
 Misc                      ----- 00047
 #### MsgBoxTimeout        00098
-Name                      00772 00780 00897 00902 00903 01004 01063
+Name                      00775 00783 00900 00905 00906 01007 01066
 #### NetPhoneClientDir    00142
 #### NetPhoneClientExists  00144
 #### NetPhoneClientFileName  00141
 #### NetPhoneClientPath   00143
 #### NetPhoneUser         00117
 #### NetPhoneUserChecksum  00116
-Next                      ----- 00521 00532 00559 00601 00640 00819 00853 01015 01024 01065
-Not                       ----- 00214 00220 00231 00262 00268 00360 00401 00457 00460 00463 00600 00602 00773 00781 
-                                00813 00816 00924 00940 00952 00960 00970 01028 01050
-Or                        ----- 00952
-#### Password             00780
-Path                      00772 00780
+Next                      ----- 00521 00532 00559 00603 00644 00822 00856 01018 01027 01068
+Not                       ----- 00214 00220 00231 00262 00268 00360 00401 00457 00460 00463 00602 00604 00776 00784 
+                                00816 00819 00927 00943 00955 00963 00973 01031 01053
+Or                        ----- 00630 00955
+#### Password             00783
+Path                      00775 00783
 #### PowerkatalogDir      00132
 #### PowerkatalogExists   00134
 #### PowerkatalogFileName  00131
 #### PowerkatalogPath     00133
-#### ProcessName          00906
+#### ProcessName          00909
 #### PromScrapeTargetsDir  00357
 #### PromScrapeTargetsExists  00359
 #### PromScrapeTargetsFileName  00356
 #### PromScrapeTargetsPath  00358
-Return                    ----- 00436 00534 00644 00651 00653 00775 00777 00825 00835 00888 00903 00913 01066 01068
+Return                    ----- 00436 00534 00648 00655 00657 00778 00780 00828 00838 00891 00906 00916 01069 01071
 #### RootDir              00153
 #### RootExists           00156
 #### RootFileName         00152
@@ -1859,32 +1865,32 @@ Return                    ----- 00436 00534 00644 00651 00653 00775 00777 00825 
 ScreenCapture             ----- 00035
 #### ScreenCaptureWinActivate  00115
 #### ScreenCaptureWnd     00114
-#### Section              00752
-#### ShowFlag             00772
+#### Section              00756
+#### ShowFlag             00775
 #### SmtpMailEHLO         00280
 #### SmtpMailFirst        00281
 #### SmtpMailSmtpServer   00279
 #### SmtpMailTrace        00282
-#### SourceDir            00811
-#### SourcePath           00949
+#### SourceDir            00814
+#### SourcePath           00952
 #### SpawnDir             00122
 #### SpawnExists          00124
 #### SpawnFileName        00121
 #### SpawnPath            00123
 #### StartTimer           00101
-Static                    ----- 00892
-#### Static$iDx           00892
-Step                      ----- 00556 00847
+Static                    ----- 00895
+#### Static$iDx           00895
+Step                      ----- 00556 00850
 #### T1                   00096
 #### T2                   00097
-Text                      00439 00900 01006
+Text                      00439 00903 01009
 Then                      ----- 00214 00220 00231 00262 00268 00360 00390 00401 00417 00421 00422 00423 00424 00425 
                                 00427 00428 00430 00457 00460 00463 00469 00477 00486 00493 00525 00541 00547 00554 
-                                00562 00564 00572 00581 00582 00585 00600 00602 00608 00610 00621 00622 00626 00628 
-                                00631 00634 00637 00649 00753 00765 00773 00781 00789 00802 00812 00813 00816 00844 
-                                00845 00848 00865 00866 00867 00868 00874 00917 00924 00925 00926 00927 00940 00941 
-                                00952 00954 00960 00970 01005 01011 01016 01019 01028 01050 01061
-#### Timer                00647
+                                00562 00564 00572 00581 00583 00585 00587 00602 00604 00610 00612 00624 00625 00630 
+                                00632 00635 00638 00641 00653 00768 00776 00784 00792 00805 00815 00816 00819 00847 
+                                00848 00851 00868 00869 00870 00871 00877 00920 00927 00928 00929 00930 00943 00944 
+                                00955 00957 00963 00973 01008 01014 01019 01022 01031 01053 01064
+#### Timer                00651
 #### Timer1               00102
 #### Timer2               00103
 #### Timer3               00104
@@ -1894,32 +1900,32 @@ Then                      ----- 00214 00220 00231 00262 00268 00360 00390 00401 
 #### Timer7               00108
 #### Timer8               00109
 Timers                    ----- 00041
-To                        ----- 00511 00524 00556 00620 00847
+To                        ----- 00511 00524 00556 00623 00850
 #### TrayTipTimeout       00099
-True                      ----- 00815
-Type                      ----- 00898 01007
-#### UserName             00780
-Value                     00752 00899 01022
-WEnd                      ----- 00432 00834
+True                      ----- 00818
+Type                      ----- 00901 01010
+#### UserName             00783
+Value                     00756 00902 01025
+WEnd                      ----- 00432 00837
 #### WIN_STATE_ACTIVE     00376
 #### WIN_STATE_ENABLED    00375
 #### WIN_STATE_EXISTS     00373
 #### WIN_STATE_MAXIMIZED  00378
 #### WIN_STATE_MINIMIZED  00377
 #### WIN_STATE_VISIBLE    00374
-Warning                   00795 00875
-While                     ----- 00419 00831
+Warning                   00798 00878
+While                     ----- 00419 00834
 WinAPISys                 ----- 00037
 #### WmiExporterCollectorTextfileDir  00349
 #### WmiExporterCollectorsEnabled  00321
-#### WmiExporterGlobalNetSetupTime  00951
+#### WmiExporterGlobalNetSetupTime  00954
 #### WmiExporterLocalDir  00307
 #### WmiExporterLocalExists  00309
 #### WmiExporterLocalFileName  00306
 #### WmiExporterLocalPath  00308
-#### WmiExporterLocalTime  00950
-#### WmiExporterMetadataArray  01000
-#### WmiExporterMetadataArrayRet  01026
+#### WmiExporterLocalTime  00953
+#### WmiExporterMetadataArray  01003
+#### WmiExporterMetadataArrayRet  01029
 #### WmiExporterMetadataDir  00352
 #### WmiExporterMetadataExists  00354
 #### WmiExporterMetadataFileName  00351
@@ -1934,68 +1940,69 @@ WinAPISys                 ----- 00037
 #### WmiExporterX64GlobalNetSetupExists  00319
 #### WmiExporterX64GlobalNetSetupFileName  00316
 #### WmiExporterX64GlobalNetSetupPath  00318
-#### aArray               00830
-#### aColorsGrey          00596
-#### aComputerSystemProduct  00686
+#### aArray               00833
+#### aColorsGrey          00598
+#### aComputerSystemProduct  00690
 #### aList                00500
-#### aMapKeys             01002
-#### aMemStats            00974
-#### aPos                 00589
-#### aProcessList         00908
-#### aReturn              01057
-#### asBody               00862
+#### aMapKeys             01005
+#### aMemStats            00977
+#### aPos                 00591
+#### aProcessList         00911
+#### aReturn              01060
+#### asBody               00865
 au3                       ----- 00035 00037 00038 00041 00042 00043 00044 00045 00046 00047
-#### dieSiebenötigen     00795
+#### dieSiebenötigen     00798
 #### hDownload            00288
 #### hEventLog            00449
-hWnd                      00580 00618
-hWndActive                00579 00619
+hWnd                      00580 00620
+hWndActive                00579 00621
 #### hWndActivePid        00119
-#### iBytes               00829
-#### iCount               00597
-#### iErr                 00873
+#### iBytes               00832
+#### iCount               00599
+#### iErr                 00876
 #### iError               00434
 #### iExtended            00434
-iFreeSpace                00841 00858
-iFreeSpacePerc            00843 00858
-#### iIndex               00830
-#### iIsAdmin             00675
-#### iKb                  00887
-#### iResponse            00872
-iState                    00510 00584
-#### iTickCount           00678
-#### iTickCount64         00680
-iTotalSpace               00842 00858
-ip_address                ----- 00968
-#### kopierenSiediesebitteaneinenanderenOrt.'&@CRLF&'AlleDateienausdemOrdnerwurdenbereitsindenOrdnerverschoben.'&@CRLF&'DerOrdneristübereineVerknüpfunginzuerreichen.'&@CRLF&'AlleIhreDateiendieimOrdnerble  00795
-#### mLabels              00896
-#### mMap                 00891
-#### mMetrics             00965
-mResult                   00895 00907
-#### nValue               00891
-netphone_user             ----- 00969
-#### oColItems            01057
-#### oWMIService          01057
-process                   ----- 00990 00994 00998
-#### sDir                 00909
-#### sDrive               00909
-#### sExtension           00909
-#### sFileName            00909
-#### sFromAddress         00860
-#### sFromName            00859
-sLabel                    00839 00858
-#### sLabels              01001
-#### sLastName            01001
-sName                     00891 00966
-#### sSubject             00861
-#### sText                00891
-#### sTextDefault         00894
-#### sToAddress           00858
-#### sType                00891
-username                  ----- 00967
+iFreeSpace                00844 00861
+iFreeSpacePerc            00846 00861
+#### iIndex               00833
+#### iIsAdmin             00679
+#### iKb                  00890
+#### iResponse            00875
+iState                    00510 00586
+#### iTickCount           00682
+#### iTickCount64         00684
+iTotalSpace               00845 00861
+ip_address                ----- 00971
+#### kopierenSiediesebitteaneinenanderenOrt.'&@CRLF&'AlleDateienausdemOrdnerwurdenbereitsindenOrdnerverschoben.'&@CRLF&'DerOrdneristübereineVerknüpfunginzuerreichen.'&@CRLF&'AlleIhreDateiendieimOrdnerble  00798
+#### mLabels              00899
+#### mMap                 00894
+#### mMetrics             00968
+mResult                   00898 00910
+#### nValue               00894
+netphone_user             ----- 00972
+#### oColItems            01060
+#### oWMIService          01060
+process                   ----- 00993 00997 01001
+#### sDir                 00912
+#### sDrive               00912
+#### sExtension           00912
+#### sFileName            00912
+#### sFromAddress         00863
+#### sFromName            00862
+sLabel                    00842 00861
+#### sLabels              01004
+#### sLastName            01004
+sName                     00894 00969
+#### sSubject             00864
+#### sText                00894
+#### sTextDefault         00897
+#### sTitle               00622
+#### sToAddress           00861
+#### sType                00894
+username                  ----- 00970
 #### vValue               00434
 #### vVar                 00434
-#### werdendemnächstunwiderruflichGELÖSCHT!'&@CRLF&'BittesichtenundsichernSieambestenjetztsofortIhreweiterhinbenötigtenDateien.'&@CRLF&'SollderOrdnerjetztgeöffnetwerden?'&@CRLF  00795
+#### werdendemnächstunwiderruflichGELÖSCHT!'&@CRLF&'BittesichtenundsichernSieambestenjetztsofortIhreweiterhinbenötigtenDateien.'&@CRLF&'SollderOrdnerjetztgeöffnetwerden?'&@CRLF  00798
 == Sort Func Names Within #regions =====================================================================
  --------------- Current sequence  ----------------------------------------------------------- 
 0000000001   #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -2032,66 +2039,66 @@ username                  ----- 00967
 0000000570   Func ReadLocalConfig()
 0000000576   EndFunc   ;==>ReadLocalConfig
 0000000578   Func ScreenCaptureNetPhoneClient()
-0000000614   EndFunc   ;==>ScreenCaptureNetPhoneClient
-0000000616   Func ScreenCaptureWnd()
-0000000645   EndFunc   ;==>ScreenCaptureWnd
-0000000647   Func Timeout(ByRef $Timer, $Delay)
-0000000654   EndFunc   ;==>Timeout
-0000000656   Func WriteLogStartup()
-0000000750   EndFunc   ;==>WriteLogStartup
-0000000752   Func WriteLogStartupIni($FileName, $Section, $Key, $IsSectionAddedToKey, $Value)
-0000000758   EndFunc   ;==>WriteLogStartupIni
-0000000759   #EndRegion
-0000000760   #Region CheckAndRunProc
-0000000761   Func Check()
-0000000770   EndFunc   ;==>Check
-0000000772   Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
-0000000778   EndFunc   ;==>CheckAndRunProc
-0000000780   Func CheckAndRunProcAs($Name, $Dir, $Path, $Exists, $UserName, $Domain, $Password)
-0000000785   EndFunc   ;==>CheckAndRunProcAs
-0000000786   #EndRegion CheckAndRunProc
-0000000787   #Region CleaningDownloads
-0000000788   Func CleaningDownloads()
-0000000806   EndFunc   ;==>CleaningDownloads
-0000000808   Func DownloadsNeedCleaning()
-0000000810   EndFunc   ;==>DownloadsNeedCleaning
-0000000811   Func FileDirMoveRec($SourceDir, $DestDir)
-0000000822   EndFunc   ;==>FileDirMoveRec
-0000000824   Func GetDownloadsLastCleaningDate()
-0000000826   EndFunc   ;==>GetDownloadsLastCleaningDate
-0000000827   #EndRegion CleaningDownloads
-0000000828   #Region FreeSpaceCheck
-0000000829   Func ByteSuffix($iBytes)
-0000000836   EndFunc   ;==>ByteSuffix
-0000000838   Func CheckHomeDriveSpaceFree()
-0000000856   EndFunc   ;==>CheckHomeDriveSpaceFree
-0000000858   Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $iFreeSpace, $iTotalSpace)
-0000000884   EndFunc   ;==>SendMailLowSpace
-0000000885   #EndRegion FreeSpaceCheck
-0000000886   #Region WMI Exporter
-0000000887   Func _FormatKbToGb($iKb)
-0000000889   EndFunc   ;==>_FormatKbToGb
-0000000891   Func _PrometheusNewDesc(ByRef $mMap, $sName, $sType, $nValue = 0, $sText = "")
-0000000904   EndFunc   ;==>_PrometheusNewDesc
-0000000906   Func MetaProcessCount($ProcessName)
-0000000914   EndFunc   ;==>MetaProcessCount
-0000000916   Func Scrape()
-0000000921   EndFunc   ;==>Scrape
-0000000923   Func ScrapeDownload()
-0000000937   EndFunc   ;==>ScrapeDownload
-0000000939   Func SetupExactFile()
-0000000945   EndFunc   ;==>SetupExactFile
-0000000947   Func SetupWmiExporter()
-0000000961   EndFunc   ;==>SetupWmiExporter
-0000000963   Func WriteMetaDataFile()
-0000001031   EndFunc   ;==>WriteMetaDataFile
-0000001033   Func WriteScrapeTargetFile()
-0000001053   EndFunc   ;==>WriteScrapeTargetFile
-0000001054   #EndRegion WMI Exporter
-0000001055   #Region UDF
-0000001056   Func _ComputerNameAndModel()
-0000001069   EndFunc   ;==>_ComputerNameAndModel
-0000001070   #EndRegion UDF
+0000000616   EndFunc   ;==>ScreenCaptureNetPhoneClient
+0000000618   Func ScreenCaptureWnd()
+0000000649   EndFunc   ;==>ScreenCaptureWnd
+0000000651   Func Timeout(ByRef $Timer, $Delay)
+0000000658   EndFunc   ;==>Timeout
+0000000660   Func WriteLogStartup()
+0000000754   EndFunc   ;==>WriteLogStartup
+0000000756   Func WriteLogStartupIni($FileName, $Section, $Key, $IsSectionAddedToKey, $Value)
+0000000761   EndFunc   ;==>WriteLogStartupIni
+0000000762   #EndRegion
+0000000763   #Region CheckAndRunProc
+0000000764   Func Check()
+0000000773   EndFunc   ;==>Check
+0000000775   Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
+0000000781   EndFunc   ;==>CheckAndRunProc
+0000000783   Func CheckAndRunProcAs($Name, $Dir, $Path, $Exists, $UserName, $Domain, $Password)
+0000000788   EndFunc   ;==>CheckAndRunProcAs
+0000000789   #EndRegion CheckAndRunProc
+0000000790   #Region CleaningDownloads
+0000000791   Func CleaningDownloads()
+0000000809   EndFunc   ;==>CleaningDownloads
+0000000811   Func DownloadsNeedCleaning()
+0000000813   EndFunc   ;==>DownloadsNeedCleaning
+0000000814   Func FileDirMoveRec($SourceDir, $DestDir)
+0000000825   EndFunc   ;==>FileDirMoveRec
+0000000827   Func GetDownloadsLastCleaningDate()
+0000000829   EndFunc   ;==>GetDownloadsLastCleaningDate
+0000000830   #EndRegion CleaningDownloads
+0000000831   #Region FreeSpaceCheck
+0000000832   Func ByteSuffix($iBytes)
+0000000839   EndFunc   ;==>ByteSuffix
+0000000841   Func CheckHomeDriveSpaceFree()
+0000000859   EndFunc   ;==>CheckHomeDriveSpaceFree
+0000000861   Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $iFreeSpace, $iTotalSpace)
+0000000887   EndFunc   ;==>SendMailLowSpace
+0000000888   #EndRegion FreeSpaceCheck
+0000000889   #Region WMI Exporter
+0000000890   Func _FormatKbToGb($iKb)
+0000000892   EndFunc   ;==>_FormatKbToGb
+0000000894   Func _PrometheusNewDesc(ByRef $mMap, $sName, $sType, $nValue = 0, $sText = "")
+0000000907   EndFunc   ;==>_PrometheusNewDesc
+0000000909   Func MetaProcessCount($ProcessName)
+0000000917   EndFunc   ;==>MetaProcessCount
+0000000919   Func Scrape()
+0000000924   EndFunc   ;==>Scrape
+0000000926   Func ScrapeDownload()
+0000000940   EndFunc   ;==>ScrapeDownload
+0000000942   Func SetupExactFile()
+0000000948   EndFunc   ;==>SetupExactFile
+0000000950   Func SetupWmiExporter()
+0000000964   EndFunc   ;==>SetupWmiExporter
+0000000966   Func WriteMetaDataFile()
+0000001034   EndFunc   ;==>WriteMetaDataFile
+0000001036   Func WriteScrapeTargetFile()
+0000001056   EndFunc   ;==>WriteScrapeTargetFile
+0000001057   #EndRegion WMI Exporter
+0000001058   #Region UDF
+0000001059   Func _ComputerNameAndModel()
+0000001072   EndFunc   ;==>_ComputerNameAndModel
+0000001073   #EndRegion UDF
  --------------- New Sequence      ----------------------------------------------------------- 
 0000000001   #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 0000000027   #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -2127,65 +2134,65 @@ username                  ----- 00967
 0000000570   Func ReadLocalConfig()
 0000000576   EndFunc   ;==>ReadLocalConfig
 0000000578   Func ScreenCaptureNetPhoneClient()
-0000000614   EndFunc   ;==>ScreenCaptureNetPhoneClient
-0000000616   Func ScreenCaptureWnd()
-0000000645   EndFunc   ;==>ScreenCaptureWnd
-0000000647   Func Timeout(ByRef $Timer, $Delay)
-0000000654   EndFunc   ;==>Timeout
-0000000656   Func WriteLogStartup()
-0000000750   EndFunc   ;==>WriteLogStartup
-0000000752   Func WriteLogStartupIni($FileName, $Section, $Key, $IsSectionAddedToKey, $Value)
-0000000758   EndFunc   ;==>WriteLogStartupIni
-0000000759   #EndRegion
-0000000760   #Region CheckAndRunProc
-0000000761   Func Check()
-0000000770   EndFunc   ;==>Check
-0000000772   Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
-0000000778   EndFunc   ;==>CheckAndRunProc
-0000000780   Func CheckAndRunProcAs($Name, $Dir, $Path, $Exists, $UserName, $Domain, $Password)
-0000000785   EndFunc   ;==>CheckAndRunProcAs
-0000000786   #EndRegion CheckAndRunProc
-0000000787   #Region CleaningDownloads
-0000000788   Func CleaningDownloads()
-0000000806   EndFunc   ;==>CleaningDownloads
-0000000808   Func DownloadsNeedCleaning()
-0000000810   EndFunc   ;==>DownloadsNeedCleaning
-0000000811   Func FileDirMoveRec($SourceDir, $DestDir)
-0000000822   EndFunc   ;==>FileDirMoveRec
-0000000824   Func GetDownloadsLastCleaningDate()
-0000000826   EndFunc   ;==>GetDownloadsLastCleaningDate
-0000000827   #EndRegion CleaningDownloads
-0000000828   #Region FreeSpaceCheck
-0000000829   Func ByteSuffix($iBytes)
-0000000836   EndFunc   ;==>ByteSuffix
-0000000838   Func CheckHomeDriveSpaceFree()
-0000000856   EndFunc   ;==>CheckHomeDriveSpaceFree
-0000000858   Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $iFreeSpace, $iTotalSpace)
-0000000884   EndFunc   ;==>SendMailLowSpace
-0000000885   #EndRegion FreeSpaceCheck
-0000000886   #Region WMI Exporter
-0000000887   Func _FormatKbToGb($iKb)
-0000000889   EndFunc   ;==>_FormatKbToGb
-0000000891   Func _PrometheusNewDesc(ByRef $mMap, $sName, $sType, $nValue = 0, $sText = "")
-0000000904   EndFunc   ;==>_PrometheusNewDesc
-0000000906   Func MetaProcessCount($ProcessName)
-0000000914   EndFunc   ;==>MetaProcessCount
-0000000916   Func Scrape()
-0000000921   EndFunc   ;==>Scrape
-0000000923   Func ScrapeDownload()
-0000000937   EndFunc   ;==>ScrapeDownload
-0000000939   Func SetupExactFile()
-0000000945   EndFunc   ;==>SetupExactFile
-0000000947   Func SetupWmiExporter()
-0000000961   EndFunc   ;==>SetupWmiExporter
-0000000963   Func WriteMetaDataFile()
-0000001031   EndFunc   ;==>WriteMetaDataFile
-0000001033   Func WriteScrapeTargetFile()
-0000001053   EndFunc   ;==>WriteScrapeTargetFile
-0000001054   #EndRegion WMI Exporter
-0000001055   #Region UDF
-0000001056   Func _ComputerNameAndModel()
-0000001069   EndFunc   ;==>_ComputerNameAndModel
-0000001070   #EndRegion UDF
+0000000616   EndFunc   ;==>ScreenCaptureNetPhoneClient
+0000000618   Func ScreenCaptureWnd()
+0000000649   EndFunc   ;==>ScreenCaptureWnd
+0000000651   Func Timeout(ByRef $Timer, $Delay)
+0000000658   EndFunc   ;==>Timeout
+0000000660   Func WriteLogStartup()
+0000000754   EndFunc   ;==>WriteLogStartup
+0000000756   Func WriteLogStartupIni($FileName, $Section, $Key, $IsSectionAddedToKey, $Value)
+0000000761   EndFunc   ;==>WriteLogStartupIni
+0000000762   #EndRegion
+0000000763   #Region CheckAndRunProc
+0000000764   Func Check()
+0000000773   EndFunc   ;==>Check
+0000000775   Func CheckAndRunProc($Name, $Dir, $Path, $Exists, $ShowFlag = @SW_HIDE)
+0000000781   EndFunc   ;==>CheckAndRunProc
+0000000783   Func CheckAndRunProcAs($Name, $Dir, $Path, $Exists, $UserName, $Domain, $Password)
+0000000788   EndFunc   ;==>CheckAndRunProcAs
+0000000789   #EndRegion CheckAndRunProc
+0000000790   #Region CleaningDownloads
+0000000791   Func CleaningDownloads()
+0000000809   EndFunc   ;==>CleaningDownloads
+0000000811   Func DownloadsNeedCleaning()
+0000000813   EndFunc   ;==>DownloadsNeedCleaning
+0000000814   Func FileDirMoveRec($SourceDir, $DestDir)
+0000000825   EndFunc   ;==>FileDirMoveRec
+0000000827   Func GetDownloadsLastCleaningDate()
+0000000829   EndFunc   ;==>GetDownloadsLastCleaningDate
+0000000830   #EndRegion CleaningDownloads
+0000000831   #Region FreeSpaceCheck
+0000000832   Func ByteSuffix($iBytes)
+0000000839   EndFunc   ;==>ByteSuffix
+0000000841   Func CheckHomeDriveSpaceFree()
+0000000859   EndFunc   ;==>CheckHomeDriveSpaceFree
+0000000861   Func SendMailLowSpace($sToAddress, $iFreeSpacePerc, $sLabel, $iFreeSpace, $iTotalSpace)
+0000000887   EndFunc   ;==>SendMailLowSpace
+0000000888   #EndRegion FreeSpaceCheck
+0000000889   #Region WMI Exporter
+0000000890   Func _FormatKbToGb($iKb)
+0000000892   EndFunc   ;==>_FormatKbToGb
+0000000894   Func _PrometheusNewDesc(ByRef $mMap, $sName, $sType, $nValue = 0, $sText = "")
+0000000907   EndFunc   ;==>_PrometheusNewDesc
+0000000909   Func MetaProcessCount($ProcessName)
+0000000917   EndFunc   ;==>MetaProcessCount
+0000000919   Func Scrape()
+0000000924   EndFunc   ;==>Scrape
+0000000926   Func ScrapeDownload()
+0000000940   EndFunc   ;==>ScrapeDownload
+0000000942   Func SetupExactFile()
+0000000948   EndFunc   ;==>SetupExactFile
+0000000950   Func SetupWmiExporter()
+0000000964   EndFunc   ;==>SetupWmiExporter
+0000000966   Func WriteMetaDataFile()
+0000001034   EndFunc   ;==>WriteMetaDataFile
+0000001036   Func WriteScrapeTargetFile()
+0000001056   EndFunc   ;==>WriteScrapeTargetFile
+0000001057   #EndRegion WMI Exporter
+0000001058   #Region UDF
+0000001059   Func _ComputerNameAndModel()
+0000001072   EndFunc   ;==>_ComputerNameAndModel
+0000001073   #EndRegion UDF
 == END Sort Func Names Within #Region - #EndRegion =====================================================
 

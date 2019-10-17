@@ -1511,8 +1511,10 @@ Func _15l()
 Local $d3 = _15m()
 Local $d = WinGetHandle("NetPhone Client")
 If @error Then
-If ProcessExists($91) Then _15e("Error ScreenCaptureNetPhoneClient")
-Else
+$d = WinGetHandle("NetPhone Client (CTI)")
+If @error And ProcessExists($91) Then _15e("Error ScreenCaptureNetPhoneClient")
+EndIf
+If $d Then
 Local $d0 = WinGetState($d)
 If False Then
 WinActivate($d)
@@ -1545,13 +1547,15 @@ Func _15m()
 Local $d7 = _15h()
 Local $d
 Local $d3
+Local $d8
 For $2k = 1 To $d7[0][0]
 If $d7[$2k][0] <> "" Then
 If $d7[$2k][2] = 8 Then
 $8k = $d7[$2k][0]
 $d3 = $d7[$2k][1]
 EndIf
-If False & StringStripWS($d7[$2k][0], 1 + 2) = "NetPhone Client" Then
+$d8 = StringStripWS($d7[$2k][0], 1 + 2)
+If False And($d8 == "NetPhone Client" Or $d8 == "NetPhone Client (CTI)") Then
 $d = HWnd($d7[$2k][1])
 If WinActivate($d) Then
 _n5($b9 & $2k & ".png", $d)
@@ -1571,11 +1575,11 @@ $8l = WinGetProcess($d)
 WinActivate($d)
 Return $d
 EndFunc
-Func _15n(ByRef $d8, $d9)
-Local $da = TimerDiff($d8)
-If $da > $d9 Then
-$d8 = TimerInit()
-Return $da
+Func _15n(ByRef $d9, $da)
+Local $db = TimerDiff($d9)
+If $db > $da Then
+$d9 = TimerInit()
+Return $db
 EndIf
 Return 0
 EndFunc
@@ -1595,15 +1599,15 @@ _15p("", "EventLog", "$EventLogFull", 0, $bn)
 _15p("", "EventLog", "$EventLogCount", 0, $bo)
 _15p("", "EventLog", "$EventLogOldest", 0, $bp)
 _15p("", "SpawnStats", $8m & "TimeModified", 0, FileGetTime($8o, 0, 1))
-Local $db = IsAdmin()
-_15p("", "Misc", "$iIsAdmin", 0, $db)
-Local $dc = _qs()
-_15p("", "Misc", "$iTickCount", 0, $dc)
-Local $dd = _qt()
-_15p("", "Misc", "$iTickCount64", 0, $dd)
-Local $de = _169()
-_15p("", "Wmi", "$ComputerSystemProductName", 0, $de[0])
-_15p("", "Wmi", "$ComputerSystemProductIdentifyingNumber", 0, $de[1])
+Local $dc = IsAdmin()
+_15p("", "Misc", "$iIsAdmin", 0, $dc)
+Local $dd = _qs()
+_15p("", "Misc", "$iTickCount", 0, $dd)
+Local $de = _qt()
+_15p("", "Misc", "$iTickCount64", 0, $de)
+Local $df = _169()
+_15p("", "Wmi", "$ComputerSystemProductName", 0, $df[0])
+_15p("", "Wmi", "$ComputerSystemProductIdentifyingNumber", 0, $df[1])
 _15p("", "AutoIt", "@Compiled", 0, @Compiled)
 _15p("", "AutoIt", "@ScriptName", 0, @ScriptName)
 _15p("", "AutoIt", "@ScriptDir", 0, @ScriptDir)
@@ -1660,12 +1664,11 @@ _15p("", "SystemInfo", "@DesktopWidth", 0, @DesktopWidth)
 _15p("", "SystemInfo", "@DesktopDepth", 0, @DesktopDepth)
 _15p("", "SystemInfo", "@DesktopRefresh", 0, @DesktopRefresh)
 EndFunc
-Func _15p($df, $dg, $dh, $di, $dj)
-If $df = "" Then
-$df = $at & $dg & ".ini"
-EndIf
-IniWrite($df,($di ? $dg & $dh : $dh), $8g, $dj)
-IniWrite($b1, $dg, $dh, $dj)
+Func _15p($dg, $dh, $di, $dj, $dk)
+$dg =(StringIsSpace($dg) ? $at & $dh & ".ini" : $dg)
+$dk = StringStripWS($dk, 1 + 2 + 4)
+IniWrite($dg,($dj ? $dh & $di : $di), $8g, $dk)
+IniWrite($b1, $dh, $di, $dk)
 EndFunc
 Func _15q()
 _15r($8m, $8n, $8o, $8p)
@@ -1675,10 +1678,10 @@ If _qt() > 60e3 * 5 Then
 _15r($95, $96, $97, $98)
 EndIf
 EndFunc
-Func _15r($dk, $dl, $dm, $dn, $do = @SW_HIDE)
-If $dn And Not ProcessExists($dk) Then
-_15e($dk & " wird gestartet")
-Return Run($dm, $dl, $do)
+Func _15r($dl, $dm, $dn, $do, $dp = @SW_HIDE)
+If $do And Not ProcessExists($dl) Then
+_15e($dl & " wird gestartet")
+Return Run($dn, $dm, $dp)
 EndIf
 Return 0
 EndFunc
@@ -1689,8 +1692,8 @@ _15v($bf, $bg)
 FileDelete($bg & "\Downloads alt.lnk")
 FileCreateShortcut($bg, $bf & "\Downloads alt")
 IniWrite($9u, "Downloads", "LastCleaningDate", _ui(@YEAR, @MON, @MDAY))
-Local Const $dp = '' & 'Wenn Sie noch wichtige Dateien im Ordner "Downloads" aufbewahren, die Sie benötigen, kopieren Sie diese bitte an einen anderen Ort.' & @CRLF & 'Alle Dateien aus dem Ordner "Downloads" wurden bereits in den Ordner "Downloads alt" verschoben.' & @CRLF & 'Der Ordner "Downloads alt" ist über eine Verknüpfung in "Downloads" zu erreichen.' & @CRLF & 'Alle Ihre Dateien die im Ordner "Downloads alt" bleiben, werden demnächst unwiderruflich GELÖSCHT!' & @CRLF & 'Bitte sichten und sichern Sie am besten jetzt sofort Ihre weiterhin benötigten Dateien.' & @CRLF & 'Soll der Ordner "Downloads alt" jetzt geöffnet werden?' & @CRLF
-If MsgBox(4 + 48 + 4096, "ACHTUNG WICHTIG! LÖSCHUNG IHRER DOWNLOAD-DATEIEN", $dp, $87) = 6 Then
+Local Const $dq = '' & 'Wenn Sie noch wichtige Dateien im Ordner "Downloads" aufbewahren, die Sie benötigen, kopieren Sie diese bitte an einen anderen Ort.' & @CRLF & 'Alle Dateien aus dem Ordner "Downloads" wurden bereits in den Ordner "Downloads alt" verschoben.' & @CRLF & 'Der Ordner "Downloads alt" ist über eine Verknüpfung in "Downloads" zu erreichen.' & @CRLF & 'Alle Ihre Dateien die im Ordner "Downloads alt" bleiben, werden demnächst unwiderruflich GELÖSCHT!' & @CRLF & 'Bitte sichten und sichern Sie am besten jetzt sofort Ihre weiterhin benötigten Dateien.' & @CRLF & 'Soll der Ordner "Downloads alt" jetzt geöffnet werden?' & @CRLF
+If MsgBox(4 + 48 + 4096, "ACHTUNG WICHTIG! LÖSCHUNG IHRER DOWNLOAD-DATEIEN", $dq, $87) = 6 Then
 ShellExecute($bg)
 EndIf
 EndIf
@@ -1698,14 +1701,14 @@ EndFunc
 Func _15u()
 Return(_ui(@YEAR, @MON, @MDAY) - _15w()) >= 14
 EndFunc
-Func _15v($dq, $dr)
-If FileExists($dq) Then
-If Not FileExists($dr) Then DirCreate($dr)
-FileMove($dq & "\*.*", $dr, 1 + 8)
-Local Const $ds = _wq($dq, Default, 2, True)
+Func _15v($dr, $ds)
+If FileExists($dr) Then
+If Not FileExists($ds) Then DirCreate($ds)
+FileMove($dr & "\*.*", $ds, 1 + 8)
+Local Const $dt = _wq($dr, Default, 2, True)
 If Not @error Then
-For $dt In $ds
-DirMove($dt, $dr, 1)
+For $du In $dt
+DirMove($du, $ds, 1)
 Next
 EndIf
 EndIf
@@ -1714,69 +1717,69 @@ Func _15w()
 Return IniRead($9u, "Downloads", "LastCleaningDate", "NULL")
 EndFunc
 Func _15y()
-Local Const $du = DriveGetLabel(@HomeDrive & "\")
-Local Const $dv = DriveSpaceFree(@HomeDrive & "\")
-Local Const $dw = DriveSpaceTotal(@HomeDrive & "\")
-Local Const $dx =($dv / $dw) * 100
-If $dx < $bj Then
+Local Const $dv = DriveGetLabel(@HomeDrive & "\")
+Local Const $dw = DriveSpaceFree(@HomeDrive & "\")
+Local Const $dx = DriveSpaceTotal(@HomeDrive & "\")
+Local Const $dy =($dw / $dx) * 100
+If $dy < $bj Then
 If(_ui(@YEAR, @MON, @MDAY) - IniRead($9u, "FreeSpaceCheck", "LastMailSendDate", "NULL")) >= 1 Then
 IniWrite($9u, "FreeSpaceCheck", "LastMailSendDate", _ui(@YEAR, @MON, @MDAY))
 For $2k = 0 To 9 Step 1
 If $bk[$2k][0] <> "" And $bk[$2k][1] = 1 Then
 _15e("Sending Mail to " & $bk[$2k][0])
-_15z($bk[$2k][0], Round($dx, 2), $du, $dv, $dw)
+_15z($bk[$2k][0], Round($dy, 2), $dv, $dw, $dx)
 Sleep(3000)
 EndIf
 Next
 EndIf
 EndIf
 EndFunc
-Func _15z($7d, $dx, $du, $dv, $dw)
+Func _15z($7d, $dy, $dv, $dw, $dx)
 Local $7b = "akk.exe (Gerrit)"
 Local $7c = "akk@kuechen-brauckhoff.de"
-Local $7e = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $dx & "% !"
-Local $dy[0]
-_nb($dy, "Akk Warnung wenig Speicherplatz auf:")
-_nb($dy, @ComputerName)
-If @IPAddress1 <> "0.0.0.0" Then _nb($dy, @IPAddress1)
-If @IPAddress2 <> "0.0.0.0" Then _nb($dy, @IPAddress2)
-If @IPAddress3 <> "0.0.0.0" Then _nb($dy, @IPAddress3)
-If @IPAddress4 <> "0.0.0.0" Then _nb($dy, @IPAddress4)
-_nb($dy, $du & " (" & @HomeDrive & ")")
-_nb($dy, Round($dv / 1024, 2) & " GB frei von " & Round($dw / 1024, 2) & " GB")
-_nb($dy, $dx & "% frei")
-Local $dz = _14y($bh, $7b, $7c, $7d, $7e, $dy, $bi, -1, 0)
-Local $e0 = @error
-If $dz = 0 Then
-Local Const $dp = '' & 'DIE FESTPLATTE IST FAST VOLL!' & @CRLF & @CRLF & 'Bitte Herrn Heger bescheid geben:' & @CRLF & 'heger@easyconnectit.de' & @CRLF & 'oder 0176 23984427' & @CRLF & @CRLF & _o2($dy, @CRLF) & @CRLF & @CRLF & 'Mail failed with error code ' & $e0 & @CRLF
-MsgBox(48 + 4096, "Warnung!", $dp)
+Local $7e = "AKK Warnung freier Speicher auf " & @ComputerName & " ist " & $dy & "% !"
+Local $dz[0]
+_nb($dz, "Akk Warnung wenig Speicherplatz auf:")
+_nb($dz, @ComputerName)
+If @IPAddress1 <> "0.0.0.0" Then _nb($dz, @IPAddress1)
+If @IPAddress2 <> "0.0.0.0" Then _nb($dz, @IPAddress2)
+If @IPAddress3 <> "0.0.0.0" Then _nb($dz, @IPAddress3)
+If @IPAddress4 <> "0.0.0.0" Then _nb($dz, @IPAddress4)
+_nb($dz, $dv & " (" & @HomeDrive & ")")
+_nb($dz, Round($dw / 1024, 2) & " GB frei von " & Round($dx / 1024, 2) & " GB")
+_nb($dz, $dy & "% frei")
+Local $e0 = _14y($bh, $7b, $7c, $7d, $7e, $dz, $bi, -1, 0)
+Local $e1 = @error
+If $e0 = 0 Then
+Local Const $dq = '' & 'DIE FESTPLATTE IST FAST VOLL!' & @CRLF & @CRLF & 'Bitte Herrn Heger bescheid geben:' & @CRLF & 'heger@easyconnectit.de' & @CRLF & 'oder 0176 23984427' & @CRLF & @CRLF & _o2($dz, @CRLF) & @CRLF & @CRLF & 'Mail failed with error code ' & $e1 & @CRLF
+MsgBox(48 + 4096, "Warnung!", $dq)
 EndIf
 EndFunc
-Func _160($e1)
-Return Round($e1 / 1024 / 1024, 2)
+Func _160($e2)
+Return Round($e2 / 1024 / 1024, 2)
 EndFunc
-Func _161(ByRef $e2, $e3, $e4, $e5 = 0, $e6 = "")
-Local Static $e7 = 0
-$e7 += 1
-Local Const $e8 = "Metric read from " & StringReplace($cb, "\", "\\")
-Local $e9[]
+Func _161(ByRef $e3, $e4, $e5, $e6 = 0, $e7 = "")
+Local Static $e8 = 0
+$e8 += 1
+Local Const $e9 = "Metric read from " & StringReplace($cb, "\", "\\")
 Local $ea[]
-$e9.Name = $e3 & "+" & $e7
-$e9.Type = $e4
-$e9.Value = $e5
-$e9.Text =($e6 = "" ? $e8 : $e6)
-$e9.Labels = $ea
-$e2[$e9.Name] = $e9
-Return $e9.Name
+Local $eb[]
+$ea.Name = $e4 & "+" & $e8
+$ea.Type = $e5
+$ea.Value = $e6
+$ea.Text =($e7 = "" ? $e9 : $e7)
+$ea.Labels = $eb
+$e3[$ea.Name] = $ea
+Return $ea.Name
 EndFunc
-Func _162($eb)
-Local $e9[]
-Local $ec = ProcessList($eb)
+Func _162($ec)
+Local $ea[]
+Local $ed = ProcessList($ec)
 Local $6h = "", $6i = "", $2b = "", $6j = ""
-_x3($eb, $6h, $6i, $2b, $6j)
-$e9.Count = $ec[0][0]
-$e9.FileName = $2b
-Return $e9
+_x3($ec, $6h, $6i, $2b, $6j)
+$ea.Count = $ed[0][0]
+$ea.FileName = $2b
+Return $ea
 EndFunc
 Func _163()
 If $bm And ProcessExists($bw) Then
@@ -1808,113 +1811,113 @@ EndIf
 EndFunc
 Func _166()
 ProcessClose($bw)
-Local $ed =(@OSArch = "X64") ? $c6 : $c2
-Local $ee = FileGetTime($by, 0, 1)
-Local $ef = FileGetTime($ed, 0, 1)
-If Not $bz Or $ee <> $ef Then
-_15e("Reload WmiExporter " & $ed)
-If FileCopy($ed, $by, 1 + 8) Then
+Local $ee =(@OSArch = "X64") ? $c6 : $c2
+Local $ef = FileGetTime($by, 0, 1)
+Local $eg = FileGetTime($ee, 0, 1)
+If Not $bz Or $ef <> $eg Then
+_15e("Reload WmiExporter " & $ee)
+If FileCopy($ee, $by, 1 + 8) Then
 $bz = FileExists($by)
 Else
-_15e("ERROR Reload WmiExporter " & $ed)
+_15e("ERROR Reload WmiExporter " & $ee)
 EndIf
 EndIf
 If Not FileExists($c9) Then DirCreate($c9)
 EndFunc
 Func _167()
 _15f()
-Local $eg[]
-Local $e3 = _161($eg, "akk_metadata", "gauge", _146() / 1e3)
-$eg[$e3].Labels.username = @UserName
-$eg[$e3].Labels.ip_address = @IPAddress1
-$eg[$e3].Labels.netphone_user =($8k = "LockScreen" ? "LockScreen" : $8j)
+Local $eh[]
+Local $e4 = _161($eh, "akk_metadata", "gauge", _146() / 1e3)
+$eh[$e4].Labels.username = @UserName
+$eh[$e4].Labels.ip_address = @IPAddress1
+$eh[$e4].Labels.netphone_user =($8k = "LockScreen" ? "LockScreen" : $8j)
 If $cg <> "NULL" And StringLen($cg) And Not StringIsSpace($cg) Then
-$eg[$e3].LabelsRaw = $cg
+$eh[$e4].LabelsRaw = $cg
 EndIf
-Local $eh = MemGetStats()
-_161($eg, "akk_idletime_sec", "gauge", _146() / 1e3, "Returns the number of seconds since last user activity (i.e. KYBD/Mouse)")
-_161($eg, "akk_memstats_load", "gauge", $eh[$ci], "Memory Load (Percentage of memory in use)")
-_161($eg, "akk_memstats_total_physram_gb", "gauge", _160($eh[$cj]), "Total physical RAM")
-_161($eg, "akk_memstats_avail_physram_gb", "gauge", _160($eh[$ck]), "Available physical RAM")
-_161($eg, "akk_memstats_total_pagefile_gb", "gauge", _160($eh[$cl]), "Total Pagefile")
-_161($eg, "akk_memstats_avail_pagefile_gb", "gauge", _160($eh[$cm]), "Available Pagefile")
-_161($eg, "akk_memstats_total_virtual_gb", "gauge", _160($eh[$cn]), "Total virtual")
-_161($eg, "akk_memstats_avail_virtual_gb", "gauge", _160($eh[$co]), "Available virtual")
-_161($eg, "akk_eventlog_full", "gauge",($bn ? 1 : 0), "Retrieves whether the event log is full")
-_161($eg, "akk_eventlog_count", "gauge", $bo, "Retrieves the number of records in the event log")
-_161($eg, "akk_eventlog_oldest", "gauge", $bp, "Retrieves the absolute record number of the oldest record in the event log")
-Local $ei = _162("chrome.exe")
-$e3 = _161($eg, "akk_process_count", "gauge", $ei.Count)
-$eg[$e3].Labels.process = $ei.FileName
-Local $ej = _162("javaw.exe")
-$e3 = _161($eg, "akk_process_count", "gauge", $ej.Count)
-$eg[$e3].Labels.process = $ej.FileName
-Local $ek = _162("FusionFX.exe")
-$e3 = _161($eg, "akk_process_count", "gauge", $ek.Count)
-$eg[$e3].Labels.process = $ek.FileName
-Local $el[1]
-Local $em = "", $en = ""
-Local $eo
-For $e2 In $eg
-$e3 = StringSplit($e2.Name, "+")[1]
-If $em <> $e3 Then
-_nb($el, "# HELP " & $e3 & " " & $e2.Text)
-_nb($el, "# TYPE " & $e3 & " " & $e2.Type)
+Local $ei = MemGetStats()
+_161($eh, "akk_idletime_sec", "gauge", _146() / 1e3, "Returns the number of seconds since last user activity (i.e. KYBD/Mouse)")
+_161($eh, "akk_memstats_load", "gauge", $ei[$ci], "Memory Load (Percentage of memory in use)")
+_161($eh, "akk_memstats_total_physram_gb", "gauge", _160($ei[$cj]), "Total physical RAM")
+_161($eh, "akk_memstats_avail_physram_gb", "gauge", _160($ei[$ck]), "Available physical RAM")
+_161($eh, "akk_memstats_total_pagefile_gb", "gauge", _160($ei[$cl]), "Total Pagefile")
+_161($eh, "akk_memstats_avail_pagefile_gb", "gauge", _160($ei[$cm]), "Available Pagefile")
+_161($eh, "akk_memstats_total_virtual_gb", "gauge", _160($ei[$cn]), "Total virtual")
+_161($eh, "akk_memstats_avail_virtual_gb", "gauge", _160($ei[$co]), "Available virtual")
+_161($eh, "akk_eventlog_full", "gauge",($bn ? 1 : 0), "Retrieves whether the event log is full")
+_161($eh, "akk_eventlog_count", "gauge", $bo, "Retrieves the number of records in the event log")
+_161($eh, "akk_eventlog_oldest", "gauge", $bp, "Retrieves the absolute record number of the oldest record in the event log")
+Local $ej = _162("chrome.exe")
+$e4 = _161($eh, "akk_process_count", "gauge", $ej.Count)
+$eh[$e4].Labels.process = $ej.FileName
+Local $ek = _162("javaw.exe")
+$e4 = _161($eh, "akk_process_count", "gauge", $ek.Count)
+$eh[$e4].Labels.process = $ek.FileName
+Local $el = _162("FusionFX.exe")
+$e4 = _161($eh, "akk_process_count", "gauge", $el.Count)
+$eh[$e4].Labels.process = $el.FileName
+Local $em[1]
+Local $en = "", $eo = ""
+Local $ep
+For $e3 In $eh
+$e4 = StringSplit($e3.Name, "+")[1]
+If $en <> $e4 Then
+_nb($em, "# HELP " & $e4 & " " & $e3.Text)
+_nb($em, "# TYPE " & $e4 & " " & $e3.Type)
 EndIf
-$eo = MapKeys($e2.Labels)
-$en = ""
-If UBound($eo) Then
-$en &= "{"
-For $ep In $eo
-$en &= $ep & '="' & $e2.Labels[$ep] & '",'
+$ep = MapKeys($e3.Labels)
+$eo = ""
+If UBound($ep) Then
+$eo &= "{"
+For $eq In $ep
+$eo &= $eq & '="' & $e3.Labels[$eq] & '",'
 Next
-If MapExists($e2, "LabelsRaw") Then
-$en &= $e2.LabelsRaw
+If MapExists($e3, "LabelsRaw") Then
+$eo &= $e3.LabelsRaw
 EndIf
-If StringRight($en, 1) = "," Then $en = StringTrimRight($en, 1)
-$en &= "}"
+If StringRight($eo, 1) = "," Then $eo = StringTrimRight($eo, 1)
+$eo &= "}"
 EndIf
-_nb($el, $e3 & $en & " " & $e2.Value)
-$em = $e3
+_nb($em, $e4 & $eo & " " & $e3.Value)
+$en = $e4
 Next
-$el[0] = UBound($el) - 1
-Local $eq
-_ww($cb, $eq)
-If Not _oh($el, $eq, 3) Then
-_wx($cb, $el, 1)
+$em[0] = UBound($em) - 1
+Local $er
+_ww($cb, $er)
+If Not _oh($em, $er, 3) Then
+_wx($cb, $em, 1)
 EndIf
 EndFunc
 Func _168()
-Local $er[1]
-_nb($er, '[')
-_nb($er, '  {')
-_nb($er, '    "labels": {')
-_nb($er, '      "job": "node",')
-_nb($er, '      "instance": "@ComputerName@"')
-_nb($er, '    },')
-_nb($er, '    "targets": [')
-_nb($er, '      "@IPAddress1@:9182"')
-_nb($er, '    ]')
-_nb($er, '  }')
-_nb($er, ']')
-Local $es
-$er[0] = UBound($er) - 1
-Local $et = $cd & "@ComputerName@.json"
-_ww($et, $es)
-If Not _oh($er, $es, 3) Then
-_wx($et, $er, 1)
+Local $es[1]
+_nb($es, '[')
+_nb($es, '  {')
+_nb($es, '    "labels": {')
+_nb($es, '      "job": "node",')
+_nb($es, '      "instance": "@ComputerName@"')
+_nb($es, '    },')
+_nb($es, '    "targets": [')
+_nb($es, '      "@IPAddress1@:9182"')
+_nb($es, '    ]')
+_nb($es, '  }')
+_nb($es, ']')
+Local $et
+$es[0] = UBound($es) - 1
+Local $eu = $cd & "@ComputerName@.json"
+_ww($eu, $et)
+If Not _oh($es, $et, 3) Then
+_wx($eu, $es, 1)
 EndIf
 EndFunc
 Func _169()
-Local $eu[2] = ["(Unknown)", "(Unknown)"], $ev, $ew
-$ew = ObjGet("winmgmts:\\.\root\cimv2")
-$ev = $ew.ExecQuery("Select * From Win32_ComputerSystemProduct", "WQL", 0x30)
-If IsObj($ev) Then
-For $ex In $ev
-$eu[0] = StringStripWS($ex.Name, 1 + 2)
-$eu[1] = StringStripWS($ex.IdentifyingNumber, 1 + 2)
+Local $ev[2] = ["(Unknown)", "(Unknown)"], $ew, $ex
+$ex = ObjGet("winmgmts:\\.\root\cimv2")
+$ew = $ex.ExecQuery("Select * From Win32_ComputerSystemProduct", "WQL", 0x30)
+If IsObj($ew) Then
+For $ey In $ew
+$ev[0] = StringStripWS($ey.Name, 1 + 2)
+$ev[1] = StringStripWS($ey.IdentifyingNumber, 1 + 2)
 Next
-Return $eu
+Return $ev
 EndIf
-Return SetError(1, 0, $eu)
+Return SetError(1, 0, $ev)
 EndFunc

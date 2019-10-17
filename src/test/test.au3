@@ -1,6 +1,41 @@
 
 #include <array.au3>
 
+ConsoleWrite(@CRLF)
+#include <MsgBoxConstants.au3>
+#include <StringConstants.au3>
+
+
+
+
+
+
+
+
+#include <MsgBoxConstants.au3>
+
+Example()
+
+Func Example()
+    ; Run Notepad
+;~     Run("notepad.exe")
+
+    ; Wait 10 seconds for the Notepad window to appear.
+;~     WinWait("[CLASS:Notepad]", "", 10)
+
+    ; Retrieve the handle of the Notepad window using the classname of Notepad.
+    Local $hWnd = WinGetHandle("[CLASS:Notepad]")
+    If @error Then
+        MsgBox($MB_SYSTEMMODAL, $hWnd, "An error occurred when trying to retrieve the window handle of Notepad.")
+;~         Exit
+    EndIf
+
+    ; Display the handle of the Notepad window.
+	if $hWnd then MsgBox($MB_SYSTEMMODAL, VarGetType($hWnd == 0), "akk")
+
+    ; Close the Notepad window using the handle returned by WinGetHandle.
+    WinClose($hWnd)
+EndFunc   ;==>Example
 
 
 
@@ -13,8 +48,85 @@
 
 
 
+exit
 
 
+
+
+
+
+;
+;
+;
+
+#include <array.au3>
+
+;---------------------------------------------
+;  define arrays
+;---------------------------------------------
+
+local $list[1337][4]                                                 ; 300 windows max
+local enum $title, $handle, $pid, $exe                              ; enumerations for array offsets
+
+;---------------------------------------------
+;  get array of windows and populate $list
+;---------------------------------------------
+
+local $a1 = winlist()                                               ; get list of windows
+
+for $i = 0 to $a1[0][0]                                             ; and copy title, handle and pid to $list array
+    $list[$i][$title]   = $a1[$i][$title]                           ; window title
+    $list[$i][$handle]  = $a1[$i][$handle]                          ; window handle
+    $list[$i][$pid]     = wingetprocess($a1[$i][$handle])           ; owning process id
+next
+
+;---------------------------------------------
+;  get array of processes and populate $list
+;---------------------------------------------
+
+local $a2 = processlist()                                           ; get list of processes
+
+for $i = 0 to $a1[0][0]
+    for $j = 0 to $a2[0][0]
+        if $list[$i][2] = $a2[$j][1] then $list[$i][3] = $a2[$j][0] ; and copy process name to $list array
+    Next
+next
+
+_arraysort($list,1,0,0,2)                                           ; sort the array by $pid desc
+
+
+
+redim $list[$i][4]
+
+_arraydisplay($list)
+
+;---------------------------------------------
+;  format output to console
+;---------------------------------------------
+
+local $savepid = '', $out = ''
+
+for $i = 0 to ubound($list) - 1
+    if $i = 0 then
+        $out &= stringformat('%-10s%-15s',$list[$i][$pid],$list[$i][$exe]) & @crlf
+
+        $savepid = $list[$i][$pid]
+    endif
+
+    if $list[$i][$pid] = '' then exitloop
+
+    if  $savepid = $list[$i][$pid] then
+        if $list[$i][$title] <> '' then $out &= @tab & @tab & $list[$i][$title] & @crlf
+
+    else
+        if $i <> 0 then $out &= stringformat('%-10s%-15s',$list[$i][$pid],$list[$i][$exe]) & @crlf
+
+        $savepid = $list[$i][$pid]
+    endif
+
+next
+
+consolewrite($out & @lf)
 
 
 
