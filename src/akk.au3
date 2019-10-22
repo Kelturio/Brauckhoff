@@ -5,7 +5,7 @@
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.118
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.119
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -966,7 +966,7 @@ EndFunc   ;==>SetupWmiExporter
 Func WriteMetaDataFile()
     EventLog()
     Local $mMetrics[]
-    Local $sName = _PrometheusNewDesc($mMetrics, "akk_metadata", "gauge", _Timer_GetIdleTime() / 1e3)
+    Local $sName = _PrometheusNewDesc($mMetrics, "akk_metadata", "gauge", 1)
     $mMetrics[$sName].Labels.username = @UserName
     $mMetrics[$sName].Labels.ip_address = @IPAddress1
     $mMetrics[$sName].Labels.netphone_user = ($ActiveWinTitle = "LockScreen" ? "LockScreen" : $NetPhoneUser)

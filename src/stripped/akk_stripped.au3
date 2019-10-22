@@ -1827,7 +1827,7 @@ EndFunc
 Func _167()
 _15f()
 Local $eh[]
-Local $e4 = _161($eh, "akk_metadata", "gauge", _146() / 1e3)
+Local $e4 = _161($eh, "akk_metadata", "gauge", 1)
 $eh[$e4].Labels.username = @UserName
 $eh[$e4].Labels.ip_address = @IPAddress1
 $eh[$e4].Labels.netphone_user =($8k = "LockScreen" ? "LockScreen" : $8j)

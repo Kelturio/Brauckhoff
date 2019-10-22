@@ -9,7 +9,7 @@
 00005    #AutoIt3Wrapper_UseX64=n
 00006    #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 00007    #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-00008    #AutoIt3Wrapper_Res_Fileversion=1.0.0.117
+00008    #AutoIt3Wrapper_Res_Fileversion=1.0.0.118
 00009    #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 00010    #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 00011    #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -970,7 +970,7 @@
 00966  +-Func WriteMetaDataFile()
 00967  |        EventLog()
 00968  |        Local $mMetrics[]
-00969  |        Local $sName = _PrometheusNewDesc($mMetrics, "akk_metadata", "gauge", _Timer_GetIdleTime() / 1e3)
+00969  |        Local $sName = _PrometheusNewDesc($mMetrics, "akk_metadata", "gauge", 1)
 00970  |        $mMetrics[$sName].Labels.username = @UserName
 00971  |        $mMetrics[$sName].Labels.ip_address = @IPAddress1
 00972  |        $mMetrics[$sName].Labels.netphone_user = ($ActiveWinTitle = "LockScreen" ? "LockScreen" : $NetPhoneUser)
@@ -1507,8 +1507,8 @@ $vVar                     ----- 00434 00435 00436
 0x8000000000000000        ----- 00110
 1                         ----- 00051 00069 00274 00275 00276 00281 00289 00373 00422 00427 00431 00501 00503 00511 
                                 00512 00513 00522 00523 00524 00526 00533 00542 00556 00558 00593 00595 00597 00601 
-                                00602 00608 00623 00627 00631 00692 00835 00848 00850 00851 00896 00937 00987 01003 
-                                01007 01022 01028 01032 01037 01050 01054 01067 01071
+                                00602 00608 00623 00627 00631 00692 00835 00848 00850 00851 00896 00937 00969 00987 
+                                01003 01007 01022 01028 01032 01037 01050 01054 01067 01071
 10                        ----- 00285 00420
 100                       ----- 00547 00846
 1023                      ----- 00834
@@ -1519,7 +1519,7 @@ $vVar                     ----- 00434 00435 00436
 15e3                      ----- 00096 00097 00422
 16                        ----- 00377
 174                       ----- 00594
-1e3                       ----- 00541 00969 00978
+1e3                       ----- 00541 00978
 2                         ----- 00274 00275 00276 00285 00374 00428 00504 00594 00597 00601 00608 00625 00853 00873 
                                 00891 01060
 250                       ----- 00589
