@@ -26,7 +26,7 @@
 #Au3Stripper_Parameters=/tl /debug /pe /mi=99 /rm /rsln /Beta
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #cs ----------------------------------------------------------------------------
-   
+
 #ce ----------------------------------------------------------------------------
 ;~ #include <AutoItConstants.au3>
 ;~ #include <MsgBoxConstants.au3>
@@ -45,6 +45,7 @@
 #include <File.au3>
 #include <Inet.au3>
 #include <Misc.au3>
+#include "udf\ADO.au3"
 #Region - Options
 ;~ Opt('CaretCoordMode', 0)				; 1 = Absolute screen coordinates, 0 = Relative coords to the active window.
 ;~ Opt('ExpandEnvStrings', 1)			; 0 = Don't expand, 1 = Do expand (Use %dos% variables in strings).
