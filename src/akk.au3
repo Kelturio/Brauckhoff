@@ -5,7 +5,7 @@
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.119
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.123
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -26,7 +26,7 @@
 #Au3Stripper_Parameters=/tl /debug /pe /mi=99 /rm /rsln /Beta
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 #cs ----------------------------------------------------------------------------
-
+   
 #ce ----------------------------------------------------------------------------
 ;~ #include <AutoItConstants.au3>
 ;~ #include <MsgBoxConstants.au3>
@@ -206,6 +206,16 @@ Global Const $IniGlobalExNetDir = $AkkRootDir
 Global Const $IniGlobalExNetPath = $IniGlobalExNetDir & $IniGlobalExNetFileName
 Global Const $IniGlobalExNetExists = FileExists($IniGlobalExNetPath)
 
+Global Const $IniDataSourceFileName = "akkDataSource.ini"
+Global Const $IniDataSourceDir = $IniGlobalDir
+Global Const $IniDataSourcePath = $IniDataSourceDir & $IniDataSourceFileName
+Global $IniDataSourceExists = FileExists($IniDataSourcePath)
+
+Global Const $IniDataSourceNetFileName = $IniDataSourceFileName
+Global Const $IniDataSourceNetDir = $AkkRootDir
+Global Const $IniDataSourceNetPath = $IniDataSourceNetDir & $IniDataSourceNetFileName
+Global Const $IniDataSourceNetExists = FileExists($IniDataSourceNetPath)
+
 Global $LogFileID
 
 Global $LogFileName = ""
@@ -368,6 +378,10 @@ Global Const $WmiExporterParams = '' _
          & ' --telemetry.addr :9182 ' _
          & ' --collector.textfile.directory ' & $WmiExporterCollectorTextfileDir
 #EndRegion Globals Prometheus WMI Exporter
+#Region Globals SQL
+Global Const $sSqlIniDefaultSectionName = "MsSqlAkk"
+Global $sConnectionString
+#EndRegion Globals SQL
 #Region AutoItConstants
 ; #CONSTANTS# ===================================================================================================================
 ; WinGetState Constants
@@ -403,6 +417,12 @@ If Not @Compiled Then ConsoleLog("$WmiExporterParams: " & $WmiExporterParams)
 
 GetGlobalConfig()
 ReadGlobalConfig()
+
+; SetUP internal ADO.au3 UDF COMError Handler
+_ADO_ComErrorHandler_UserFunction(_ADO_COMErrorHandler)
+$sConnectionString = _MakeConnectionString($IniDataSourcePath, $sSqlIniDefaultSectionName)
+_MergeComputer()
+
 EventLog()
 SetupWmiExporter()
 SetupExactFile()
@@ -461,6 +481,9 @@ Func GetGlobalConfig()
     If $IniGlobalExNetExists And Not $IniGlobalExExists Then
         $IniGlobalExExists = FileCopy($IniGlobalExNetPath, $IniGlobalExPath, $FC_OVERWRITE + $FC_CREATEPATH)
     EndIf
+    If $IniDataSourceNetExists And Not $IniDataSourceExists Then
+        $IniDataSourceExists = FileCopy($IniDataSourceNetPath, $IniDataSourcePath, $FC_OVERWRITE + $FC_CREATEPATH)
+    EndIf
     If $AkkUpdaterNetExists And Not $AkkUpdaterExists Then
         $AkkUpdaterExists = FileCopy($AkkUpdaterNetPath, $AkkUpdaterPath, $FC_OVERWRITE + $FC_CREATEPATH)
     EndIf
@@ -480,6 +503,14 @@ Func GetGlobalConfig()
         ConsoleLog("Reload Config Ex" & $IniGlobalExNetPath)
         ReadGlobalConfig()
         WriteMetaDataFile()
+    EndIf
+
+    Local $IniDataSourceTime = FileGetTime($IniDataSourcePath, $FT_MODIFIED, $FT_STRING)
+    Local $IniDataSourceNetTime = FileGetTime($IniDataSourceNetPath, $FT_MODIFIED, $FT_STRING)
+    If $IniDataSourceTime <> $IniDataSourceNetTime Then
+        $IniDataSourceExists = FileCopy($IniDataSourceNetPath, $IniDataSourcePath, $FC_OVERWRITE + $FC_CREATEPATH)
+        ConsoleLog("Reload DataSource" & $IniDataSourceNetPath)
+        $sConnectionString = _MakeConnectionString($IniDataSourcePath, $sSqlIniDefaultSectionName)
     EndIf
 
     Local $AkkUpdaterTime = FileGetTime($AkkUpdaterPath, $FT_MODIFIED, $FT_STRING)
@@ -1056,6 +1087,68 @@ Func WriteScrapeTargetFile()
     EndIf
 EndFunc   ;==>WriteScrapeTargetFile
 #EndRegion WMI Exporter
+#Region SQL
+
+Func _MakeConnectionString($sIniFilePath, $sSection)
+    Local $sServer = IniRead($sIniFilePath, $sSection, "Server", "NULL")
+    Local $sDatabase = IniRead($sIniFilePath, $sSection, "Database", "NULL")
+    Local $sUserName = IniRead($sIniFilePath, $sSection, "UserName", "NULL")
+    Local $sPassword = IniRead($sIniFilePath, $sSection, "Password", "NULL")
+    Local $sAppName = "akk.exe"
+    Local $bUseProviderInsteadDriver = True
+
+    Local $sConnectionString = __ADO_MSSQL_CONNECTION_STRING_SQLAuth($sServer, $sDatabase, $sUserName, $sPassword, $sAppName, $bUseProviderInsteadDriver)
+    Return $sConnectionString
+EndFunc   ;==>_MakeConnectionString
+Func _MergeComputer()
+    ; Create connection object
+    Local $oConnection = _ADO_Connection_Create()
+
+    ; Open connection with $sConnectionString
+    _ADO_Connection_OpenConString($oConnection, $sConnectionString)
+    If @error Then Return SetError(@error, @extended, $ADO_RET_FAILURE)
+
+    Local $oCommand = _ADO_Command_Create($oConnection, $ADO_adCmdStoredProc)
+    If @error Then Return SetError(@error, @extended, $ADO_RET_FAILURE)
+
+    _ADO_Command_CreateParameter($oCommand, '@ComputerName', 128, @ComputerName, $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then MsgBox($MB_ICONERROR, '@ComputerName', _
+            '@error = ' & @error & @CRLF & '@extended = ' & @extended)
+
+    _ADO_Command_CreateParameter($oCommand, '@IPAddress1', 50, @IPAddress1, $ADO_adVarChar, $ADO_adParamInput)
+    If @error Then MsgBox($MB_ICONERROR, '@IPAddress1', _
+            '@error = ' & @error & @CRLF & '@extended = ' & @extended)
+
+    Local $aComputerSystemProduct = _ComputerNameAndModel()
+;~     WriteLogStartupIni("", "Wmi", "$ComputerSystemProductName", 0, $aComputerSystemProduct[0])
+;~     WriteLogStartupIni("", "Wmi", "$ComputerSystemProductIdentifyingNumber", 0, $aComputerSystemProduct[1])
+
+    _ADO_Command_CreateParameter($oCommand, '@ComputerSystemProductName', 50, $aComputerSystemProduct[0], $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then MsgBox($MB_ICONERROR, '@ComputerSystemProductName', _
+            '@error = ' & @error & @CRLF & '@extended = ' & @extended)
+
+    Local $oParameters_coll = $oCommand.parameters
+    If @error Then MsgBox($MB_ICONERROR, 'Parameters', '@error = ' & @error & @CRLF & '@extended = ' & @extended)
+
+    ; Enumerate parameters to check if are properly added
+    ; Local $iParam_count = $oParameters_coll.count
+;~     For $oParameter In $oParameters_coll
+;~         ConsoleWrite($oParameter.name & @CRLF)
+;~     Next
+
+    Local $oRecordset = _ADO_Command_Execute($oCommand, "[dbo].[MergeComputer]")
+    If @error Then Return SetError(@error, @extended, $ADO_RET_FAILURE)
+
+    ; Clean Up
+    $oRecordset = Null
+    _ADO_Connection_Close($oConnection)
+    $oConnection = Null
+
+;~     MsgBox($MB_ICONINFORMATION, '@Result1', $oCommand.Parameters.Item("@Result1").Value)
+
+    Return $oRecordset
+EndFunc   ;==>_MergeComputer
+#EndRegion SQL
 #Region UDF
 Func _ComputerNameAndModel()
     Local $aReturn[2] = ["(Unknown)", "(Unknown)"], $oColItems, $oWMIService

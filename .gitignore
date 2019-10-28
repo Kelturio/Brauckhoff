@@ -22,3 +22,5 @@ src/udf/BackUp/ArrayEx_old2.au3
 src/udf/BackUp/Ini_old1.au3
 
 src/test/BackUp/ads_old1.au3
+
+src/akkDataSource.ini
