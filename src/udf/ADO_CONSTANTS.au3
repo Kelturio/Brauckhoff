@@ -1,4 +1,4 @@
-﻿#cs
+#cs
 	Any program that accepts data from a user must include code to validate that data before sending it to the data store. You cannot rely on the data store, the provider, ADO, or even your programming language to notify you of problems. You must check every byte entered by your users, making sure that data is the correct type for its field and that required fields are not empty.
 	https://msdn.microsoft.com/en-us/library/ms681470(v=vs.85).aspx
 #ce

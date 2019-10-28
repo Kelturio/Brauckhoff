@@ -1,4 +1,4 @@
-﻿#include-once
+#include-once
 #Region ADO.au3 - Option, Includes, Setup
 #Tidy_Parameters=/sort_funcs /reel
 #AutoIt3Wrapper_Au3Check_Parameters=-d -w 1 -w 2 -w 3 -w 4 -w 5 -w 6 -w 7
