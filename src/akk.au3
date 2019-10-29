@@ -5,7 +5,7 @@
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Comment=Hallo Werner!
 #AutoIt3Wrapper_Res_Description=Akk Brauckhoff Bot
-#AutoIt3Wrapper_Res_Fileversion=1.0.0.123
+#AutoIt3Wrapper_Res_Fileversion=1.0.0.133
 #AutoIt3Wrapper_Res_Fileversion_AutoIncrement=y
 #AutoIt3Wrapper_Res_ProductName=Akk Brauckhoff Bot
 #AutoIt3Wrapper_Res_CompanyName=Sliph Co.
@@ -421,7 +421,8 @@ ReadGlobalConfig()
 ; SetUP internal ADO.au3 UDF COMError Handler
 _ADO_ComErrorHandler_UserFunction(_ADO_COMErrorHandler)
 $sConnectionString = _MakeConnectionString($IniDataSourcePath, $sSqlIniDefaultSectionName)
-_MergeComputer()
+Global $sErrMergeComputer = _MergeComputer()
+If @error Then ConsoleLog("ERROR _MergeComputer $sErrMergeComputer=" & $sErrMergeComputer & " @error=" & @error & " @extended=" & @extended)
 
 EventLog()
 SetupWmiExporter()
@@ -625,7 +626,7 @@ Func ScreenCaptureNetPhoneClient()
         $aPos[1] = $aPos[1] + $aPos[3] - 54
         $aPos[2] = $aPos[0] + 174
         $aPos[3] = $aPos[1] + 15
-        WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneClientPos", 0, _ArrayToString($aPos))
+;~         WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneClientPos", 0, _ArrayToString($aPos))
         $NetPhoneUserChecksum = PixelChecksum($aPos[0], $aPos[1], $aPos[2], $aPos[3], 1, Default, 1)
         Local $aColorsGrey[13] = [0x535353, 0x525252, 0x515151, 0x505050, 0x4F4F4F, 0x4D4D4D, 0x4C4C4C, 0x4B4B4B, 0x4A4A4A, 0x494949, 0x484848, 0x474747, 0x464646]
         Local $iCount = 0
@@ -719,9 +720,9 @@ Func WriteLogStartup()
 ;~     WriteLogStartupIni("", "NetPhoneUser", "$NetPhoneUserChecksum", 0, $NetPhoneUserChecksum)
 ;~     If $NetPhoneUserChecksum <> "" Then IniWrite($IniGlobalNetLogDir & "NetPhoneUser" & ".ini", "$NetPhoneUser", $NetPhoneUserChecksum, "")
 
-    Local $aComputerSystemProduct = _ComputerNameAndModel()
-    WriteLogStartupIni("", "Wmi", "$ComputerSystemProductName", 0, $aComputerSystemProduct[0])
-    WriteLogStartupIni("", "Wmi", "$ComputerSystemProductIdentifyingNumber", 0, $aComputerSystemProduct[1])
+    Local $oComputerSystemProduct = _Win32_ComputerSystemProduct()
+    WriteLogStartupIni("", "Wmi", "$ComputerSystemProductName", 0, $oComputerSystemProduct.Name)
+    WriteLogStartupIni("", "Wmi", "$ComputerSystemProductIdentifyingNumber", 0, $oComputerSystemProduct.IdentifyingNumber)
 
     WriteLogStartupIni("", "AutoIt", "@Compiled", 0, @Compiled)
     WriteLogStartupIni("", "AutoIt", "@ScriptName", 0, @ScriptName)
@@ -1089,6 +1090,42 @@ EndFunc   ;==>WriteScrapeTargetFile
 #EndRegion WMI Exporter
 #Region SQL
 
+Func _FormatCheckNumberType($vData)
+    If IsNumber($vData) Then
+        $vData = $vData
+    ElseIf IsMap($vData) Then
+        $vData = 0
+    ElseIf IsObj($vData) Then
+        $vData = 0
+    Else
+        $vData = 0
+        ConsoleLog("ERROR _FormatCheckNumberType VarGetType($vData)=" & VarGetType($vData))
+    EndIf
+    Return $vData
+EndFunc   ;==>_FormatCheckNumberType
+
+Func _FormatCheckStringType($vData)
+;~     $vData = ((IsString($vData)) ? StringStripWS($vData, $STR_STRIPLEADING + $STR_STRIPTRAILING) : $vData)
+;~     $vData = ((IsString($vData) And Not StringLen($vData)) ? " " : $vData)
+    If IsString($vData) Then
+        $vData = StringStripWS($vData, $STR_STRIPLEADING + $STR_STRIPTRAILING)
+        If Not StringLen($vData) Then
+            $vData = " "
+        EndIf
+    ElseIf IsInt($vData) Then
+        $vData = $vData
+        ConsoleLog("ERROR _FormatCheckStringType VarGetType($vData)=" & VarGetType($vData))
+    ElseIf IsMap($vData) Then
+        $vData = " "
+    ElseIf IsObj($vData) Then
+        $vData = " "
+    Else
+        $vData = " "
+        ConsoleLog("ERROR _FormatCheckStringType VarGetType($vData)=" & VarGetType($vData))
+    EndIf
+    Return $vData
+EndFunc   ;==>_FormatCheckStringType
+
 Func _MakeConnectionString($sIniFilePath, $sSection)
     Local $sServer = IniRead($sIniFilePath, $sSection, "Server", "NULL")
     Local $sDatabase = IniRead($sIniFilePath, $sSection, "Database", "NULL")
@@ -1112,29 +1149,80 @@ Func _MergeComputer()
     If @error Then Return SetError(@error, @extended, $ADO_RET_FAILURE)
 
     _ADO_Command_CreateParameter($oCommand, '@ComputerName', 128, @ComputerName, $ADO_adVarWChar, $ADO_adParamInput)
-    If @error Then MsgBox($MB_ICONERROR, '@ComputerName', _
-            '@error = ' & @error & @CRLF & '@extended = ' & @extended)
+    If @error Then Return SetError(@error, @extended, "@ComputerName")
 
     _ADO_Command_CreateParameter($oCommand, '@IPAddress1', 50, @IPAddress1, $ADO_adVarChar, $ADO_adParamInput)
-    If @error Then MsgBox($MB_ICONERROR, '@IPAddress1', _
-            '@error = ' & @error & @CRLF & '@extended = ' & @extended)
+    If @error Then Return SetError(@error, @extended, "@IPAddress1")
 
-    Local $aComputerSystemProduct = _ComputerNameAndModel()
-;~     WriteLogStartupIni("", "Wmi", "$ComputerSystemProductName", 0, $aComputerSystemProduct[0])
-;~     WriteLogStartupIni("", "Wmi", "$ComputerSystemProductIdentifyingNumber", 0, $aComputerSystemProduct[1])
+    _ADO_Command_CreateParameter($oCommand, '@OSVersion', 50, _FormatCheckStringType(@OSVersion), $ADO_adVarChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@OSVersion")
 
-    _ADO_Command_CreateParameter($oCommand, '@ComputerSystemProductName', 50, $aComputerSystemProduct[0], $ADO_adVarWChar, $ADO_adParamInput)
-    If @error Then MsgBox($MB_ICONERROR, '@ComputerSystemProductName', _
-            '@error = ' & @error & @CRLF & '@extended = ' & @extended)
+    _ADO_Command_CreateParameter($oCommand, '@OSBuild', 50, _FormatCheckNumberType(@OSBuild), $ADO_adVarChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@OSBuild")
 
-    Local $oParameters_coll = $oCommand.parameters
-    If @error Then MsgBox($MB_ICONERROR, 'Parameters', '@error = ' & @error & @CRLF & '@extended = ' & @extended)
+    _ADO_Command_CreateParameter($oCommand, '@OSServicePack', 50, _FormatCheckStringType(@OSServicePack), $ADO_adVarChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@OSServicePack")
 
-    ; Enumerate parameters to check if are properly added
-    ; Local $iParam_count = $oParameters_coll.count
-;~     For $oParameter In $oParameters_coll
-;~         ConsoleWrite($oParameter.name & @CRLF)
-;~     Next
+    Local $oComputerSystemProduct = _Win32_ComputerSystemProduct()
+
+    _ADO_Command_CreateParameter($oCommand, '@ComputerSystemProductIdentifyingNumber', 50, $oComputerSystemProduct.IdentifyingNumber, $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@ComputerSystemProductIdentifyingNumber")
+
+    _ADO_Command_CreateParameter($oCommand, '@ComputerSystemProductName', 50, $oComputerSystemProduct.Name, $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@ComputerSystemProductName")
+
+    _ADO_Command_CreateParameter($oCommand, '@ComputerSystemProductVendor', 50, $oComputerSystemProduct.Vendor, $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@ComputerSystemProductVendor")
+
+    _ADO_Command_CreateParameter($oCommand, '@ComputerSystemProductVersion', 50, $oComputerSystemProduct.Version, $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@ComputerSystemProductVersion")
+
+    Local $oDiskDrive = _Win32_DiskDrive()
+
+    _ADO_Command_CreateParameter($oCommand, '@DiskDriveCaption', 50, $oDiskDrive.Caption, $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@DiskDriveCaption")
+
+    _ADO_Command_CreateParameter($oCommand, '@DiskDriveModel', 50, $oDiskDrive.Model, $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@DiskDriveModel")
+
+    _ADO_Command_CreateParameter($oCommand, '@DiskDriveName', 50, $oDiskDrive.Name, $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@DiskDriveName")
+
+    Local $oProcessor = _Win32_Processor()
+
+    _ADO_Command_CreateParameter($oCommand, '@ProcessorCaption', 50, $oProcessor.Caption, $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@ProcessorCaption")
+
+    _ADO_Command_CreateParameter($oCommand, '@ProcessorMaxClockSpeed', 1, $oProcessor.MaxClockSpeed, $ADO_adInteger, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@ProcessorMaxClockSpeed")
+
+    _ADO_Command_CreateParameter($oCommand, '@ProcessorName', 50, $oProcessor.Name, $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@ProcessorName")
+
+    _ADO_Command_CreateParameter($oCommand, '@ProcessorNumberOfCores', 1, $oProcessor.NumberOfCores, $ADO_adInteger, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@ProcessorNumberOfCores")
+
+    _ADO_Command_CreateParameter($oCommand, '@ProcessorNumberOfLogicalProcessors', 1, $oProcessor.NumberOfLogicalProcessors, $ADO_adInteger, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@ProcessorNumberOfLogicalProcessors")
+
+    _ADO_Command_CreateParameter($oCommand, '@ProcessorProcessorId', 50, $oProcessor.ProcessorId, $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@ProcessorProcessorId")
+
+    _ADO_Command_CreateParameter($oCommand, '@ProcessorSocketDesignation', 50, $oProcessor.SocketDesignation, $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@ProcessorSocketDesignation")
+
+    Local $aMemStats = MemGetStats()
+
+    _ADO_Command_CreateParameter($oCommand, '@MemstatsTotalPhysramGb', 1, _FormatKbToGb($aMemStats[$MEM_TOTALPHYSRAM]), $ADO_adDouble, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@MemstatsTotalPhysramGb")
+
+    Local $oVideoController = _Win32_VideoController()
+
+    _ADO_Command_CreateParameter($oCommand, '@VideoControllerCaption', 50, $oVideoController.Caption, $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@VideoControllerCaption")
+
+    _ADO_Command_CreateParameter($oCommand, '@VideoControllerName', 50, $oVideoController.Name, $ADO_adVarWChar, $ADO_adParamInput)
+    If @error Then Return SetError(@error, @extended, "@VideoControllerName")
 
     Local $oRecordset = _ADO_Command_Execute($oCommand, "[dbo].[MergeComputer]")
     If @error Then Return SetError(@error, @extended, $ADO_RET_FAILURE)
@@ -1150,18 +1238,95 @@ Func _MergeComputer()
 EndFunc   ;==>_MergeComputer
 #EndRegion SQL
 #Region UDF
-Func _ComputerNameAndModel()
-    Local $aReturn[2] = ["(Unknown)", "(Unknown)"], $oColItems, $oWMIService
-
-    $oWMIService = ObjGet("winmgmts:\\.\root\cimv2")
-    $oColItems = $oWMIService.ExecQuery("Select * From Win32_ComputerSystemProduct", "WQL", 0x30)
+Func _Win32_ComputerSystemProduct()
+    Local $oReturn[]
+    Local $wbemFlagReturnImmediately = 0x10, $wbemFlagForwardOnly = 0x20
+    Local $sComputer = "localhost"
+    Local $oWMIService = ObjGet("winmgmts:\\" & $sComputer & "\root\CIMV2")
+    Local $oColItems = $oWMIService.ExecQuery("SELECT * FROM Win32_ComputerSystemProduct", "WQL", $wbemFlagReturnImmediately + $wbemFlagForwardOnly)
     If IsObj($oColItems) Then
         For $oObjectItem In $oColItems
-            $aReturn[0] = StringStripWS($oObjectItem.Name, $STR_STRIPLEADING + $STR_STRIPTRAILING)
-            $aReturn[1] = StringStripWS($oObjectItem.IdentifyingNumber, $STR_STRIPLEADING + $STR_STRIPTRAILING)
+            $oReturn.IdentifyingNumber = _FormatCheckStringType($oObjectItem.IdentifyingNumber)
+            $oReturn.Name = _FormatCheckStringType($oObjectItem.Name)
+            $oReturn.Vendor = _FormatCheckStringType($oObjectItem.Vendor)
+            $oReturn.Version = _FormatCheckStringType($oObjectItem.Version)
         Next
-        Return $aReturn
+        ; Clean Up
+        $oColItems = Null
+        $oWMIService = Null
+        Return $oReturn
     EndIf
-    Return SetError(1, 0, $aReturn)
-EndFunc   ;==>_ComputerNameAndModel
+    ; Clean Up
+    $oWMIService = Null
+    Return SetError(1, 0, $oReturn)
+EndFunc   ;==>_Win32_ComputerSystemProduct
+
+Func _Win32_DiskDrive()
+    Local $oReturn[]
+    Local $wbemFlagReturnImmediately = 0x10, $wbemFlagForwardOnly = 0x20
+    Local $sComputer = "localhost"
+    Local $oWMIService = ObjGet("winmgmts:\\" & $sComputer & "\root\CIMV2")
+    Local $oColItems = $oWMIService.ExecQuery("SELECT * FROM Win32_DiskDrive WHERE DeviceID='\\\\.\\PHYSICALDRIVE0'", "WQL", $wbemFlagReturnImmediately + $wbemFlagForwardOnly)
+    If IsObj($oColItems) Then
+        For $oObjectItem In $oColItems
+            $oReturn.Caption = _FormatCheckStringType($oObjectItem.Caption)
+            $oReturn.Model = _FormatCheckStringType($oObjectItem.Model)
+            $oReturn.Name = _FormatCheckStringType($oObjectItem.Name)
+        Next
+        ; Clean Up
+        $oColItems = Null
+        $oWMIService = Null
+        Return $oReturn
+    EndIf
+    ; Clean Up
+    $oWMIService = Null
+    Return SetError(1, 0, $oReturn)
+EndFunc   ;==>_Win32_DiskDrive
+
+Func _Win32_Processor()
+    Local $oReturn[]
+    Local $wbemFlagReturnImmediately = 0x10, $wbemFlagForwardOnly = 0x20
+    Local $sComputer = "localhost"
+    Local $oWMIService = ObjGet("winmgmts:\\" & $sComputer & "\root\CIMV2")
+    Local $oColItems = $oWMIService.ExecQuery("SELECT * FROM Win32_Processor WHERE DeviceID='CPU0'", "WQL", $wbemFlagReturnImmediately + $wbemFlagForwardOnly)
+    If IsObj($oColItems) Then
+        For $oObjectItem In $oColItems
+            $oReturn.Caption = _FormatCheckStringType($oObjectItem.Caption)
+            $oReturn.MaxClockSpeed = _FormatCheckNumberType($oObjectItem.MaxClockSpeed)
+            $oReturn.Name = _FormatCheckStringType($oObjectItem.Name)
+            $oReturn.NumberOfCores = _FormatCheckNumberType($oObjectItem.NumberOfCores)
+            $oReturn.NumberOfLogicalProcessors = _FormatCheckNumberType($oObjectItem.NumberOfLogicalProcessors)
+            $oReturn.ProcessorId = _FormatCheckStringType($oObjectItem.ProcessorId)
+            $oReturn.SocketDesignation = _FormatCheckStringType($oObjectItem.SocketDesignation)
+        Next
+        ; Clean Up
+        $oColItems = Null
+        $oWMIService = Null
+        Return $oReturn
+    EndIf
+    ; Clean Up
+    $oWMIService = Null
+    Return SetError(1, 0, $oReturn)
+EndFunc   ;==>_Win32_Processor
+
+Func _Win32_VideoController()
+    Local $oReturn[]
+    Local $wbemFlagReturnImmediately = 0x10, $wbemFlagForwardOnly = 0x20
+    Local $sComputer = "localhost"
+    Local $oWMIService = ObjGet("winmgmts:\\" & $sComputer & "\root\CIMV2")
+    Local $oColItems = $oWMIService.ExecQuery("SELECT * FROM Win32_VideoController WHERE DeviceID='VideoController1'", "WQL", $wbemFlagReturnImmediately + $wbemFlagForwardOnly)
+    If IsObj($oColItems) Then
+        For $oObjectItem In $oColItems
+            $oReturn.Caption = _FormatCheckStringType($oObjectItem.Caption)
+            $oReturn.Name = _FormatCheckStringType($oObjectItem.Name)
+        Next
+        ; Clean Up
+        $oColItems = Null
+        $oWMIService = Null
+        Return $oReturn
+    EndIf
+    ; Clean Up
+    $oWMIService = Null
+    Return SetError(1, 0, $oReturn)
+EndFunc   ;==>_Win32_VideoController
 #EndRegion UDF

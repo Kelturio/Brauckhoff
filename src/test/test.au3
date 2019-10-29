@@ -6,8 +6,12 @@ ConsoleWrite(@CRLF)
 #include <StringConstants.au3>
 
 
+global $akk[]
 
-
+;~ MsgBox(0,"",StringLen($akk.hgf))
+;~ MsgBox(0,"",IsMap($akk))
+MsgBox(0,"",VarGetType($akk.dfgh))
+;~ MsgBox(0,"",StringLen(555))
 
 
 
